@@ -1,4 +1,6 @@
+import 'catalog_item.dart';
 import 'commands.dart';
+import 'economy_error.dart';
 import 'economy_result.dart';
 import 'economy_state.dart';
 
@@ -14,6 +16,52 @@ final class EconomyEngine {
             lastCreditSourceId: sourceId,
           ),
           explanationIds: const ['exp.credit'],
+        );
+      case ConfirmPlan(:final plan):
+        if (!(plan.total <= state.available)) {
+          return EconomyResult(
+            state: state,
+            explanationIds: const ['exp.plan_too_big'],
+            error: EconomyError.planExceedsAvailable,
+          );
+        }
+        return EconomyResult(
+          state: state.copyWith(plan: plan),
+          explanationIds: const ['exp.plan_ok'],
+        );
+      case BuyItem(:final commandId, :final item):
+        if (state.processedBuyIds.contains(commandId)) {
+          return EconomyResult(
+            state: state,
+            explanationIds: const ['exp.buy_repeat'],
+          );
+        }
+        if (state.plan == null) {
+          return EconomyResult(
+            state: state,
+            explanationIds: const ['exp.need_plan'],
+            error: EconomyError.noPlan,
+          );
+        }
+        if (!(item.price <= state.available)) {
+          return EconomyResult(
+            state: state,
+            explanationIds: const ['exp.insufficient', 'exp.recover'],
+            error: EconomyError.insufficientFunds,
+          );
+        }
+        return EconomyResult(
+          state: state.copyWith(
+            available: state.available - item.price,
+            spentNeed: item.kind == ItemKind.need
+                ? state.spentNeed + item.price
+                : state.spentNeed,
+            spentWant: item.kind == ItemKind.want
+                ? state.spentWant + item.price
+                : state.spentWant,
+            processedBuyIds: [...state.processedBuyIds, commandId],
+          ),
+          explanationIds: const ['exp.buy'],
         );
       default:
         throw UnimplementedError(command.runtimeType.toString());
