@@ -2,10 +2,13 @@
 
 | Путь | Назначение |
 |------|------------|
-| [`templates/FEATURE_SA_SPEC_TEMPLATE.md`](../templates/FEATURE_SA_SPEC_TEMPLATE.md) | Шаблон SA (из практики fintech-web) |
-| `work/{area}/` | SA-спеки и бизнес-доки фич |
-| `superpowers/specs/` | Design после brainstorm |
-| `superpowers/plans/` | Implementation plans |
+| [`templates/FEATURE_SA_SPEC_TEMPLATE.md`](../templates/FEATURE_SA_SPEC_TEMPLATE.md) | Шаблон SA |
+| [`work/product/TZ_RESEARCH_AND_PLANS.md`](product/TZ_RESEARCH_AND_PLANS.md) | Разведка ТЗ и конкуренты |
+| [`work/product/FINNI_CORE_SA_SPEC.md`](product/FINNI_CORE_SA_SPEC.md) | SA ядра MVP (F-001), согласовано |
+| [`superpowers/specs/2026-09-20-finni-core-design.md`](../superpowers/specs/2026-09-20-finni-core-design.md) | Design Superpowers (architectural) |
+| [`superpowers/plans/2026-09-20-finni-program-roadmap.md`](../superpowers/plans/2026-09-20-finni-program-roadmap.md) | Roadmap программы |
+| [`superpowers/plans/2026-09-20-finni-economy.md`](../superpowers/plans/2026-09-20-finni-economy.md) | Implementation plan №1: домен экономики (TDD) |
+| `work/{area}/` | Прочие SA и бизнес-доки |
 
-**Пайплайн:** superpowers (требования) → SA + бизнес-доки → код → тесты.  
-См. `.cursor/rules/delivery-workflow.mdc`.
+**Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
+См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.

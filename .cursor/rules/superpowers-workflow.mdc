@@ -1,0 +1,22 @@
+---
+description: Как стыковать Superpowers со спекой SA, TDD и веткой Ivan_DevStand
+alwaysApply: true
+---
+
+# Superpowers в этом репозитории
+
+Плагин включён (`.cursor/settings.json`). Перед работой **прочитай актуальный SKILL.md** скилла, не опирайся на память.
+
+Классификация продукта: **architectural** (нового клиента ещё нет). Bounded/spike не использовать, чтобы обойти спеку.
+
+Порядок:
+
+1. `superpowers:brainstorming` → design `docs/superpowers/specs/YYYY-MM-DD-*-design.md`
+2. SA по шаблону команды → `docs/work/...`
+3. Ок Ивана на **оба** документа
+4. `superpowers:writing-plans` — **отдельный** план на одну подсистему (сначала экономика). Шаги 2–5 мин, TDD, без TBD
+5. Исполнение: `subagent-driven-development` или `executing-plans` — Иван выбирает на handoff
+6. Код: `superpowers:test-driven-development` — нет продакшн-кода без красного теста
+7. Конец ветки: `finishing-a-development-branch`, но **не merge в main** и **не push** без git-collaboration
+
+Ветка только `Ivan_DevStand` (создать в начале первого implementation plan). Worktree — от неё, не новая remote-ветка. Коммиты по шагам плана — только если Иван сказал исполнять план (это включает коммиты в свою ветку). Push — отдельное «можно».

@@ -1,0 +1,5 @@
+﻿ea113ea test(economy): cover barrel export
+---STAT---
+ client/test/economy/barrel_test.dart | 11 +++++++++++  1 file changed, 11 insertions(+)
+---DIFF---
+diff --git a/client/test/economy/barrel_test.dart b/client/test/economy/barrel_test.dart new file mode 100644 index 0000000..5fb342e --- /dev/null +++ b/client/test/economy/barrel_test.dart @@ -0,0 +1,11 @@ +import 'package:finni/economy/economy.dart'; +import 'package:flutter_test/flutter_test.dart'; + +void main() { +  test('barrel exports engine', () { +    expect( +      EconomyEngine().apply(EconomyState.empty(), Credit(GameCoins(1), 't')).state.available, +      GameCoins(1), +    ); +  }); +}

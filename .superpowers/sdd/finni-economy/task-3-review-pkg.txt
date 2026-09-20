@@ -1,0 +1,233 @@
+﻿0a50e96 feat(economy): credit command increases available with source
+---STAT---
+ client/lib/economy/commands.dart       | 42 +++++++++++++++++
+ client/lib/economy/economy.dart        |  8 ++++
+ client/lib/economy/economy_engine.dart | 22 +++++++++
+ client/lib/economy/economy_result.dart | 13 ++++++
+ client/lib/economy/economy_state.dart  | 83 ++++++++++++++++++++++++++++++++++
+ client/test/economy/credit_test.dart   | 19 ++++++++
+ 6 files changed, 187 insertions(+)
+---DIFF---
+diff --git a/client/lib/economy/commands.dart b/client/lib/economy/commands.dart
+new file mode 100644
+index 0000000..d2301e1
+--- /dev/null
++++ b/client/lib/economy/commands.dart
+@@ -0,0 +1,42 @@
++import 'budget_plan.dart';
++import 'catalog_item.dart';
++import 'game_coins.dart';
++
++sealed class EconomyCommand {
++  const EconomyCommand();
++}
++
++final class Credit extends EconomyCommand {
++  const Credit(this.amount, this.sourceId);
++  final GameCoins amount;
++  final String sourceId;
++}
++
++final class ConfirmPlan extends EconomyCommand {
++  const ConfirmPlan(this.plan);
++  final BudgetPlan plan;
++}
++
++final class BuyItem extends EconomyCommand {
++  const BuyItem({required this.commandId, required this.item});
++  final String commandId;
++  final CatalogItem item;
++}
++
++final class TransferToSavings extends EconomyCommand {
++  const TransferToSavings(this.amount);
++  final GameCoins amount;
++}
++
++final class RequestWithdraw extends EconomyCommand {
++  const RequestWithdraw(this.amount);
++  final GameCoins amount;
++}
++
++final class ConfirmWithdraw extends EconomyCommand {
++  const ConfirmWithdraw();
++}
++
++final class ClosePeriod extends EconomyCommand {
++  const ClosePeriod();
++}
+diff --git a/client/lib/economy/economy.dart b/client/lib/economy/economy.dart
+new file mode 100644
+index 0000000..9a87465
+--- /dev/null
++++ b/client/lib/economy/economy.dart
+@@ -0,0 +1,8 @@
++export 'budget_plan.dart';
++export 'catalog_item.dart';
++export 'commands.dart';
++export 'economy_engine.dart';
++export 'economy_error.dart';
++export 'economy_result.dart';
++export 'economy_state.dart';
++export 'game_coins.dart';
+diff --git a/client/lib/economy/economy_engine.dart b/client/lib/economy/economy_engine.dart
+new file mode 100644
+index 0000000..c15fcf6
+--- /dev/null
++++ b/client/lib/economy/economy_engine.dart
+@@ -0,0 +1,22 @@
++import 'commands.dart';
++import 'economy_result.dart';
++import 'economy_state.dart';
++
++final class EconomyEngine {
++  const EconomyEngine();
++
++  EconomyResult apply(EconomyState state, EconomyCommand command) {
++    switch (command) {
++      case Credit(:final amount, :final sourceId):
++        return EconomyResult(
++          state: state.copyWith(
++            available: state.available + amount,
++            lastCreditSourceId: sourceId,
++          ),
++          explanationIds: const ['exp.credit'],
++        );
++      default:
++        throw UnimplementedError(command.runtimeType.toString());
++    }
++  }
++}
+diff --git a/client/lib/economy/economy_result.dart b/client/lib/economy/economy_result.dart
+new file mode 100644
+index 0000000..4fac080
+--- /dev/null
++++ b/client/lib/economy/economy_result.dart
+@@ -0,0 +1,13 @@
++import 'economy_error.dart';
++import 'economy_state.dart';
++
++final class EconomyResult {
++  const EconomyResult({
++    required this.state,
++    required this.explanationIds,
++    this.error,
++  });
++  final EconomyState state;
++  final List<String> explanationIds;
++  final EconomyError? error;
++}
+diff --git a/client/lib/economy/economy_state.dart b/client/lib/economy/economy_state.dart
+new file mode 100644
+index 0000000..5eaa7ee
+--- /dev/null
++++ b/client/lib/economy/economy_state.dart
+@@ -0,0 +1,83 @@
++import 'budget_plan.dart';
++import 'game_coins.dart';
++
++enum PetMood { steady, glad, uneasy }
++
++final class EconomyState {
++  const EconomyState({
++    required this.available,
++    required this.savings,
++    required this.plan,
++    required this.spentNeed,
++    required this.spentWant,
++    required this.savedThisPeriod,
++    required this.petMood,
++    required this.petStage,
++    required this.goodPeriods,
++    required this.processedBuyIds,
++    required this.pendingWithdraw,
++    required this.lastCreditSourceId,
++  });
++
++  factory EconomyState.empty() => const EconomyState(
++    available: GameCoins.zero,
++    savings: GameCoins.zero,
++    plan: null,
++    spentNeed: GameCoins.zero,
++    spentWant: GameCoins.zero,
++    savedThisPeriod: GameCoins.zero,
++    petMood: PetMood.steady,
++    petStage: 1,
++    goodPeriods: 0,
++    processedBuyIds: [],
++    pendingWithdraw: null,
++    lastCreditSourceId: null,
++  );
++
++  final GameCoins available;
++  final GameCoins savings;
++  final BudgetPlan? plan;
++  final GameCoins spentNeed;
++  final GameCoins spentWant;
++  final GameCoins savedThisPeriod;
++  final PetMood petMood;
++  final int petStage;
++  final int goodPeriods;
++  final List<String> processedBuyIds;
++  final GameCoins? pendingWithdraw;
++  final String? lastCreditSourceId;
++
++  EconomyState copyWith({
++    GameCoins? available,
++    GameCoins? savings,
++    BudgetPlan? plan,
++    bool clearPlan = false,
++    GameCoins? spentNeed,
++    GameCoins? spentWant,
++    GameCoins? savedThisPeriod,
++    PetMood? petMood,
++    int? petStage,
++    int? goodPeriods,
++    List<String>? processedBuyIds,
++    GameCoins? pendingWithdraw,
++    bool clearPendingWithdraw = false,
++    String? lastCreditSourceId,
++  }) {
++    return EconomyState(
++      available: available ?? this.available,
++      savings: savings ?? this.savings,
++      plan: clearPlan ? null : (plan ?? this.plan),
++      spentNeed: spentNeed ?? this.spentNeed,
++      spentWant: spentWant ?? this.spentWant,
++      savedThisPeriod: savedThisPeriod ?? this.savedThisPeriod,
++      petMood: petMood ?? this.petMood,
++      petStage: petStage ?? this.petStage,
++      goodPeriods: goodPeriods ?? this.goodPeriods,
++      processedBuyIds: processedBuyIds ?? this.processedBuyIds,
++      pendingWithdraw: clearPendingWithdraw
++          ? null
++          : (pendingWithdraw ?? this.pendingWithdraw),
++      lastCreditSourceId: lastCreditSourceId ?? this.lastCreditSourceId,
++    );
++  }
++}
+diff --git a/client/test/economy/credit_test.dart b/client/test/economy/credit_test.dart
+new file mode 100644
+index 0000000..aac5320
+--- /dev/null
++++ b/client/test/economy/credit_test.dart
+@@ -0,0 +1,19 @@
++import 'package:finni/economy/commands.dart';
++import 'package:finni/economy/economy_engine.dart';
++import 'package:finni/economy/economy_state.dart';
++import 'package:finni/economy/game_coins.dart';
++import 'package:flutter_test/flutter_test.dart';
++
++void main() {
++  test('credit increases available and records source', () {
++    const engine = EconomyEngine();
++    final result = engine.apply(
++      EconomyState.empty(),
++      Credit(GameCoins(50), 'starter'),
++    );
++    expect(result.error, isNull);
++    expect(result.state.available, GameCoins(50));
++    expect(result.state.lastCreditSourceId, 'starter');
++    expect(result.explanationIds, ['exp.credit']);
++  });
++}

@@ -1,0 +1,66 @@
+﻿92a68a4 feat(economy): add BudgetPlan, CatalogItem, error codes
+---STAT---
+ client/lib/economy/budget_plan.dart       |  9 +++++++++
+ client/lib/economy/catalog_item.dart      | 10 ++++++++++
+ client/lib/economy/economy_error.dart     |  1 +
+ client/test/economy/budget_plan_test.dart | 14 ++++++++++++++
+ 4 files changed, 34 insertions(+)
+---DIFF---
+diff --git a/client/lib/economy/budget_plan.dart b/client/lib/economy/budget_plan.dart
+new file mode 100644
+index 0000000..cbaee91
+--- /dev/null
++++ b/client/lib/economy/budget_plan.dart
+@@ -0,0 +1,9 @@
++import 'game_coins.dart';
++
++final class BudgetPlan {
++  const BudgetPlan({required this.need, required this.want, required this.save});
++  final GameCoins need;
++  final GameCoins want;
++  final GameCoins save;
++  GameCoins get total => need + want + save;
++}
+diff --git a/client/lib/economy/catalog_item.dart b/client/lib/economy/catalog_item.dart
+new file mode 100644
+index 0000000..5898586
+--- /dev/null
++++ b/client/lib/economy/catalog_item.dart
+@@ -0,0 +1,10 @@
++import 'game_coins.dart';
++
++enum ItemKind { need, want }
++
++final class CatalogItem {
++  const CatalogItem({required this.id, required this.kind, required this.price});
++  final String id;
++  final ItemKind kind;
++  final GameCoins price;
++}
+diff --git a/client/lib/economy/economy_error.dart b/client/lib/economy/economy_error.dart
+new file mode 100644
+index 0000000..6f5d205
+--- /dev/null
++++ b/client/lib/economy/economy_error.dart
+@@ -0,0 +1 @@
++enum EconomyError { insufficientFunds, planExceedsAvailable, noPlan, withdrawNotPending }
+diff --git a/client/test/economy/budget_plan_test.dart b/client/test/economy/budget_plan_test.dart
+new file mode 100644
+index 0000000..2256394
+--- /dev/null
++++ b/client/test/economy/budget_plan_test.dart
+@@ -0,0 +1,14 @@
++import 'package:finni/economy/budget_plan.dart';
++import 'package:finni/economy/game_coins.dart';
++import 'package:flutter_test/flutter_test.dart';
++
++void main() {
++  test('total is need plus want plus save', () {
++    final plan = BudgetPlan(
++      need: GameCoins(10),
++      want: GameCoins(5),
++      save: GameCoins(3),
++    );
++    expect(plan.total, GameCoins(18));
++  });
++}
