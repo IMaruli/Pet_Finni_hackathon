@@ -1,7 +1,14 @@
 final class GameCoins {
-  const GameCoins(this.value) : assert(value >= 0);
+  const GameCoins._(this.value);
 
-  static const zero = GameCoins(0);
+  factory GameCoins(int value) {
+    if (value < 0) {
+      throw ArgumentError.value(value, 'value', 'must be non-negative');
+    }
+    return GameCoins._(value);
+  }
+
+  static const zero = GameCoins._(0);
 
   final int value;
 

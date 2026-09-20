@@ -11,6 +11,6 @@ void main() {
   });
 
   test('constructor rejects negative value', () {
-    expect(() => GameCoins(-1), throwsA(isA<AssertionError>()));
+    expect(() => GameCoins(-1), throwsArgumentError);
   });
 }
