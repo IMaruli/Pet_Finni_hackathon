@@ -63,6 +63,51 @@ final class EconomyEngine {
           ),
           explanationIds: const ['exp.buy'],
         );
+      case TransferToSavings(:final amount):
+        if (!(amount <= state.available)) {
+          return EconomyResult(
+            state: state,
+            explanationIds: const ['exp.insufficient', 'exp.recover'],
+            error: EconomyError.insufficientFunds,
+          );
+        }
+        return EconomyResult(
+          state: state.copyWith(
+            available: state.available - amount,
+            savings: state.savings + amount,
+            savedThisPeriod: state.savedThisPeriod + amount,
+          ),
+          explanationIds: const ['exp.save'],
+        );
+      case RequestWithdraw(:final amount):
+        if (!(amount <= state.savings)) {
+          return EconomyResult(
+            state: state,
+            explanationIds: const ['exp.insufficient', 'exp.recover'],
+            error: EconomyError.insufficientFunds,
+          );
+        }
+        return EconomyResult(
+          state: state.copyWith(pendingWithdraw: amount),
+          explanationIds: const ['exp.withdraw_preview'],
+        );
+      case ConfirmWithdraw():
+        final pending = state.pendingWithdraw;
+        if (pending == null) {
+          return EconomyResult(
+            state: state,
+            explanationIds: const ['exp.withdraw_need_confirm'],
+            error: EconomyError.withdrawNotPending,
+          );
+        }
+        return EconomyResult(
+          state: state.copyWith(
+            available: state.available + pending,
+            savings: state.savings - pending,
+            clearPendingWithdraw: true,
+          ),
+          explanationIds: const ['exp.withdraw_done'],
+        );
       default:
         throw UnimplementedError(command.runtimeType.toString());
     }
