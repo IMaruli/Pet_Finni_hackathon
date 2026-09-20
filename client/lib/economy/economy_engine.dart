@@ -3,6 +3,7 @@ import 'commands.dart';
 import 'economy_error.dart';
 import 'economy_result.dart';
 import 'economy_state.dart';
+import 'game_coins.dart';
 
 final class EconomyEngine {
   const EconomyEngine();
@@ -50,17 +51,18 @@ final class EconomyEngine {
             error: EconomyError.insufficientFunds,
           );
         }
+        final nextState = state.copyWith(
+          available: state.available - item.price,
+          spentNeed: item.kind == ItemKind.need
+              ? state.spentNeed + item.price
+              : state.spentNeed,
+          spentWant: item.kind == ItemKind.want
+              ? state.spentWant + item.price
+              : state.spentWant,
+          processedBuyIds: [...state.processedBuyIds, commandId],
+        );
         return EconomyResult(
-          state: state.copyWith(
-            available: state.available - item.price,
-            spentNeed: item.kind == ItemKind.need
-                ? state.spentNeed + item.price
-                : state.spentNeed,
-            spentWant: item.kind == ItemKind.want
-                ? state.spentWant + item.price
-                : state.spentWant,
-            processedBuyIds: [...state.processedBuyIds, commandId],
-          ),
+          state: nextState.copyWith(petMood: _mood(nextState)),
           explanationIds: const ['exp.buy'],
         );
       case TransferToSavings(:final amount):
@@ -71,12 +73,13 @@ final class EconomyEngine {
             error: EconomyError.insufficientFunds,
           );
         }
+        final nextState = state.copyWith(
+          available: state.available - amount,
+          savings: state.savings + amount,
+          savedThisPeriod: state.savedThisPeriod + amount,
+        );
         return EconomyResult(
-          state: state.copyWith(
-            available: state.available - amount,
-            savings: state.savings + amount,
-            savedThisPeriod: state.savedThisPeriod + amount,
-          ),
+          state: nextState.copyWith(petMood: _mood(nextState)),
           explanationIds: const ['exp.save'],
         );
       case RequestWithdraw(:final amount):
@@ -108,8 +111,59 @@ final class EconomyEngine {
           ),
           explanationIds: const ['exp.withdraw_done'],
         );
+      case ClosePeriod():
+        final plan = state.plan;
+        final isGood =
+            plan != null &&
+            state.spentNeed >= plan.need &&
+            state.savedThisPeriod.value > 0;
+        final goodPeriods = state.goodPeriods + (isGood ? 1 : 0);
+        return EconomyResult(
+          state: state.copyWith(
+            clearPlan: true,
+            spentNeed: GameCoins.zero,
+            spentWant: GameCoins.zero,
+            savedThisPeriod: GameCoins.zero,
+            petMood: _mood(state),
+            petStage: _stageAfterClose(state.petStage, goodPeriods),
+            goodPeriods: goodPeriods,
+            processedBuyIds: const [],
+            clearPendingWithdraw: true,
+          ),
+          explanationIds: const ['exp.period_closed', 'exp.mood'],
+        );
       default:
         throw UnimplementedError(command.runtimeType.toString());
     }
+  }
+
+  PetMood _mood(EconomyState state) {
+    final plan = state.plan;
+    if (plan == null) {
+      return PetMood.steady;
+    }
+
+    final needMet = state.spentNeed >= plan.need;
+    final actual =
+        state.spentNeed.value +
+        state.spentWant.value +
+        state.savedThisPeriod.value;
+    final planned = plan.total.value;
+    if (needMet && actual * 5 >= planned * 4 && actual * 5 <= planned * 6) {
+      return PetMood.glad;
+    }
+    if (plan.need.value > 0 && !needMet) {
+      return PetMood.uneasy;
+    }
+    return PetMood.steady;
+  }
+
+  int _stageAfterClose(int currentStage, int goodPeriods) {
+    final computed = goodPeriods >= 4
+        ? 3
+        : goodPeriods >= 2
+        ? 2
+        : 1;
+    return currentStage > computed ? currentStage : computed;
   }
 }
