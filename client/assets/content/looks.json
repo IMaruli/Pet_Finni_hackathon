@@ -1,0 +1,13 @@
+{
+  "looks": [
+    {"id": "sun_tuft", "title": "Солнышко с хохолком", "color": "#FFCC33", "hair": "tuft"},
+    {"id": "sun_bangs", "title": "Солнышко с чёлкой", "color": "#FFCC33", "hair": "bangs"},
+    {"id": "sun_buns", "title": "Солнышко с пучками", "color": "#FFCC33", "hair": "buns"},
+    {"id": "lemon_tuft", "title": "Лимон с хохолком", "color": "#FFE45C", "hair": "tuft"},
+    {"id": "lemon_bangs", "title": "Лимон с чёлкой", "color": "#FFE45C", "hair": "bangs"},
+    {"id": "lemon_buns", "title": "Лимон с пучками", "color": "#FFE45C", "hair": "buns"},
+    {"id": "orange_tuft", "title": "Апельсин с хохолком", "color": "#FFAA40", "hair": "tuft"},
+    {"id": "orange_bangs", "title": "Апельсин с чёлкой", "color": "#FFAA40", "hair": "bangs"},
+    {"id": "orange_buns", "title": "Апельсин с пучками", "color": "#FFAA40", "hair": "buns"}
+  ]
+}

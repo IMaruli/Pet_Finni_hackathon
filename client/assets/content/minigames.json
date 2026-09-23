@@ -1,0 +1,44 @@
+{
+  "sortCards": [
+    {"emoji": "🥣", "title": "Завтрак", "kind": "need", "why": "Без еды нет сил на день"},
+    {"emoji": "🍬", "title": "Конфеты", "kind": "want", "why": "Вкусно, но можно и без них"},
+    {"emoji": "🪥", "title": "Зубная щётка", "kind": "need", "why": "Зубы нужно чистить каждый день"},
+    {"emoji": "🎮", "title": "Новая игра", "kind": "want", "why": "Весело, но жить можно и без неё"},
+    {"emoji": "🧥", "title": "Тёплая куртка зимой", "kind": "need", "why": "Зимой без неё холодно"},
+    {"emoji": "🎈", "title": "Воздушный шарик", "kind": "want", "why": "Красиво, но это для радости"},
+    {"emoji": "📚", "title": "Учебник", "kind": "need", "why": "Нужен, чтобы учиться"},
+    {"emoji": "🍦", "title": "Мороженое", "kind": "want", "why": "Приятно, но это хотелка"},
+    {"emoji": "💧", "title": "Вода", "kind": "need", "why": "Пить нужно каждый день"},
+    {"emoji": "✨", "title": "Блестящие наклейки", "kind": "want", "why": "Украшение, не необходимость"},
+    {"emoji": "👟", "title": "Кроссовки взамен порванных", "kind": "need", "why": "В порванных ходить нельзя"},
+    {"emoji": "🚗", "title": "Ещё одна машинка", "kind": "want", "why": "Машинки уже есть, это для удовольствия"}
+  ],
+  "puzzles": [
+    {"id": "p_school", "title": "Собираемся в школу", "budget": 30, "items": [
+      {"emoji": "📓", "title": "Тетрадь", "price": 6, "kind": "need"},
+      {"emoji": "🖊️", "title": "Ручка", "price": 4, "kind": "need"},
+      {"emoji": "🥪", "title": "Обед", "price": 10, "kind": "need"},
+      {"emoji": "✨", "title": "Наклейки", "price": 8, "kind": "want"},
+      {"emoji": "🔑", "title": "Брелок", "price": 7, "kind": "want"}
+    ]},
+    {"id": "p_picnic", "title": "Пикник в парке", "budget": 25, "items": [
+      {"emoji": "💧", "title": "Вода", "price": 5, "kind": "need"},
+      {"emoji": "🥪", "title": "Бутерброды", "price": 9, "kind": "need"},
+      {"emoji": "⚽", "title": "Мяч", "price": 8, "kind": "want"},
+      {"emoji": "🫧", "title": "Мыльные пузыри", "price": 6, "kind": "want"},
+      {"emoji": "🍿", "title": "Попкорн", "price": 5, "kind": "want"}
+    ]},
+    {"id": "p_gift", "title": "Подарок маме", "budget": 20, "items": [
+      {"emoji": "💐", "title": "Цветы", "price": 12, "kind": "need"},
+      {"emoji": "💌", "title": "Открытка", "price": 4, "kind": "need"},
+      {"emoji": "🎈", "title": "Шарик", "price": 6, "kind": "want"},
+      {"emoji": "🍬", "title": "Конфеты", "price": 5, "kind": "want"}
+    ]}
+  ],
+  "catcher": {
+    "seconds": 30,
+    "target": 25,
+    "temptations": ["🍭", "🧸", "🎮", "🍩"],
+    "temptationPenalty": 3
+  }
+}

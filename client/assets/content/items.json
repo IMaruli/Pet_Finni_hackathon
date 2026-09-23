@@ -1,0 +1,15 @@
+{
+  "items": [
+    {"id": "breakfast", "kind": "need", "price": 8, "title": "Завтрак", "emoji": "🥣", "effect": "Сытый и бодрый до вечера", "slot": "consumable"},
+    {"id": "water", "kind": "need", "price": 8, "title": "Вода", "emoji": "💧", "effect": "Без воды грустно и вяло", "slot": "consumable"},
+    {"id": "care", "kind": "need", "price": 10, "title": "Уход: зубы и умывание", "emoji": "🪥", "effect": "Чистый и свежий", "slot": "consumable"},
+    {"id": "chocolate", "kind": "want", "price": 12, "title": "Шоколадка", "emoji": "🍫", "effect": "Вкусно! Радость до вечера", "slot": "consumable"},
+    {"id": "bandana", "kind": "want", "price": 14, "title": "Бандана", "emoji": "🧣", "effect": "Надевается на героя", "slot": "hero", "accessory": "bandana"},
+    {"id": "glasses", "kind": "want", "price": 15, "title": "Крутые очки", "emoji": "🕶️", "effect": "Надеваются на героя", "slot": "hero", "accessory": "glasses"},
+    {"id": "bow", "kind": "want", "price": 12, "title": "Бантик", "emoji": "🎀", "effect": "Надевается на героя", "slot": "hero", "accessory": "bow"},
+    {"id": "headphones", "kind": "want", "price": 18, "title": "Наушники", "emoji": "🎧", "effect": "Надеваются на героя", "slot": "hero", "accessory": "headphones"},
+    {"id": "lamp", "kind": "want", "price": 16, "title": "Ночник-луна", "emoji": "🌙", "effect": "Уютный свет в комнате", "slot": "room", "accessory": "lamp"},
+    {"id": "rug", "kind": "want", "price": 18, "title": "Коврик", "emoji": "🧶", "effect": "Мягкий коврик на пол", "slot": "room", "accessory": "rug"},
+    {"id": "poster", "kind": "want", "price": 14, "title": "Постер с героем", "emoji": "🖼️", "effect": "Твой герой на стене", "slot": "room", "accessory": "poster"}
+  ]
+}

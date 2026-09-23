@@ -1,0 +1,11 @@
+{
+  "startCoins": 40,
+  "pocketMoney": 20,
+  "rewardWise": 12,
+  "rewardTry": 6,
+  "demoPeriods": 5,
+  "needRotation": [
+    ["breakfast", "water"],
+    ["breakfast", "care"]
+  ]
+}
