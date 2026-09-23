@@ -55,12 +55,17 @@ final class GameController extends ChangeNotifier {
   int get goalRemaining => goal == null ? 0 : max(0, goal!.cost - economy.savings.value);
   bool get canRedeem => goal != null && goalRemaining == 0;
 
-  /// Настроение с учётом шоколадки: короткая радость, но не вместо нужного.
+  /// Настроение на экране (SA F-006 BR-05, BR-14).
+  /// Днём, пока нужное можно докупить, герой не грустит, а ждёт: грусть — итог дня.
+  /// Утром до плана видно вчерашнее настроение. Шоколадка — короткая радость, но не вместо нужного.
   PetMood get mood {
-    final base = economy.petMood;
-    if (base == PetMood.steady && isBoughtToday('chocolate')) return PetMood.glad;
-    return base;
+    var base = economy.petMood;
+    if (base == PetMood.uneasy && planConfirmed && !needsDone) base = PetMood.steady;
+    return _withTreat(base);
   }
+
+  PetMood _withTreat(PetMood base) =>
+      base == PetMood.steady && isBoughtToday('chocolate') ? PetMood.glad : base;
 
   int get stage => economy.petStage;
   String get stageTitle => content.text('stage.$stage');
@@ -280,8 +285,8 @@ final class GameController extends ChangeNotifier {
   Future<DaySummary> endDay() async {
     final before = economy;
     final plan = before.plan;
-    final dayMood = mood;
     final closed = _engine.apply(before, const ClosePeriod()).state;
+    final dayMood = _withTreat(closed.petMood);
     final nextDay = day + 1;
     final morning = _engine
         .apply(closed, Credit(GameCoins(content.config.pocketMoney), 'pocket:$nextDay'))

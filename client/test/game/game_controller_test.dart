@@ -116,10 +116,24 @@ void main() {
     expect(f.messages.length, 2);
   });
 
+  test('partial needs mid-day keep the pet calm, not sad', () async {
+    await game.confirmPlan(need: game.todaysNeedSum, want: 0, save: 0);
+    await game.buy(game.todaysNeeds.first.id, commandId: game.newCommandId());
+    expect(game.economy.petMood, PetMood.uneasy); // домен
+    expect(game.mood, PetMood.steady); // экран: ждёт нужное
+  });
+
+  test('sad face from a skipped day shows next morning until the plan', () async {
+    await game.confirmPlan(need: game.todaysNeedSum, want: 0, save: 0);
+    await game.buy(game.todaysNeeds.first.id, commandId: game.newCommandId());
+    await game.endDay();
+    expect(game.mood, PetMood.uneasy);
+  });
+
   test('chocolate makes the day glad only when needs are covered', () async {
     await game.confirmPlan(need: game.todaysNeedSum, want: 12, save: 0);
     await game.buy('chocolate', commandId: game.newCommandId());
-    expect(game.mood, PetMood.uneasy);
+    expect(game.economy.petMood, PetMood.uneasy);
     for (final item in game.todaysNeeds) {
       await game.buy(item.id, commandId: game.newCommandId());
     }
