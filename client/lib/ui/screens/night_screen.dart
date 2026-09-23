@@ -193,7 +193,6 @@ class _NightScreenState extends State<NightScreen> with SingleTickerProviderStat
                 s.good ? '✅ Хороший день!' : '🌱 Завтра будет лучше',
                 style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
               ),
-              const Text('Хороший день: нужное куплено и что-то отложено.', style: TextStyle(color: FinniColors.muted)),
               const SizedBox(height: 10),
               _ladder(s),
               const SizedBox(height: 6),

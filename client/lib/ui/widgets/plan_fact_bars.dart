@@ -22,12 +22,13 @@ class PlanFactBars extends StatelessWidget {
     final ink = dark ? Colors.white : FinniColors.ink;
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
+          runSpacing: 4,
           children: [
-            _legend('План', ink.withValues(alpha: 0.35), ink),
+            _legend('План — бледный', FinniColors.primary.withValues(alpha: 0.35), ink),
             const SizedBox(width: 16),
-            _legend('Факт', ink, ink),
+            _legend('Факт — яркий', FinniColors.primary, ink),
           ],
         ),
         const SizedBox(height: 12),
@@ -68,6 +69,7 @@ class PlanFactBars extends StatelessWidget {
   }
 
   Widget _legend(String text, Color swatch, Color ink) => Row(
+    mainAxisSize: MainAxisSize.min,
     children: [
       Container(width: 14, height: 14, decoration: BoxDecoration(color: swatch, borderRadius: BorderRadius.circular(4))),
       const SizedBox(width: 6),

@@ -120,6 +120,7 @@ class _CatcherGameState extends State<CatcherGame> with SingleTickerProviderStat
               child: LayoutBuilder(
                 builder: (context, box) {
                   _field = Size(box.maxWidth, box.maxHeight);
+                  if (!_started) _model.jarX = box.maxWidth / 2;
                   final jarTop = box.maxHeight - CatcherModel.jarHeight - 10;
                   return GestureDetector(
                     behavior: HitTestBehavior.opaque,
