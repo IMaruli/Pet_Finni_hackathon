@@ -15,6 +15,7 @@ final class GameController extends ChangeNotifier {
     required this.content,
     required ProfileStore store,
     String Function()? newId,
+    // ignore: prefer_initializing_formals
   }) : _store = store,
        _newId = newId ?? _randomId;
 
