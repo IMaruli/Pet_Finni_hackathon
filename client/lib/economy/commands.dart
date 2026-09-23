@@ -40,3 +40,9 @@ final class ConfirmWithdraw extends EconomyCommand {
 final class ClosePeriod extends EconomyCommand {
   const ClosePeriod();
 }
+
+final class RedeemGoal extends EconomyCommand {
+  const RedeemGoal({required this.goalId, required this.cost});
+  final String goalId;
+  final GameCoins cost;
+}

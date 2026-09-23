@@ -111,6 +111,18 @@ final class EconomyEngine {
           ),
           explanationIds: const ['exp.withdraw_done'],
         );
+      case RedeemGoal(:final cost):
+        if (!(cost <= state.savings)) {
+          return EconomyResult(
+            state: state,
+            explanationIds: const ['exp.goal_not_yet'],
+            error: EconomyError.insufficientFunds,
+          );
+        }
+        return EconomyResult(
+          state: state.copyWith(savings: state.savings - cost),
+          explanationIds: const ['exp.goal_done'],
+        );
       case ClosePeriod():
         final plan = state.plan;
         final isGood =
