@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../content/models.dart';
+import '../../economy/economy_state.dart';
 import '../../game/game_controller.dart';
 import '../games/games_hub.dart';
 import '../mascot/mascot_look.dart';
@@ -183,7 +184,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            '${game.content.text('mood.$mood')}: ${game.content.text('mood.$mood.why', {'pet': name})}',
+            game.planConfirmed || game.mood != PetMood.steady
+                ? '${game.content.text('mood.$mood')}: ${game.content.text('mood.$mood.why', {'pet': name})}'
+                : game.content.text('mood.morning', {'pet': name}),
             style: const TextStyle(color: FinniColors.muted),
           ),
         ],

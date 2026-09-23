@@ -42,7 +42,7 @@ class _PlanScreenState extends State<PlanScreen> {
     setState(() {
       final need = game.todaysNeedSum.clamp(0, _available);
       final rest = _available - need;
-      final save = (rest / 3).floor();
+      final save = (rest / 2).ceil();
       _values[Basket.need] = need;
       _values[Basket.save] = save;
       _values[Basket.want] = rest - save;

@@ -61,7 +61,14 @@ class _IntroScreenState extends State<IntroScreen> {
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 4),
-            const Text('Каждую монету можно отправить в одну из трёх банок', style: TextStyle(color: FinniColors.muted)),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                'Каждую монету можно отправить в одну из трёх банок',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: FinniColors.muted),
+              ),
+            ),
             Expanded(
               child: PageView.builder(
                 controller: _page,

@@ -21,7 +21,7 @@ final class GameController extends ChangeNotifier {
 
   static final _random = Random();
   static String _randomId() =>
-      '${DateTime.now().microsecondsSinceEpoch}-${_random.nextInt(1 << 32)}';
+      '${DateTime.now().microsecondsSinceEpoch}-${_random.nextInt(1000000000)}';
 
   final GameContent content;
   final ProfileStore _store;

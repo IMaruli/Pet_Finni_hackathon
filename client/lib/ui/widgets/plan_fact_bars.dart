@@ -75,21 +75,26 @@ class PlanFactBars extends StatelessWidget {
     ],
   );
 
-  Widget _bar(int value, int top, Color color, Color ink) => Column(
-    mainAxisAlignment: MainAxisAlignment.end,
-    children: [
-      Text('$value', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: ink)),
-      const SizedBox(height: 4),
-      TweenAnimationBuilder<double>(
-        tween: Tween(begin: 0, end: value / top),
-        duration: const Duration(milliseconds: 900),
-        curve: Curves.easeOutBack,
-        builder: (_, v, _) => Container(
-          width: 22,
-          height: max(4, 88 * v),
-          decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(8)),
-        ),
-      ),
-    ],
+  Widget _bar(int value, int top, Color color, Color ink) => LayoutBuilder(
+    builder: (context, box) {
+      final maxBar = max(8.0, (box.maxHeight.isFinite ? box.maxHeight : 120) - 26);
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text('$value', style: TextStyle(fontSize: 14, height: 1.2, fontWeight: FontWeight.w900, color: ink)),
+          const SizedBox(height: 4),
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: value / top),
+            duration: const Duration(milliseconds: 900),
+            curve: Curves.easeOutBack,
+            builder: (_, v, _) => Container(
+              width: 22,
+              height: (maxBar * v).clamp(4.0, maxBar).toDouble(),
+              decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+        ],
+      );
+    },
   );
 }
