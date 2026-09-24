@@ -219,4 +219,6 @@ flutter install             # поставить на подключённый �
 | 📐 Системные спецификации по историям (F-002 … F-053) | [`docs/work`](docs/work/README.md) |
 | ✅ Полный аудит по ТЗ: статусы «реализовано / в работе / не начато» и план до финала | [`docs/work/product/TZ_FULL_AUDIT.md`](docs/work/product/TZ_FULL_AUDIT.md) |
 | ✅ Соответствие правилам ТЗ (аудит 2026-09-25) | [`docs/work/product/TZ_RULES_COMPLIANCE.md`](docs/work/product/TZ_RULES_COMPLIANCE.md) |
+| 📄 Сопроводительная документация по разделу 5 ТЗ (PDF) | [`docs/documentation/Finni_Documentation.pdf`](docs/documentation/Finni_Documentation.pdf) · [Markdown](docs/documentation/FINNI_DOCUMENTATION.md) · [карта контента](docs/documentation/CONTENT_MAP.md) |
+| 🏪 Черновик карточки RuStore | [`docs/release/rustore/CARD.md`](docs/release/rustore/CARD.md) |
 | 📦 Релиз и чеклист сдачи | [`docs/release/RELEASE_v1.0.0.md`](docs/release/RELEASE_v1.0.0.md) |
