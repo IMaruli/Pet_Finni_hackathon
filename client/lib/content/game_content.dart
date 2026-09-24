@@ -123,6 +123,9 @@ final class GameContent {
       if (g.reward == GoalReward.furniture && g.options.isEmpty) {
         problems.add('goals: ${g.id} furniture needs options');
       }
+      if (g.reward == GoalReward.item && (g.item == null || g.item!.isEmpty)) {
+        problems.add('goals: ${g.id} item reward needs item');
+      }
     }
     final topicIds = {for (final t in topics) t.id};
     for (final l in lessons) {

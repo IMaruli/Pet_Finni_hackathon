@@ -44,6 +44,16 @@ abstract final class RoomBuilder {
       if (inventory.owned.contains('rug')) _rug(meshes, const Color(0xFFE2B8AE), const Color(0xFFF6E9E2));
       if (inventory.owned.contains('poster')) _poster(meshes);
       if (inventory.owned.contains('lamp')) _lamp(meshes, night: lampsOn);
+      final owned = inventory.owned;
+      if (owned.contains('painting')) _painting(meshes);
+      if (owned.contains('garland')) _garland(meshes, on: lampsOn);
+      if (owned.contains('toychest')) _toyChest(meshes);
+      if (owned.contains('beanbag')) _beanbag(meshes);
+      if (owned.contains('aquarium')) _aquarium(meshes);
+      // Награды целей копилки (F-029).
+      if (owned.contains('zoo_photo')) _zooPhoto(meshes);
+      if (owned.contains('telescope')) _telescope(meshes);
+      if (owned.contains('bike')) _bike(meshes);
       switch (inventory.furniture) {
         case 'sofa':
           _sofa(meshes);
@@ -70,18 +80,18 @@ abstract final class RoomBuilder {
     ]) {
       m.add(Mesh.cylinder(0.2, 0.12, rim, seg: 22, topR: 0.26).translated(at));
       // Внутренность миски: светлое дно с тёмным ободком — видно, что пусто.
-      m.add(Mesh.cylinder(0.225, 0.003, Color.lerp(rim, const Color(0xFF000000), 0.25)!, seg: 22, castShadow: false).translated(at + const Vec3(0, 0.12, 0)));
-      m.add(Mesh.cylinder(0.19, 0.004, inside, seg: 22, castShadow: false).translated(at + const Vec3(0, 0.121, 0)));
+      m.add(Mesh.cylinder(0.225, 0.003, Color.lerp(rim, const Color(0xFF000000), 0.25)!, seg: 22, castShadow: false).translated(at + const Vec3(0, 0.12, 0)).lifted(0.3));
+      m.add(Mesh.cylinder(0.19, 0.004, inside, seg: 22, castShadow: false).translated(at + const Vec3(0, 0.124, 0)).lifted(0.45));
     }
     if (b.food) {
-      m.add(Mesh.sphere(0.19, const Color(0xFFF1C27D), lat: 6, lon: 14, castShadow: false).scaled(const Vec3(1, 0.4, 1)).translated(food + const Vec3(0, 0.1, 0)));
+      m.add(Mesh.sphere(0.19, const Color(0xFFF1C27D), lat: 6, lon: 14, castShadow: false).scaled(const Vec3(1, 0.4, 1)).translated(food + const Vec3(0, 0.1, 0)).lifted(0.6));
       for (final (dx, dz) in [(-0.06, 0.03), (0.05, -0.04), (0.02, 0.07)]) {
-        m.add(Mesh.sphere(0.035, const Color(0xFFD6334F), lat: 4, lon: 6, castShadow: false).translated(food + Vec3(dx, 0.17, dz)));
+        m.add(Mesh.sphere(0.035, const Color(0xFFD6334F), lat: 4, lon: 6, castShadow: false).translated(food + Vec3(dx, 0.17, dz)).lifted(0.8));
       }
     }
     if (b.water) {
-      m.add(Mesh.cylinder(0.215, 0.006, const Color(0xFF38A8FF), seg: 22, castShadow: false).translated(water + const Vec3(0, 0.126, 0)));
-      m.add(Mesh.cylinder(0.07, 0.004, const Color(0xFFE6F6FF), seg: 10, castShadow: false).translated(water + const Vec3(-0.06, 0.133, -0.05)));
+      m.add(Mesh.cylinder(0.215, 0.006, const Color(0xFF38A8FF), seg: 22, castShadow: false).translated(water + const Vec3(0, 0.13, 0)).lifted(0.6));
+      m.add(Mesh.cylinder(0.07, 0.004, const Color(0xFFE6F6FF), seg: 10, castShadow: false).translated(water + const Vec3(-0.06, 0.137, -0.05)).lifted(0.8));
     }
   }
 
@@ -194,10 +204,16 @@ abstract final class RoomBuilder {
 
     // Плинтусы и рейка над панелями.
     const skirt = Color(0xFFFFFDFA);
-    m.add(Mesh.box(const Vec3(4, 0.1, 0.03), skirt, castShadow: false).translated(const Vec3(0, 0, -1.985)));
-    m.add(Mesh.box(const Vec3(0.03, 0.1, 4), skirt, castShadow: false).translated(const Vec3(-1.985, 0, 0)));
-    m.add(Mesh.box(const Vec3(4, 0.035, 0.035), skirt, castShadow: false).translated(const Vec3(0, panelTop, -1.98)));
-    m.add(Mesh.box(const Vec3(0.035, 0.035, 4), skirt, castShadow: false).translated(const Vec3(-1.98, panelTop, 0)));
+    // Плинтус и молдинг — короткими кусками: у длинной планки центр ближе к камере,
+    // и она «прорезала» предметы в углу (монстеру). Куски сортируются каждый на своём месте.
+    const pieces = 8;
+    for (var i = 0; i < pieces; i++) {
+      final c = -2 + 4 * (i + 0.5) / pieces;
+      m.add(Mesh.box(const Vec3(4 / pieces, 0.1, 0.03), skirt, castShadow: false).translated(Vec3(c, 0, -1.985)));
+      m.add(Mesh.box(const Vec3(0.03, 0.1, 4 / pieces), skirt, castShadow: false).translated(Vec3(-1.985, 0, c)));
+      m.add(Mesh.box(const Vec3(4 / pieces, 0.035, 0.035), skirt, castShadow: false).translated(Vec3(c, panelTop, -1.98)));
+      m.add(Mesh.box(const Vec3(0.035, 0.035, 4 / pieces), skirt, castShadow: false).translated(Vec3(-1.98, panelTop, c)));
+    }
 
     // Шторы.
     if (!play) {
@@ -223,10 +239,12 @@ abstract final class RoomBuilder {
     _pottedPlant(m, const Vec3(1.45, 1.67, -1.88), 0.5);
 
     // Часы на задней стене.
+    // Часы на задней стене: обод → циферблат → стрелки, каждый слой чуть «выше» в сортировке.
     m.add(Mesh.cylinder(0.24, 0.05, const Color(0xFFB9855A), castShadow: false).rotatedX(pi / 2).translated(const Vec3(-1.3, 1.95, -2)));
-    m.add(Mesh.cylinder(0.2, 0.06, const Color(0xFFFFFBF2), castShadow: false).rotatedX(pi / 2).translated(const Vec3(-1.3, 1.95, -2)));
-    m.add(Mesh.box(const Vec3(0.025, 0.14, 0.02), const Color(0xFF3B2A20), castShadow: false).translated(const Vec3(-1.3, 1.95, -1.93)));
-    m.add(Mesh.box(const Vec3(0.11, 0.025, 0.02), const Color(0xFF3B2A20), castShadow: false).translated(const Vec3(-1.25, 1.94, -1.93)));
+    m.add(Mesh.cylinder(0.2, 0.012, const Color(0xFFFFFBF2), castShadow: false).rotatedX(pi / 2).translated(const Vec3(-1.3, 1.95, -1.95)).lifted(0.3));
+    m.add(Mesh.box(const Vec3(0.025, 0.14, 0.01), const Color(0xFF3B2A20), castShadow: false).translated(const Vec3(-1.3, 1.95, -1.935)).lifted(0.6));
+    m.add(Mesh.box(const Vec3(0.11, 0.025, 0.01), const Color(0xFF3B2A20), castShadow: false).translated(const Vec3(-1.25, 1.94, -1.935)).lifted(0.6));
+    m.add(Mesh.cylinder(0.02, 0.015, const Color(0xFF3B2A20), seg: 8, castShadow: false).rotatedX(pi / 2).translated(const Vec3(-1.3, 1.95, -1.93)).lifted(0.7));
 
     // Монстера в углу у окна.
     const pot = Color(0xFFD08A5E);
@@ -271,15 +289,130 @@ abstract final class RoomBuilder {
     }
   }
 
+  /// Ночник-луна: полумесяц на деревянной подставке и звёздочка на проволоке (F-029).
   static void _lamp(List<Mesh> m, {required bool night}) {
     final p = _lampPos;
-    m.add(Mesh.cylinder(0.14, 0.04, const Color(0xFFE9D8BD)).translated(p));
-    m.add(Mesh.cylinder(0.05, 0.36, const Color(0xFFFFF6E6), castShadow: false).translated(p));
+    const wood = Color(0xFFC89B6D);
+    m.add(Mesh.cylinder(0.17, 0.06, wood, seg: 20).translated(p));
+    m.add(Mesh.cylinder(0.02, 0.2, const Color(0xFF8C6A4A), seg: 8, castShadow: false).translated(p + const Vec3(0, 0.06, 0)));
+    final glow = night ? const Color(0xFFFFE9A6) : const Color(0xFFF6DC8E);
+    // Полумесяц «)» в плоскости, повёрнутой к камере (азимут 0.62): дуга из шариков, толще в середине.
+    final c = p + const Vec3(0, 0.52, 0);
+    const n = 13;
+    for (var i = 0; i < n; i++) {
+      final a = -1.75 + 3.5 * i / (n - 1);
+      final t = cos(a * 0.9);
+      final local = Vec3(0.2 * cos(a), 0.2 * sin(a), 0);
+      m.add(
+        Mesh.sphere(0.022 + 0.05 * t, glow, lat: 5, lon: 8, castShadow: false, emissive: night)
+            .translated(local.rotatedY(0.62) + c)
+            .lifted(0.05 * t),
+      );
+    }
+    // Звёздочка рядом.
+    m.add(Mesh.box(const Vec3(0.01, 0.34, 0.01), const Color(0xFF8C6A4A), castShadow: false).translated(p + const Vec3(0.12, 0.06, 0.05)));
     m.add(
-      Mesh.sphere(0.24, night ? const Color(0xFFFFF0B8) : const Color(0xFFF8DD95), castShadow: false, emissive: night)
-          .scaled(const Vec3(1, 0.62, 1))
-          .translated(p + const Vec3(0, 0.28, 0)),
+      Mesh.sphere(0.07, night ? const Color(0xFFFFF3C4) : const Color(0xFFF2CF6B), lat: 4, lon: 5, castShadow: false, emissive: night)
+          .scaled(const Vec3(0.35, 1, 1))
+          .translated(p + const Vec3(0.12, 0.44, 0.05))
+          .lifted(0.2),
     );
+  }
+
+  static void _painting(List<Mesh> m) {
+    // Задняя стена справа, между полкой и гирляндой: горы и солнце.
+    const at = Vec3(1.15, 2.05, -1.97);
+    m.add(Mesh.box(const Vec3(0.8, 0.6, 0.04), const Color(0xFF7A5537), castShadow: false).translated(at));
+    m.add(Mesh.box(const Vec3(0.7, 0.5, 0.02), const Color(0xFFBFE3F7), castShadow: false).translated(at + const Vec3(0, 0.05, 0.02)).lifted(0.2));
+    for (final (dx, hgt, c) in [(-0.14, 0.32, const Color(0xFF6A9E6E)), (0.14, 0.24, const Color(0xFF8DBA7B))]) {
+      m.add(Mesh.cone(0.2, hgt, c, seg: 4).scaled(const Vec3(1, 1, 0.1)).translated(at + Vec3(dx, 0.05, 0.035)).lifted(0.35));
+    }
+    m.add(Mesh.sphere(0.06, const Color(0xFFFFD66B), lat: 5, lon: 8, castShadow: false).scaled(const Vec3(1, 1, 0.3)).translated(at + const Vec3(0.22, 0.4, 0.035)).lifted(0.35));
+  }
+
+  static void _garland(List<Mesh> m, {required bool on}) {
+    // Провисающие огоньки над полкой по задней стене.
+    const colors = [Color(0xFFFF6B6B), Color(0xFFFFD166), Color(0xFF6BCB77), Color(0xFF4D96FF), Color(0xFFC77DFF)];
+    const n = 15;
+    for (var i = 0; i < n; i++) {
+      final x = -1.8 + 3.6 * i / (n - 1);
+      final sag = 0.12 * sin(pi * ((i % 5) / 4));
+      final at = Vec3(x, 2.95 - sag, -1.95);
+      m.add(Mesh.box(Vec3(3.6 / (n - 1), 0.012, 0.012), const Color(0xFF5B4B3D), castShadow: false).translated(at + Vec3(1.8 / (n - 1), 0.02, 0)));
+      final c = colors[i % colors.length];
+      m.add(Mesh.sphere(0.05, on ? Color.lerp(c, const Color(0xFFFFFFFF), 0.35)! : c, lat: 4, lon: 6, castShadow: false, emissive: on).scaled(const Vec3(1, 1.3, 1)).translated(at).lifted(0.2));
+    }
+  }
+
+  static void _toyChest(List<Mesh> m) {
+    const at = Vec3(1.62, 0, 1.55);
+    m.add(Mesh.box(const Vec3(0.62, 0.36, 0.42), const Color(0xFF6C9BD2)).rotatedY(-0.35).translated(at));
+    m.add(Mesh.box(const Vec3(0.66, 0.05, 0.46), const Color(0xFF4F7FB8), castShadow: false).rotatedY(-0.35).translated(at + const Vec3(0, 0.36, 0)));
+    m.add(Mesh.box(const Vec3(0.3, 0.08, 0.02), const Color(0xFFF2CF6B), castShadow: false).rotatedY(-0.35).translated(at + const Vec3(0.08, 0.2, 0.22)).lifted(0.2));
+    // Мишка сидит сверху, рядом мяч.
+    const bear = Color(0xFFB9855A);
+    m.add(Mesh.sphere(0.13, bear, lat: 6, lon: 10).translated(at + const Vec3(-0.08, 0.41, 0)));
+    m.add(Mesh.sphere(0.09, bear, lat: 6, lon: 10, castShadow: false).translated(at + const Vec3(-0.08, 0.6, 0.02)));
+    for (final dx in [-0.07, 0.07]) {
+      m.add(Mesh.sphere(0.035, bear, lat: 4, lon: 6, castShadow: false).translated(at + Vec3(-0.08 + dx, 0.68, 0.02)));
+    }
+    m.add(Mesh.sphere(0.1, const Color(0xFFE85D5D)).translated(at + const Vec3(0.42, 0, 0.25)));
+  }
+
+  static void _beanbag(List<Mesh> m) {
+    const at = Vec3(-0.55, 0, -0.95);
+    const c = Color(0xFFE88A6B);
+    m.add(Mesh.sphere(0.42, c, lat: 8, lon: 16).scaled(const Vec3(1.1, 0.55, 1)).translated(at));
+    m.add(Mesh.sphere(0.3, Color.lerp(c, const Color(0xFF000000), 0.08)!, lat: 6, lon: 12, castShadow: false).scaled(const Vec3(1, 0.7, 0.6)).translated(at + const Vec3(0, 0.22, -0.2)));
+  }
+
+  static void _aquarium(List<Mesh> m) {
+    // Тумба под окном и аквариум на ней.
+    const at = Vec3(-1.72, 0, 0.25);
+    m.add(Mesh.box(const Vec3(0.4, 0.5, 0.7), const Color(0xFFEFE6DA)).translated(at));
+    m.add(Mesh.box(const Vec3(0.36, 0.38, 0.62), const Color(0xFF7FC8E8), castShadow: false).translated(at + const Vec3(0, 0.5, 0)).copyWith(emissive: true));
+    m.add(Mesh.box(const Vec3(0.37, 0.03, 0.63), const Color(0xFF3F6E8C), castShadow: false).translated(at + const Vec3(0, 0.88, 0)));
+    m.add(Mesh.box(const Vec3(0.34, 0.05, 0.6), const Color(0xFFE8D7A8), castShadow: false).translated(at + const Vec3(0, 0.5, 0)).lifted(0.1));
+    for (final (dz, y, c) in [(-0.12, 0.66, const Color(0xFFFF8C42)), (0.14, 0.76, const Color(0xFFFFD166)), (0.02, 0.6, const Color(0xFFFF6B9D))]) {
+      m.add(Mesh.sphere(0.04, c, lat: 4, lon: 6, castShadow: false).scaled(const Vec3(0.6, 0.8, 1.4)).translated(at + Vec3(0.19, y, dz)).lifted(0.3));
+    }
+    m.add(Mesh.box(const Vec3(0.02, 0.2, 0.02), const Color(0xFF3FA55B), castShadow: false).translated(at + const Vec3(0.1, 0.55, 0.22)).lifted(0.2));
+  }
+
+  static void _zooPhoto(List<Mesh> m) {
+    // Фото с жирафом на задней стене слева от часов.
+    const at = Vec3(-1.62, 1.25, -1.97);
+    m.add(Mesh.box(const Vec3(0.5, 0.4, 0.03), const Color(0xFFFFFFFF), castShadow: false).translated(at));
+    m.add(Mesh.box(const Vec3(0.42, 0.3, 0.02), const Color(0xFFBFE8A0), castShadow: false).translated(at + const Vec3(0, 0.05, 0.015)).lifted(0.2));
+    const g = Color(0xFFF2B84B);
+    m.add(Mesh.box(const Vec3(0.05, 0.22, 0.01), g, castShadow: false).translated(at + const Vec3(0.03, 0.08, 0.03)).lifted(0.4));
+    m.add(Mesh.box(const Vec3(0.12, 0.06, 0.01), g, castShadow: false).translated(at + const Vec3(0.0, 0.07, 0.03)).lifted(0.4));
+    m.add(Mesh.box(const Vec3(0.06, 0.04, 0.01), g, castShadow: false).translated(at + const Vec3(0.06, 0.29, 0.03)).lifted(0.4));
+  }
+
+  static void _telescope(List<Mesh> m) {
+    const at = Vec3(-1.3, 0, 1.45);
+    const leg = Color(0xFF4A4A55);
+    for (final a in [0.0, 2.1, 4.2]) {
+      m.add(Mesh.box(const Vec3(0.025, 0.85, 0.025), leg, castShadow: false).rotatedX(0.25).rotatedY(a).translated(at + Vec3(0.12 * sin(a), 0, 0.12 * cos(a))));
+    }
+    m.add(Mesh.cylinder(0.07, 0.6, const Color(0xFFF4F4F6), seg: 12).rotatedX(pi / 2 - 0.5).rotatedY(-0.9).translated(at + const Vec3(0, 0.78, 0)));
+    m.add(Mesh.cylinder(0.075, 0.08, const Color(0xFF4D96FF), seg: 12, castShadow: false).rotatedX(pi / 2 - 0.5).rotatedY(-0.9).translated(at + const Vec3(-0.21, 0.97, -0.17)).lifted(0.2));
+  }
+
+  static void _bike(List<Mesh> m) {
+    // У левой стены: колёса, рама, руль, седло.
+    const x = -1.82, z0 = -1.05, z1 = -0.15;
+    const tyre = Color(0xFF2E2E34), frame = Color(0xFFE85D5D);
+    for (final z in [z0, z1]) {
+      m.add(Mesh.cylinder(0.26, 0.04, tyre, seg: 20).rotatedX(pi / 2).rotatedY(pi / 2).translated(Vec3(x, 0.26, z)));
+      m.add(Mesh.cylinder(0.12, 0.045, const Color(0xFFD9D9DE), seg: 12, castShadow: false).rotatedX(pi / 2).rotatedY(pi / 2).translated(Vec3(x, 0.26, z)).lifted(0.2));
+    }
+    m.add(Mesh.box(const Vec3(0.04, 0.04, 0.72), frame, castShadow: false).translated(const Vec3(x, 0.5, (z0 + z1) / 2)).lifted(0.3));
+    m.add(Mesh.box(const Vec3(0.04, 0.34, 0.04), frame, castShadow: false).translated(Vec3(x, 0.26, z0 + 0.3)).lifted(0.3));
+    m.add(Mesh.box(const Vec3(0.04, 0.34, 0.04), frame, castShadow: false).translated(Vec3(x, 0.3, z1)).lifted(0.3));
+    m.add(Mesh.box(const Vec3(0.3, 0.03, 0.03), const Color(0xFF3B2A20), castShadow: false).translated(Vec3(x, 0.66, z1)).lifted(0.4));
+    m.add(Mesh.box(const Vec3(0.1, 0.04, 0.16), const Color(0xFF3B2A20), castShadow: false).translated(Vec3(x, 0.62, z0 + 0.25)).lifted(0.4));
   }
 
   static void _sofa(List<Mesh> m) {
@@ -363,7 +496,7 @@ abstract final class RoomBuilder {
       m.add(Mesh.box(const Vec3(0.32, 0.32, 0.32), cubes[i], castShadow: stack[i].y == 0).rotatedY(i * 0.4).translated(stack[i]));
     }
     // Мяч.
-    m.add(Mesh.sphere(0.24, const Color(0xFFE85D5D)).translated(const Vec3(1.35, 0, 0.9)));
+    m.add(Mesh.sphere(0.24, const Color(0xFFE85D5D)).translated(const Vec3(-0.6, 0, 1.45))); // мяч не на мисках
     // Палатка-шалаш.
     m.add(Mesh.cone(0.85, 1.4, const Color(0xFFF2D7B6), seg: 4).rotatedY(pi / 4).translated(const Vec3(1.2, 0, -1.2)));
     // Шарики на ниточках.

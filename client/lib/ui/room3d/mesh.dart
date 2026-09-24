@@ -18,6 +18,7 @@ final class Mesh {
     this.emissive = false,
     this.layer = MeshLayer.object,
     this.castShadow = false,
+    this.lift = 0,
   });
 
   final List<Vec3> vertices;
@@ -36,6 +37,10 @@ final class Mesh {
   final MeshLayer layer;
   final bool castShadow;
 
+  /// Приоритет в сортировке по глубине: > 0 — рисуется поверх соседей на той же высоте
+  /// (дно миски над ободом, стрелки над циферблатом). Без него плоские слои «мерцают» клиньями.
+  final double lift;
+
   Mesh _map(Vec3 Function(Vec3) f, {Vec3? newCenter}) => Mesh(
     vertices: [for (final v in vertices) f(v)],
     faces: faces,
@@ -46,6 +51,7 @@ final class Mesh {
     emissive: emissive,
     layer: layer,
     castShadow: castShadow,
+    lift: lift,
   );
 
   Mesh translated(Vec3 d) => _map((v) => v + d);
@@ -56,7 +62,9 @@ final class Mesh {
     return _map((v) => Vec3(v.x, v.y * c - v.z * s, v.y * s + v.z * c));
   }
 
-  Mesh copyWith({Color? color, bool? emissive, MeshLayer? layer, bool? castShadow, List<Color>? vertexColors}) => Mesh(
+  Mesh lifted(double by) => copyWith(lift: by);
+
+  Mesh copyWith({Color? color, bool? emissive, MeshLayer? layer, bool? castShadow, List<Color>? vertexColors, double? lift}) => Mesh(
     vertices: vertices,
     faces: faces,
     color: color ?? this.color,
@@ -66,6 +74,7 @@ final class Mesh {
     emissive: emissive ?? this.emissive,
     layer: layer ?? this.layer,
     castShadow: castShadow ?? this.castShadow,
+    lift: lift ?? this.lift,
   );
 
   /// Горизонтальные границы в плоскости пола (для тени).

@@ -78,7 +78,7 @@ abstract final class Renderer {
         final colors = vertexShade != null
             ? [vertexShade[a], vertexShade[b], vertexShade[c]]
             : [_shade(m, a, n, lighting), _shade(m, b, n, lighting), _shade(m, c, n, lighting)];
-        layers[m.layer]!.add(_Tri([pa, pb, pc], colors, (view[a].z + view[b].z + view[c].z) / 3));
+        layers[m.layer]!.add(_Tri([pa, pb, pc], colors, (view[a].z + view[b].z + view[c].z) / 3 - m.lift));
         count++;
       }
 

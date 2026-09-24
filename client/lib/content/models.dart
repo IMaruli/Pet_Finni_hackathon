@@ -3,7 +3,7 @@ import '../economy/game_coins.dart';
 
 enum ItemSlot { consumable, hero, room }
 
-enum GoalReward { room, skin, furniture, gift }
+enum GoalReward { room, skin, furniture, gift, item }
 
 T _enum<T extends Enum>(List<T> values, Object? raw, String field) {
   for (final v in values) {
@@ -70,6 +70,7 @@ final class GoalDef {
     required this.cost,
     required this.reward,
     required this.options,
+    this.item,
   });
 
   factory GoalDef.fromJson(Map<String, dynamic> j) => GoalDef(
@@ -79,6 +80,7 @@ final class GoalDef {
     description: j['description'] as String,
     cost: j['cost'] as int,
     reward: _enum(GoalReward.values, j['reward'], 'reward'),
+    item: j['item'] as String?,
     options: [
       for (final o in (j['options'] as List? ?? const []))
         GoalOption.fromJson(o as Map<String, dynamic>),
@@ -92,6 +94,9 @@ final class GoalDef {
   final int cost;
   final GoalReward reward;
   final List<GoalOption> options;
+
+  /// Вещь в комнату для `reward: item` (F-029).
+  final String? item;
 
   GameCoins get coins => GameCoins(cost);
 }

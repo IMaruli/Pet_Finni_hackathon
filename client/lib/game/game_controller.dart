@@ -301,6 +301,7 @@ final class GameController extends ChangeNotifier {
       GoalReward.skin => inv.copyWith(skin: 'monkey'),
       GoalReward.furniture => inv.copyWith(furniture: snapshot.goalOption),
       GoalReward.gift => inv, // радость дарить: цель отмечена в goalsDone
+      GoalReward.item => inv.copyWith(owned: {...inv.owned, ?g.item}), // вещь-награда в комнату (F-029)
     };
     await _commit(snapshot.copyWith(economy: r.state, inventory: inv, clearGoal: true));
     return GameFeedback(ok: true, messages: _texts(r));

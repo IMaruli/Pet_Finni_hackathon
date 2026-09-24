@@ -12,6 +12,11 @@
     {"id": "headphones", "kind": "want", "price": 18, "title": "Наушники", "emoji": "🎧", "effect": "Надеваются на героя", "slot": "hero", "accessory": "headphones"},
     {"id": "lamp", "kind": "want", "price": 16, "title": "Ночник-луна", "emoji": "🌙", "effect": "Уютный свет в комнате", "slot": "room", "accessory": "lamp"},
     {"id": "rug", "kind": "want", "price": 18, "title": "Коврик", "emoji": "🧶", "effect": "Мягкий коврик на пол", "slot": "room", "accessory": "rug"},
-    {"id": "poster", "kind": "want", "price": 14, "title": "Постер с героем", "emoji": "🖼️", "effect": "Твой герой на стене", "slot": "room", "accessory": "poster"}
+    {"id": "poster", "kind": "want", "price": 14, "title": "Постер с героем", "emoji": "🖼️", "effect": "Твой герой на стене", "slot": "room", "accessory": "poster"},
+    {"id": "painting", "kind": "want", "price": 12, "title": "Картина с горами", "emoji": "🏞️", "effect": "Горы и солнце на стене у окна", "slot": "room", "accessory": "painting"},
+    {"id": "garland", "kind": "want", "price": 13, "title": "Гирлянда", "emoji": "✨", "effect": "Разноцветные огоньки — горят вечером и ночью", "slot": "room", "accessory": "garland"},
+    {"id": "toychest", "kind": "want", "price": 15, "title": "Ящик с игрушками", "emoji": "🧸", "effect": "Мишка, кубики и мяч всегда под рукой", "slot": "room", "accessory": "toychest"},
+    {"id": "beanbag", "kind": "want", "price": 20, "title": "Кресло-мешок", "emoji": "🛋️", "effect": "Мягкое место для отдыха", "slot": "room", "accessory": "beanbag"},
+    {"id": "aquarium", "kind": "want", "price": 22, "title": "Аквариум", "emoji": "🐠", "effect": "Рыбки плавают под окном", "slot": "room", "accessory": "aquarium"}
   ]
 }

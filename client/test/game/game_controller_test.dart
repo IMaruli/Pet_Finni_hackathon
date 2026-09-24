@@ -285,6 +285,20 @@ void main() {
     expect((await game.chooseGoal('furniture', option: 'sofa')).reason, FeedbackReason.alreadyOwned);
   });
 
+  test('item goal puts its reward into the room (F-029)', () async {
+    expect((await game.chooseGoal('telescope')).ok, isTrue);
+    await planAll(game, need: game.todaysNeedSum);
+    await buyNeeds();
+    await game.toSavings(game.economy.available.value);
+    await game.finishLesson('needs_1');
+    await game.finishMiniGame('sort', win: true, score: 9);
+    await game.toSavings(game.economy.available.value);
+    expect(game.canRedeem, isTrue);
+    expect((await game.redeemGoal()).ok, isTrue);
+    expect(game.inventory.owned, contains('telescope'));
+    expect(game.inventory.goalsDone, contains('telescope'));
+  });
+
   test('room and skin goals', () async {
     await game.chooseGoal('room2');
     await planAll(game, need: game.todaysNeedSum, want: 0);

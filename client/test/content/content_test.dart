@@ -26,7 +26,8 @@ void main() {
     expect(content.needItems.length + content.wantItems.length, greaterThanOrEqualTo(8));
     expect(content.needItems, isNotEmpty);
     expect(content.wantItems, isNotEmpty);
-    expect(content.goals.length, greaterThanOrEqualTo(3));
+    expect(content.goals.length, greaterThanOrEqualTo(6));
+    expect(content.wantItems.where((i) => i.slot == ItemSlot.room).length, greaterThanOrEqualTo(8));
     expect(content.lessons.length, greaterThanOrEqualTo(8));
     expect(content.topics.length, greaterThanOrEqualTo(4));
     expect(content.looks.length, greaterThanOrEqualTo(9));

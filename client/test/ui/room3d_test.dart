@@ -84,6 +84,9 @@ void main() {
       expect(count(Inventory.empty.copyWith(owned: {'rug'})), greaterThan(empty));
       expect(count(Inventory.empty.copyWith(owned: {'lamp'})), greaterThan(empty));
       expect(count(Inventory.empty.copyWith(owned: {'poster'})), greaterThan(empty));
+      for (final id in ['garland', 'painting', 'toychest', 'beanbag', 'aquarium', 'zoo_photo', 'telescope', 'bike']) {
+        expect(count(Inventory.empty.copyWith(owned: {id})), greaterThan(empty), reason: id);
+      }
       for (final f in ['sofa', 'shelf', 'tv', 'console']) {
         expect(count(Inventory.empty.copyWith(furniture: f)), greaterThan(empty), reason: f);
       }
@@ -118,10 +121,13 @@ void main() {
     });
 
     test('whole furnished room stays within the triangle budget', () {
-      final inv = Inventory.empty.copyWith(owned: {'rug', 'lamp', 'poster'}, furniture: 'shelf');
+      final inv = Inventory.empty.copyWith(
+        owned: {'rug', 'lamp', 'poster', 'garland', 'painting', 'toychest', 'beanbag', 'aquarium', 'zoo_photo', 'telescope', 'bike'},
+        furniture: 'shelf',
+      );
       final cam = Camera(azimuth: 0.62, elevation: 0.34, distance: 9, fov: 0.62);
       final f = Renderer.render(RoomBuilder.build(inventory: inv), cam, const Size(360, 700), RoomBuilder.lighting(inventory: inv));
-      expect(f.triangles, lessThan(3000));
+      expect(f.triangles, lessThan(4500));
       expect(f.triangles, greaterThan(200));
     });
   });
