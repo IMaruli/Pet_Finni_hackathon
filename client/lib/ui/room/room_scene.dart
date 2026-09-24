@@ -26,6 +26,7 @@ class RoomScene extends StatefulWidget {
     this.bowls = const Bowls(),
     this.time = DayTime.day,
     this.initialAzimuth,
+    this.orbit = const [],
   });
 
   final Inventory inventory;
@@ -45,6 +46,9 @@ class RoomScene extends StatefulWidget {
 
   /// Подпись над головой героя (облачко «нужно»).
   final Widget? heroBadge;
+
+  /// Пузыри вокруг героя: слева и справа по два в столбик (F-039).
+  final List<Widget> orbit;
 
   /// Совместимость с F-017: размер героя теперь считается по перспективе.
   final double heroScale;
@@ -163,6 +167,14 @@ class _RoomSceneState extends State<RoomScene> with SingleTickerProviderStateMix
                   width: heroSize,
                   height: heroSize,
                   child: widget.hero!,
+                ),
+              for (final (i, w) in widget.orbit.indexed)
+                Positioned(
+                  // Чётные — слева от героя (прижаты к нему правым краем), нечётные — справа.
+                  left: i.isEven ? null : heroBase.dx + heroSize * 0.36,
+                  right: i.isEven ? size.width - (heroBase.dx - heroSize * 0.36) : null,
+                  top: heroBase.dy - heroSize * 0.46 + (i ~/ 2) * 50, // ниже облачка реплики
+                  child: w,
                 ),
               if (widget.heroBadge != null)
                 Positioned(

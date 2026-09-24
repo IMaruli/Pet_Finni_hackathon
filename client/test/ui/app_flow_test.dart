@@ -104,15 +104,14 @@ void main() {
     await settle(t, 30);
     await t.pageBack();
     await settle(t, 20);
-    await tapKey(t, 'home.needs');
+    // F-039: нужное — пузырями над героем, в два тапа.
+    expect(find.byKey(const Key('home.need.breakfast')), findsNothing); // уже куплен
     for (final id in ['water', 'care']) {
-      await tapKey(t, 'shopRow.$id');
+      await tapKey(t, 'home.need.$id');
       await tapKey(t, 'shop.buy');
       await settle(t, 30);
+      expect(find.byKey(Key('home.need.$id')), findsNothing);
     }
-    expect(find.text('✓ куплено'), findsNWidgets(3));
-    await t.pageBack();
-    await settle(t, 20);
     await tapKey(t, 'home.clothes');
     await tapKey(t, 'clothes.glasses'); // примерка
     await tapKey(t, 'clothes.glasses'); // покупка

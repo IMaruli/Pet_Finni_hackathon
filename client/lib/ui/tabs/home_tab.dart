@@ -18,7 +18,9 @@ import '../screens/savings_screen.dart';
 import '../shell/main_shell.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
+import '../widgets/buy_sheet.dart';
 import '../widgets/duo.dart';
+import '../widgets/need_bubble.dart';
 import '../widgets/pet_speech.dart';
 
 /// Дом (Figma 02): комната на весь экран, герой, плавающие элементы (SA F-017 BR-03).
@@ -92,6 +94,18 @@ class _HomeTabState extends State<HomeTab> {
                   semanticsLabel: name,
                   onTap: _sayMood,
                 ),
+                orbit: game.greeting
+                    ? const []
+                    : [
+                        for (final (i, item) in game.needsLeft.indexed)
+                          NeedBubble(
+                            key: Key('home.need.${item.id}'),
+                            item: item,
+                            phase: i * 0.27,
+                            urgent: i == 0,
+                            onTap: () => buyFlow(context, game, item, mascot: _mascot),
+                          ),
+                      ],
                 heroBadge: game.greeting
                     ? PetSpeech(
                         text: game.content.text('greet.$_greet', {'pet': name, 'player': game.profile.playerName}),
@@ -233,7 +247,11 @@ class _HomeTabState extends State<HomeTab> {
 
   void _fulfil(WishKind kind) => switch (kind) {
     WishKind.plan => _open(PlanScreen(game: game)),
-    WishKind.eat || WishKind.drink || WishKind.wash => _open(CategoryScreen(game: game, category: ShopCategory.needs)),
+    // Сразу подтверждение покупки того, что просит герой (F-039).
+    WishKind.eat || WishKind.drink || WishKind.wash =>
+      game.planConfirmed && game.needsLeft.isNotEmpty
+          ? buyFlow(context, game, game.needsLeft.first, mascot: _mascot)
+          : _open(CategoryScreen(game: game, category: ShopCategory.needs)),
     WishKind.quest => _open(LessonScreen(game: game, lesson: game.recommendedLesson)),
     WishKind.play => ShellScope.go(context, ShellTab.games),
     WishKind.save => _open(SavingsScreen(game: game)),
