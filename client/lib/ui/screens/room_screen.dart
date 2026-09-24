@@ -41,7 +41,7 @@ class _RoomScreenState extends State<RoomScreen> {
           ),
           body: Column(
             children: [
-              Expanded(child: RoomScene(inventory: game.inventory, room: _room)),
+              Expanded(child: RoomScene(inventory: game.inventory, room: _room, bowls: game.bowls)),
               Container(
                 color: FinniColors.surface,
                 child: SafeArea(

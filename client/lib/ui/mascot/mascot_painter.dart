@@ -65,6 +65,7 @@ final class MascotPainter extends CustomPainter {
     _back(canvas);
     _body(canvas);
     if (look.isMonkey) _muzzle(canvas);
+    if (look.grubby) _mud(canvas);
     _cheeks(canvas);
     if (look.isCat) _whiskers(canvas);
     _eyes(canvas);
@@ -72,6 +73,7 @@ final class MascotPainter extends CustomPainter {
     _mouth(canvas);
     if (look.hasHair) _hair(canvas, front: true);
     _accessories(canvas);
+    if (look.grubby) _stink(canvas);
     canvas.restore();
   }
 
@@ -337,6 +339,45 @@ final class MascotPainter extends CustomPainter {
       for (final tilt in [-0.07, 0.07]) {
         canvas.drawLine(p.offset, p.offset + Offset(side * _r * 0.42, tilt * _r * 1.6), paint);
       }
+    }
+  }
+
+  // ---------- Неухоженный (F-027) ----------
+
+  /// Мультяшные пятна грязи: мягкие, не страшные.
+  void _mud(Canvas canvas) {
+    const mud = Color(0xFF8B6A4A);
+    for (final (lat, lon, ry, rx, a) in const [
+      (-0.55, -0.55, 0.13, 0.17, 0.55),
+      (-0.7, 0.35, 0.09, 0.12, 0.5),
+      (0.45, 0.75, 0.08, 0.1, 0.45),
+      (-0.2, 1.05, 0.1, 0.08, 0.5),
+      (0.25, -0.95, 0.07, 0.09, 0.45),
+    ]) {
+      _patch(canvas, lat, lon, ry, rx, mud.withValues(alpha: a), blur: 0.012);
+    }
+    // брызги
+    for (final (lat, lon) in const [(-0.4, -0.2), (-0.85, 0.05), (0.1, 0.95), (-0.3, -1.1)]) {
+      _patch(canvas, lat, lon, 0.025, 0.025, mud.withValues(alpha: 0.6));
+    }
+  }
+
+  /// Волнистые линии «запаха» над головой.
+  void _stink(Canvas canvas) {
+    final paint = Paint()
+      ..color = const Color(0xFF7FA34A).withValues(alpha: 0.75)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = _r * 0.045
+      ..strokeCap = StrokeCap.round;
+    // По бокам головы, чтобы не прятались под облачком реплики.
+    for (final dx in [-1.08, -0.9, 0.9, 1.08]) {
+      final x0 = _c.dx + dx * _r + sin(pose.yaw * 3 + dx) * _r * 0.04;
+      final y0 = _c.dy - _r * (dx.abs() > 1 ? 0.2 : 0.55);
+      final path = Path()..moveTo(x0, y0);
+      for (var k = 1; k <= 5; k++) {
+        path.lineTo(x0 + sin(k * 1.5 + dx * 5) * _r * 0.06, y0 - k * _r * 0.075);
+      }
+      canvas.drawPath(path, paint);
     }
   }
 

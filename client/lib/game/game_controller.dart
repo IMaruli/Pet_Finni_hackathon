@@ -10,6 +10,7 @@ import '../store/profile_store.dart';
 import '../store/snapshot.dart';
 import 'game_feedback.dart';
 import 'quests.dart';
+import 'bowls.dart';
 
 /// Единая точка изменения состояния игры (SA F-006).
 final class GameController extends ChangeNotifier {
@@ -47,6 +48,13 @@ final class GameController extends ChangeNotifier {
   int get todaysNeedSum => todaysNeeds.fold(0, (s, i) => s + i.price);
   bool isBoughtToday(String itemId) => snapshot.boughtToday.contains(itemId);
   bool get needsDone => todaysNeeds.every((i) => isBoughtToday(i.id));
+
+  // Потребности видны в комнате (SA F-027).
+  bool _needToday(String id) => todaysNeeds.any((i) => i.id == id);
+  bool get foodServed => isBoughtToday('breakfast');
+  bool get waterServed => !_needToday('water') || isBoughtToday('water');
+  bool get isGrubby => _needToday('care') && !isBoughtToday('care');
+  Bowls get bowls => Bowls(food: foodServed, water: waterServed);
 
   // Сначала нужное (SA F-021).
   List<ShopItem> get needsLeft => [for (final i in todaysNeeds) if (!isBoughtToday(i.id)) i];

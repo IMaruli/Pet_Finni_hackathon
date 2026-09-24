@@ -110,7 +110,7 @@ void main() {
           MaterialApp(
             home: Center(
               child: MascotView(
-                look: MascotLook(color: const Color(0xFFFFCC33), hair: 'tuft', mood: PetMood.steady, stage: 2, emotion: e),
+                look: MascotLook(color: const Color(0xFFFFCC33), hair: 'tuft', mood: PetMood.steady, stage: 2, emotion: e, grubby: animated),
                 animated: animated,
               ),
             ),

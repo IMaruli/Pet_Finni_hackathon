@@ -75,6 +75,7 @@ class _HomeTabState extends State<HomeTab> {
             Positioned.fill(
               child: RoomScene(
                 inventory: game.inventory,
+                bowls: game.bowls,
                 room: room,
                 feetY: feetY,
                 heroScale: 0.78,

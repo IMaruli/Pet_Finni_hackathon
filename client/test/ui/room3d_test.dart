@@ -4,6 +4,7 @@ import 'package:finni/ui/room3d/math3d.dart';
 import 'package:finni/ui/room3d/mesh.dart';
 import 'package:finni/ui/room3d/renderer.dart';
 import 'package:finni/ui/room3d/room_builder.dart';
+import 'package:finni/game/bowls.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -85,6 +86,14 @@ void main() {
       for (final f in ['sofa', 'shelf', 'tv', 'console']) {
         expect(count(Inventory.empty.copyWith(furniture: f)), greaterThan(empty), reason: f);
       }
+    });
+
+    test('full bowls add food and water to the room (F-027)', () {
+      int bowls(Bowls b, {int room = 1}) => RoomBuilder.build(inventory: Inventory.empty, room: room, bowls: b).length;
+      final empty = bowls(const Bowls(food: false, water: false));
+      expect(bowls(const Bowls(food: true, water: false)), greaterThan(empty));
+      expect(bowls(const Bowls(food: false, water: true)), greaterThan(empty));
+      expect(bowls(const Bowls(), room: 2), greaterThan(bowls(const Bowls(food: false, water: false), room: 2)));
     });
 
     test('playroom is a different scene', () {

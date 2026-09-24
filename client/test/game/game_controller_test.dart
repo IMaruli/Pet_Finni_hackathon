@@ -379,6 +379,25 @@ void main() {
     expect(game.mood, PetMood.glad);
   });
 
+  test('needs show in the room: bowls and grooming (F-027)', () async {
+    // день 1: завтрак, вода, уход
+    expect(game.foodServed, isFalse);
+    expect(game.waterServed, isFalse);
+    expect(game.isGrubby, isTrue);
+    await planAll(game, need: game.todaysNeedSum);
+    await game.buy('breakfast', commandId: game.newCommandId());
+    expect(game.foodServed, isTrue);
+    await game.buy('water', commandId: game.newCommandId());
+    expect(game.waterServed, isTrue);
+    await game.buy('care', commandId: game.newCommandId());
+    expect(game.isGrubby, isFalse);
+    expect(game.bowls.food && game.bowls.water, isTrue);
+    await game.endDay(); // день 2: завтрак и уход, воды нет в нужном
+    expect(game.foodServed, isFalse);
+    expect(game.waterServed, isTrue);
+    expect(game.isGrubby, isTrue);
+  });
+
   group('Finik style (F-023)', () {
     test('profile keeps the chosen skin, color and hair', () async {
       final g = await fresh();

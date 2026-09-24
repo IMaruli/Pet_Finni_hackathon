@@ -1,3 +1,4 @@
+import '../../game/bowls.dart';
 import 'dart:math';
 
 import 'package:flutter/scheduler.dart';
@@ -21,9 +22,13 @@ class RoomScene extends StatefulWidget {
     this.heroScale = 0.56,
     this.feetY = 0.68,
     this.animated = true,
+    this.bowls = const Bowls(),
   });
 
   final Inventory inventory;
+
+  /// Миски с едой и водой: полные, если нужное куплено (F-027).
+  final Bowls bowls;
   final int room;
   final bool night;
   final Widget? hero;
@@ -84,10 +89,10 @@ class _RoomSceneState extends State<RoomScene> with SingleTickerProviderStateMix
 
   void _ensureScene() {
     final inv = widget.inventory;
-    final key = '${inv.owned.toList()..sort()}|${inv.furniture}|${widget.room}|${widget.night}';
+    final key = '${inv.owned.toList()..sort()}|${inv.furniture}|${widget.room}|${widget.night}|${widget.bowls.key}';
     if (key == _key) return;
     _key = key;
-    _meshes = RoomBuilder.build(inventory: inv, room: widget.room, night: widget.night);
+    _meshes = RoomBuilder.build(inventory: inv, room: widget.room, night: widget.night, bowls: widget.bowls);
     _lighting = RoomBuilder.lighting(inventory: inv, room: widget.room, night: widget.night);
   }
 

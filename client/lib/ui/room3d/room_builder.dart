@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import '../../store/snapshot.dart';
 import 'math3d.dart';
+import '../../game/bowls.dart';
 import 'mesh.dart';
 import 'renderer.dart';
 
@@ -22,7 +23,7 @@ abstract final class RoomBuilder {
   static const _lampPos = Vec3(-1.2, 0, 0.95);
   static const _pendantPos = Vec3(0.2, 2.75, -0.2);
 
-  static List<Mesh> build({required Inventory inventory, int room = 1, bool night = false}) {
+  static List<Mesh> build({required Inventory inventory, int room = 1, bool night = false, Bowls bowls = const Bowls()}) {
     final play = room == 2;
     final meshes = <Mesh>[];
     _shell(meshes, play: play, night: night);
@@ -44,8 +45,34 @@ abstract final class RoomBuilder {
           _console(meshes);
       }
     }
+    _bowls(meshes, bowls);
     _pendant(meshes, night: night);
     return meshes;
+  }
+
+  /// Миски справа от героя: еда (тёплая керамика) и вода (голубая). Пустые — видно дно.
+  static void _bowls(List<Mesh> m, Bowls b) {
+    const food = Vec3(1.25, 0, 0.95);
+    const water = Vec3(1.3, 0, 0.35);
+    for (final (at, rim, inside) in [
+      (food, const Color(0xFFE8744F), const Color(0xFFF7D9C9)),
+      (water, const Color(0xFF4C9BE8), const Color(0xFFE9E7E3)),
+    ]) {
+      m.add(Mesh.cylinder(0.2, 0.12, rim, seg: 22, topR: 0.26).translated(at));
+      // Внутренность миски: светлое дно с тёмным ободком — видно, что пусто.
+      m.add(Mesh.cylinder(0.225, 0.003, Color.lerp(rim, const Color(0xFF000000), 0.25)!, seg: 22, castShadow: false).translated(at + const Vec3(0, 0.12, 0)));
+      m.add(Mesh.cylinder(0.19, 0.004, inside, seg: 22, castShadow: false).translated(at + const Vec3(0, 0.121, 0)));
+    }
+    if (b.food) {
+      m.add(Mesh.sphere(0.19, const Color(0xFFF1C27D), lat: 6, lon: 14, castShadow: false).scaled(const Vec3(1, 0.4, 1)).translated(food + const Vec3(0, 0.1, 0)));
+      for (final (dx, dz) in [(-0.06, 0.03), (0.05, -0.04), (0.02, 0.07)]) {
+        m.add(Mesh.sphere(0.035, const Color(0xFFD6334F), lat: 4, lon: 6, castShadow: false).translated(food + Vec3(dx, 0.17, dz)));
+      }
+    }
+    if (b.water) {
+      m.add(Mesh.cylinder(0.215, 0.006, const Color(0xFF38A8FF), seg: 22, castShadow: false).translated(water + const Vec3(0, 0.126, 0)));
+      m.add(Mesh.cylinder(0.07, 0.004, const Color(0xFFE6F6FF), seg: 10, castShadow: false).translated(water + const Vec3(-0.06, 0.133, -0.05)));
+    }
   }
 
   static Lighting lighting({required Inventory inventory, int room = 1, bool night = false}) {

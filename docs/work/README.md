@@ -43,6 +43,7 @@
 | F-024 | План раскладывает все монеты | [game/F-024](game/F-024_PLAN_ALL_COINS_SA_SPEC.md) | `game/game_controller.dart`, `ui/screens/plan_screen.dart` | `game_controller_test` |
 | F-025 | Уроки как в Duolingo: 6 игр по рецепту | [ui/F-025](ui/F-025_LESSON_ENGINE_SA_SPEC.md) | `content/lesson_models.dart`, `game/lesson_logic.dart`, `ui/lesson/`, `assets/content/lessons.json` | `lesson_logic_test`, `lesson_test`, `content_test`, `app_flow_test` |
 | F-026 | Задания дня и недели | [game/F-026](game/F-026_DAILY_WEEKLY_QUESTS_SA_SPEC.md) | `game/quests.dart`, `ui/tabs/tasks_tab.dart` | `lesson_logic_test`, `game_controller_test` |
+| F-027 | Потребности в комнате: миски и неухоженный питомец | [ui/F-027](ui/F-027_NEEDS_IN_ROOM_SA_SPEC.md) | `game/bowls.dart`, `ui/room3d/room_builder.dart`, `ui/mascot/mascot_painter.dart` | `game_controller_test`, `room3d_test`, `mascot_test` |
 
 **Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
 См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.
