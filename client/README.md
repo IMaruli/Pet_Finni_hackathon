@@ -73,4 +73,4 @@ lib/
 ## Документация
 
 - Механики для бизнеса: [`docs/business`](../docs/business/README.md)
-- SA по каждой истории F-002 … F-039: [`docs/work/README.md`](../docs/work/README.md)
+- SA по каждой истории F-002 … F-040: [`docs/work/README.md`](../docs/work/README.md)

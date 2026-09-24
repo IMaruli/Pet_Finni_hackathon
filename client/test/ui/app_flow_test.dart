@@ -152,6 +152,13 @@ void main() {
     await t.pageBack();
     await settle(t, 30);
 
+    // F-040: копилка на виду рядом с кошельком — сколько отложено и путь в неё.
+    expect(find.text('5 / 50'), findsOneWidget);
+    await tapKey(t, 'home.piggy');
+    expect(find.textContaining('осталось 45'), findsWidgets);
+    await t.pageBack();
+    await settle(t, 30);
+
     // Одежда: очки надеты после покупки, тап — снять.
     await tapKey(t, 'home.clothes');
     expect(find.text('надето'), findsOneWidget);

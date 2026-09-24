@@ -22,6 +22,7 @@ import '../widgets/buy_sheet.dart';
 import '../widgets/duo.dart';
 import '../widgets/need_bubble.dart';
 import '../widgets/pet_speech.dart';
+import '../widgets/piggy.dart';
 
 /// Дом (Figma 02): комната на весь экран, герой, плавающие элементы (SA F-017 BR-03).
 class HomeTab extends StatefulWidget {
@@ -130,7 +131,13 @@ class _HomeTabState extends State<HomeTab> {
                 child: Column(
                   children: [
                     _topBar(name),
-                    if (game.inventory.rooms > 1) ...[const SizedBox(height: 8), _roomToggle()],
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Flexible(child: _nameRow(name)),
+                        if (game.inventory.rooms > 1) ...[const Spacer(), _roomToggle()],
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -162,35 +169,77 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   Widget _topBar(String name) {
+    final goal = game.goal;
+    final saved = game.economy.savings.value;
     return Row(
       children: [
-        Flexible(
-          child: Glass(
-            radius: 24,
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CoinIcon(size: 20),
-                const SizedBox(width: 6),
-                Text(
-                  '${game.economy.available.value}',
-                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, letterSpacing: -0.3),
-                ),
-                Container(width: 0.8, height: 18, margin: const EdgeInsets.symmetric(horizontal: 10), color: const Color(0x33000000)),
-                Flexible(
-                  child: Text(name, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, letterSpacing: -0.4)),
-                ),
-                const SizedBox(width: 8),
-                Flexible(
-                  flex: 2,
-                  child: FittedBox(fit: BoxFit.scaleDown, child: DuoChip(text: game.stageTitle, color: FinniColors.primary)),
-                ),
-              ],
-            ),
+        // Кошелёк.
+        Glass(
+          radius: 24,
+          padding: const EdgeInsets.fromLTRB(12, 8, 14, 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CoinIcon(size: 20),
+              const SizedBox(width: 6),
+              Text('${game.economy.available.value}', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, letterSpacing: -0.3)),
+            ],
           ),
         ),
         const SizedBox(width: 8),
+        // Копилка на виду: сколько отложено и сколько до цели (SA F-040).
+        Flexible(
+          child: Semantics(
+            button: true,
+            label: goal == null ? 'Копилка: $saved' : 'Копилка: $saved из ${goal.cost}',
+            child: Pressable(
+              key: const Key('home.piggy'),
+              onTap: () => _open(SavingsScreen(game: game)),
+              child: Glass(
+                radius: 24,
+                tint: const Color(0xCCE3F0FF),
+                padding: const EdgeInsets.fromLTRB(8, 5, 12, 5),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(width: 30, height: 26, child: CustomPaint(painter: PiggyBankPainter())),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              goal == null ? '$saved' : '$saved / ${goal.cost}',
+                              key: const Key('home.piggy.amount'),
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: -0.3, color: Color(0xFF0A5BC4)),
+                            ),
+                          ),
+                          if (goal != null)
+                            SizedBox(
+                              width: 56,
+                              height: 4,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(2),
+                                child: LinearProgressIndicator(
+                                  value: (saved / goal.cost).clamp(0.0, 1.0),
+                                  backgroundColor: const Color(0x330A84FF),
+                                  color: FinniColors.save,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        const Spacer(),
         Semantics(
           button: true,
           label: 'Меню',
@@ -203,6 +252,22 @@ class _HomeTabState extends State<HomeTab> {
       ],
     );
   }
+
+  /// Имя героя и стадия — второй строкой.
+  Widget _nameRow(String name) => Glass(
+    radius: 18,
+    padding: const EdgeInsets.fromLTRB(12, 5, 6, 5),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(
+          child: Text(name, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: -0.3)),
+        ),
+        const SizedBox(width: 8),
+        FittedBox(fit: BoxFit.scaleDown, child: DuoChip(text: game.stageTitle, color: FinniColors.primary)),
+      ],
+    ),
+  );
 
   Widget _roomToggle() => Glass(
     radius: 18,
