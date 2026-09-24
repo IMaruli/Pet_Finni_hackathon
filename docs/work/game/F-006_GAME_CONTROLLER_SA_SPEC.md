@@ -10,6 +10,9 @@
 | **Участники** | Егор |
 | **Связанные артефакты** | F-003, F-004, F-005; все UI-истории F-007…F-016 |
 
+
+> **Актуальность (2026-09-24).** `answerQuest` и `todaysQuest` заменены уроками: `startLesson`, `saveLessonStep`, `finishLesson`, `recommendedLesson` (F-025) и заданиями `dailyQuests`, `weeklyQuests` (F-026). Добавлены правила «сначала нужное» (F-021), «план раскладывает все монеты» и `planLocked` (F-024), облик `restyle` (F-023).
+
 ---
 
 ## 1. Контекст

@@ -12,6 +12,7 @@
 | [`superpowers/specs/2026-09-24-finni-game-ui-design.md`](../superpowers/specs/2026-09-24-finni-game-ui-design.md) | Design игры поверх экономики (Егор): 3D-маскот, мини-игры, экраны |
 | [`work/product/FINNI_GAME_UI_SA_SPEC.md`](product/FINNI_GAME_UI_SA_SPEC.md) | SA-эпик F-002: игра, подсистемы 2–5 roadmap |
 | [`work/product/TZ_RULES_COMPLIANCE.md`](product/TZ_RULES_COMPLIANCE.md) | Аудит соответствия правилам игры из ТЗ |
+| [`business/README.md`](../business/README.md) | **Бизнес-описание механик со скриншотами** |
 | `work/{area}/` | Прочие SA и бизнес-доки |
 
 ### SA по историям (Егор, `Egor_DevStand`)
@@ -24,10 +25,10 @@
 | F-006 | Игровой контроллер | [game/F-006](game/F-006_GAME_CONTROLLER_SA_SPEC.md) | `client/lib/game/game_controller.dart` | `test/game/game_controller_test.dart` |
 | F-007 | 3D-маскот | [ui/F-007](ui/F-007_MASCOT_3D_SA_SPEC.md) | `client/lib/ui/mascot/` | `test/ui/mascot_test.dart` |
 | F-008 | Знакомство и создание героя | [ui/F-008](ui/F-008_ONBOARDING_SA_SPEC.md) | `ui/screens/intro_screen.dart`, `create_hero_screen.dart` | `test/ui/app_flow_test.dart` |
-| F-009 | Дом и комната | [ui/F-009](ui/F-009_HOME_ROOM_SA_SPEC.md) | `ui/screens/home_screen.dart`, `ui/widgets/room_view.dart` | `app_flow_test` |
+| F-009 | Дом и комната | [ui/F-009](ui/F-009_HOME_ROOM_SA_SPEC.md) | `ui/tabs/home_tab.dart`, `ui/room/room_scene.dart` | `app_flow_test` |
 | F-010 | План: три банки | [ui/F-010](ui/F-010_BUDGET_JARS_SA_SPEC.md) | `ui/screens/plan_screen.dart`, `ui/widgets/jar_view.dart` | `app_flow_test` |
-| F-011 | Магазин и гардероб | [ui/F-011](ui/F-011_SHOP_WARDROBE_SA_SPEC.md) | `ui/screens/shop_screen.dart` | `app_flow_test` |
-| F-012 | Задания-сцены | [ui/F-012](ui/F-012_QUEST_SCENES_SA_SPEC.md) | `ui/screens/quest_screen.dart` | `app_flow_test` |
+| F-011 | Покупка и гардероб (разделы — F-022) | [ui/F-011](ui/F-011_SHOP_WARDROBE_SA_SPEC.md) | `ui/widgets/buy_sheet.dart`, `ui/screens/clothes_screen.dart` | `app_flow_test` |
+| F-012 | Задания-сцены (заменено F-025) | [ui/F-012](ui/F-012_QUEST_SCENES_SA_SPEC.md) | — | — |
 | F-013 | Мини-игры | [ui/F-013](ui/F-013_MINI_GAMES_SA_SPEC.md) | `client/lib/game/minigames.dart`, `ui/games/` | `test/game/minigames_test.dart`, `app_flow_test` |
 | F-014 | Копилка и цели | [ui/F-014](ui/F-014_SAVINGS_GOALS_SA_SPEC.md) | `ui/screens/savings_screen.dart` | `app_flow_test` |
 | F-015 | Ночь: итог дня | [ui/F-015](ui/F-015_NIGHT_SUMMARY_SA_SPEC.md) | `ui/screens/night_screen.dart` | `app_flow_test` |
