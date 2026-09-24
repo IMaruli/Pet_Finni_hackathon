@@ -366,14 +366,6 @@ void main() {
     expect((await game.redeemGoal()).reason, FeedbackReason.noGoal);
   });
 
-  test('demo coins go to the wallet (F-050)', () async {
-    final before = game.economy.available.value;
-    final f = await game.demoCoins();
-    expect(f.ok, isTrue);
-    expect(game.economy.available.value, before + 500);
-    expect(game.economy.lastCreditSourceId, 'demo:${game.day}');
-  });
-
   test('withdraw needs confirm; cancel keeps savings', () async {
     await planAll(game, need: game.todaysNeedSum, want: 0);
     await game.toSavings(20);

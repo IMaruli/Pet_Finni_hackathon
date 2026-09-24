@@ -189,20 +189,6 @@ class _AdultScreenState extends State<AdultScreen> {
           },
         ),
         const SizedBox(height: 16),
-        // Демо: быстро накопить и посмотреть все вещи (F-050).
-        DuoButton(
-          key: const Key('adult.demoCoins'),
-          label: 'Демо: +500 монет',
-          icon: Icons.savings_rounded,
-          color: FinniColors.save,
-          onPressed: () async {
-            final f = await g.demoCoins();
-            if (!mounted) return;
-            setState(() {});
-            showToast(context, f.messages, emoji: '🪙', color: FinniColors.save);
-          },
-        ),
-        const SizedBox(height: 10),
         DuoButton(
           key: const Key('adult.reset'),
           label: 'Сбросить профиль (тест)',
