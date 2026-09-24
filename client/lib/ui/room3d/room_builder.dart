@@ -386,14 +386,23 @@ abstract final class RoomBuilder {
   }
 
   static void _zooPhoto(List<Mesh> m) {
-    // Фото с жирафом на задней стене слева от часов.
-    const at = Vec3(-1.62, 1.25, -1.97);
-    m.add(Mesh.box(const Vec3(0.5, 0.4, 0.03), const Color(0xFFFFFFFF), castShadow: false).translated(at));
-    m.add(Mesh.box(const Vec3(0.42, 0.3, 0.02), const Color(0xFFBFE8A0), castShadow: false).translated(at + const Vec3(0, 0.05, 0.015)).lifted(0.2));
-    const g = Color(0xFFF2B84B);
-    m.add(Mesh.box(const Vec3(0.05, 0.22, 0.01), g, castShadow: false).translated(at + const Vec3(0.03, 0.08, 0.03)).lifted(0.4));
-    m.add(Mesh.box(const Vec3(0.12, 0.06, 0.01), g, castShadow: false).translated(at + const Vec3(0.0, 0.07, 0.03)).lifted(0.4));
-    m.add(Mesh.box(const Vec3(0.06, 0.04, 0.01), g, castShadow: false).translated(at + const Vec3(0.06, 0.29, 0.03)).lifted(0.4));
+    // Фото с жирафом: высоко на задней стене правее лампы, над облачком реплики (F-047).
+    const at = Vec3(0.22, 2.4, -1.97);
+    m.add(Mesh.box(const Vec3(0.64, 0.5, 0.03), const Color(0xFF8A5A3B), castShadow: false).translated(at)); // рамка
+    m.add(Mesh.box(const Vec3(0.56, 0.42, 0.02), const Color(0xFFFFFFFF), castShadow: false).translated(at + const Vec3(0, 0, 0.015)).lifted(0.15));
+    m.add(Mesh.box(const Vec3(0.5, 0.25, 0.02), const Color(0xFFBFE3F7), castShadow: false).translated(at + const Vec3(0, 0.07, 0.025)).lifted(0.2)); // небо
+    m.add(Mesh.box(const Vec3(0.5, 0.11, 0.02), const Color(0xFF9BD27A), castShadow: false).translated(at + const Vec3(0, -0.11, 0.025)).lifted(0.2)); // трава
+    m.add(Mesh.sphere(0.035, const Color(0xFFFFD66B), lat: 5, lon: 8, castShadow: false).scaled(const Vec3(1, 1, 0.3)).translated(at + const Vec3(-0.17, 0.12, 0.04)).lifted(0.35));
+    const g = Color(0xFFF2B84B), spot = Color(0xFFB9772E);
+    m.add(Mesh.box(const Vec3(0.14, 0.07, 0.01), g, castShadow: false).translated(at + const Vec3(0.05, -0.06, 0.04)).lifted(0.4)); // тело
+    m.add(Mesh.box(const Vec3(0.045, 0.2, 0.01), g, castShadow: false).translated(at + const Vec3(0.1, 0.05, 0.04)).lifted(0.4)); // шея
+    m.add(Mesh.box(const Vec3(0.07, 0.04, 0.01), g, castShadow: false).translated(at + const Vec3(0.13, 0.16, 0.04)).lifted(0.4)); // голова
+    for (final dx in [-0.0, 0.1]) {
+      m.add(Mesh.box(const Vec3(0.02, 0.07, 0.01), g, castShadow: false).translated(at + Vec3(dx, -0.12, 0.04)).lifted(0.4)); // ноги
+    }
+    for (final (dx, dy) in [(0.02, -0.055), (0.07, -0.07), (0.1, 0.02), (0.1, 0.09)]) {
+      m.add(Mesh.box(const Vec3(0.022, 0.018, 0.01), spot, castShadow: false).translated(at + Vec3(dx, dy, 0.045)).lifted(0.5));
+    }
   }
 
   static void _telescope(List<Mesh> m) {

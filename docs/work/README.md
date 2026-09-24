@@ -62,6 +62,8 @@
 | F-043 | Мягкий первый день | [game/F-043](game/F-043_SOFT_FIRST_DAY_SA_SPEC.md) | `game/game_controller.dart`, `game/pet_wish.dart` | `game_controller_test`, `app_flow_test` |
 | F-044 | Копилка как вклад | [game/F-044](game/F-044_SAVINGS_DEPOSIT_SA_SPEC.md) | `economy/`, `game/game_controller.dart`, `ui/screens/savings_screen.dart` | `economy`, `game_controller_test`, `app_flow_test` |
 | F-045 | Вёрстка «Одежды» | [ui/F-045](ui/F-045_CLOTHES_LAYOUT_SA_SPEC.md) | `ui/screens/clothes_screen.dart` | `app_flow_test` |
+| F-046 | Перетаскивание в уроках | [ui/F-046](ui/F-046_DRAG_SORT_SA_SPEC.md) | `ui/lesson/lesson_steps.dart` | `lesson_test` |
+| F-047 | Фото из зоопарка на виду | [ui/F-047](ui/F-047_ZOO_PHOTO_PLACE_SA_SPEC.md) | `ui/room3d/room_builder.dart` | `room3d_test` |
 
 **Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
 См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.
