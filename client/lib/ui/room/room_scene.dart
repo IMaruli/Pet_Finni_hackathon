@@ -17,6 +17,7 @@ class RoomScene extends StatefulWidget {
     this.room = 1,
     this.night = false,
     this.hero,
+    this.heroBadge,
     this.heroScale = 0.56,
     this.feetY = 0.68,
     this.animated = true,
@@ -26,6 +27,9 @@ class RoomScene extends StatefulWidget {
   final int room;
   final bool night;
   final Widget? hero;
+
+  /// Подпись над головой героя (облачко «нужно»).
+  final Widget? heroBadge;
 
   /// Совместимость с F-017: размер героя теперь считается по перспективе.
   final double heroScale;
@@ -142,6 +146,13 @@ class _RoomSceneState extends State<RoomScene> with SingleTickerProviderStateMix
                   width: heroSize,
                   height: heroSize,
                   child: widget.hero!,
+                ),
+              if (widget.heroBadge != null)
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  top: heroBase.dy - heroSize * 0.78 - 44,
+                  child: Center(child: widget.heroBadge!),
                 ),
             ],
           ),

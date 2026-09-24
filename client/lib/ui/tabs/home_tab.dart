@@ -62,7 +62,6 @@ class _HomeTabState extends State<HomeTab> {
       builder: (context, box) {
         final size = Size(box.maxWidth, box.maxHeight);
         const feetY = 0.66;
-        final feet = Offset(size.width / 2, size.height * feetY);
         final heroSize = size.width * 0.5;
         return Stack(
           children: [
@@ -73,14 +72,8 @@ class _HomeTabState extends State<HomeTab> {
                 feetY: feetY,
                 heroScale: 0.5,
                 hero: MascotView(look: MascotLook.fromGame(game), controller: _mascot, size: heroSize, semanticsLabel: name),
+                heroBadge: _needBubble(),
               ),
-            ),
-            // Облачко «что нужно» над героем.
-            Positioned(
-              left: 16,
-              right: 16,
-              top: feet.dy - heroSize * 0.92 - 36,
-              child: Center(child: _needBubble()),
             ),
             SafeArea(
               child: Padding(

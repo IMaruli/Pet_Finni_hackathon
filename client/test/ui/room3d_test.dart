@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:finni/store/snapshot.dart';
 import 'package:finni/ui/room/room_scene.dart';
 import 'package:finni/ui/room3d/math3d.dart';
