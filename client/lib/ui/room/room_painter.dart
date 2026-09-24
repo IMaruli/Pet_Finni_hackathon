@@ -4,11 +4,14 @@ import 'package:flutter/rendering.dart';
 
 /// Перспективная комната (SA F-017 §4.3): точка схода по центру, задняя стена — уменьшенный экран.
 final class RoomGeometry {
-  RoomGeometry(this.size)
-    : back = Rect.fromLTRB(size.width * 0.12, size.height * 0.09, size.width * 0.88, size.height * 0.6),
+  RoomGeometry(this.size, {this.feetY = 0.84})
+    : back = Rect.fromLTRB(size.width * 0.12, size.height * 0.09, size.width * 0.88, size.height * min(0.6, feetY - 0.16)),
       v = Offset(size.width * 0.5, size.height * 0.09 / (1 - 0.76));
 
   final Size size;
+
+  /// Где стоит герой по высоте (доля экрана). На Доме выше: снизу панель.
+  final double feetY;
 
   /// Точка схода.
   final Offset v;
@@ -45,15 +48,15 @@ final class RoomGeometry {
   }
 
   /// Где стоят «ноги» героя: центр коврика.
-  Offset get heroFeet => Offset(w * 0.5, h * 0.84);
+  Offset get heroFeet => Offset(w * 0.5, h * feetY);
 }
 
-Offset heroAnchor(Size size) => RoomGeometry(size).heroFeet;
+Offset heroAnchor(Size size, {double feetY = 0.84}) => RoomGeometry(size, feetY: feetY).heroFeet;
 
 Color _mix(Color a, Color b, double t) => Color.lerp(a, b, t)!;
 
 final class RoomPainter extends CustomPainter {
-  RoomPainter({required this.owned, this.furniture, this.room = 1, this.night = false});
+  RoomPainter({required this.owned, this.furniture, this.room = 1, this.night = false, this.feetY = 0.84});
 
   /// Купленные постоянные вещи: lamp, rug, poster.
   final Set<String> owned;
@@ -64,13 +67,14 @@ final class RoomPainter extends CustomPainter {
   /// 1 — спальня, 2 — игровая.
   final int room;
   final bool night;
+  final double feetY;
 
   bool get _play => room == 2;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) return;
-    final g = RoomGeometry(size);
+    final g = RoomGeometry(size, feetY: feetY);
     _shell(canvas, g);
     if (_play) {
       _playroom(canvas, g);
@@ -324,7 +328,7 @@ final class RoomPainter extends CustomPainter {
   }
 
   void _rug(Canvas canvas, RoomGeometry g, Color outer, Color inner) {
-    final c = Offset(g.w * 0.5, g.h * 0.83);
+    final c = g.heroFeet.translate(0, -g.h * 0.01);
     final rect = Rect.fromCenter(center: c, width: g.w * 0.86, height: g.h * 0.16);
     canvas.drawOval(rect.translate(0, 3), Paint()..color = const Color(0x22000000));
     canvas.drawOval(rect, Paint()..color = outer);
@@ -348,7 +352,7 @@ final class RoomPainter extends CustomPainter {
   }
 
   void _lamp(Canvas canvas, RoomGeometry g) {
-    final base = g.floor(0.2, 0.3);
+    final base = g.floor(0.3, 0.12);
     final s = g.w * 0.1;
     _shadow(canvas, Rect.fromCenter(center: base, width: s * 1.6, height: s * 0.4));
     canvas.drawCircle(
@@ -551,5 +555,6 @@ final class RoomPainter extends CustomPainter {
       !old.owned.containsAll(owned) ||
       old.furniture != furniture ||
       old.room != room ||
-      old.night != night;
+      old.night != night ||
+      old.feetY != feetY;
 }

@@ -61,14 +61,17 @@ class _HomeTabState extends State<HomeTab> {
     return LayoutBuilder(
       builder: (context, box) {
         final size = Size(box.maxWidth, box.maxHeight);
-        final feet = heroAnchor(size);
-        final heroSize = size.width * 0.56;
+        const feetY = 0.66;
+        final feet = heroAnchor(size, feetY: feetY);
+        final heroSize = size.width * 0.5;
         return Stack(
           children: [
             Positioned.fill(
               child: RoomScene(
                 inventory: game.inventory,
                 room: room,
+                feetY: feetY,
+                heroScale: 0.5,
                 hero: MascotView(look: MascotLook.fromGame(game), controller: _mascot, size: heroSize, semanticsLabel: name),
               ),
             ),

@@ -12,6 +12,7 @@ class RoomScene extends StatelessWidget {
     this.night = false,
     this.hero,
     this.heroScale = 0.56,
+    this.feetY = 0.84,
   });
 
   final Inventory inventory;
@@ -22,12 +23,15 @@ class RoomScene extends StatelessWidget {
   /// Размер героя как доля ширины.
   final double heroScale;
 
+  /// Где стоит герой по высоте (доля).
+  final double feetY;
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, box) {
         final size = Size(box.maxWidth, box.maxHeight);
-        final feet = heroAnchor(size);
+        final feet = heroAnchor(size, feetY: feetY);
         final heroSize = size.width * heroScale;
         return Stack(
           fit: StackFit.expand,
@@ -35,7 +39,7 @@ class RoomScene extends StatelessWidget {
             RepaintBoundary(
               child: CustomPaint(
                 size: size,
-                painter: RoomPainter(owned: inventory.owned, furniture: inventory.furniture, room: room, night: night),
+                painter: RoomPainter(owned: inventory.owned, furniture: inventory.furniture, room: room, night: night, feetY: feetY),
               ),
             ),
             if (hero != null)
