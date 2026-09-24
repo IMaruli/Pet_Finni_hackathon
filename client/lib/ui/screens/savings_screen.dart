@@ -323,7 +323,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                                 child: DuoButton(
                                   key: Key('save.$a'),
                                   label: '+$a',
-                                  height: 44,
+                                  height: 48,
                                   color: FinniColors.surface,
                                   onPressed: wallet >= a ? () => _save(a) : null,
                                 ),

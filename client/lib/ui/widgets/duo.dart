@@ -100,14 +100,7 @@ class _DuoButtonState extends State<DuoButton> {
 
 /// Белая карточка с мягкой тенью, без рамки.
 class DuoCard extends StatelessWidget {
-  const DuoCard({
-    super.key,
-    required this.child,
-    this.color = FinniColors.surface,
-    this.onTap,
-    this.padding = const EdgeInsets.all(16),
-    this.radius = 20,
-  });
+  const DuoCard({super.key, required this.child, this.color = FinniColors.surface, this.onTap, this.padding = const EdgeInsets.all(16), this.radius = 20});
 
   final Widget child;
   final Color color;
@@ -180,7 +173,10 @@ class DuoChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[Icon(icon, size: 13, color: ink), const SizedBox(width: 4)],
-          Text(text, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: ink, letterSpacing: -0.1)),
+          Text(
+            text,
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: ink, letterSpacing: -0.1),
+          ),
         ],
       ),
     );
@@ -201,11 +197,7 @@ class IconTile extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(size * 0.26),
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color.lerp(color, Colors.white, 0.15)!, color],
-        ),
+        gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color.lerp(color, Colors.white, 0.15)!, color]),
       ),
       child: Icon(icon, size: size * 0.58, color: Colors.white),
     );
@@ -214,13 +206,7 @@ class IconTile extends StatelessWidget {
 
 /// Матовое стекло поверх сцены.
 class Glass extends StatelessWidget {
-  const Glass({
-    super.key,
-    required this.child,
-    this.radius = 22,
-    this.padding = const EdgeInsets.all(12),
-    this.tint = const Color(0xB8FFFFFF),
-  });
+  const Glass({super.key, required this.child, this.radius = 22, this.padding = const EdgeInsets.all(12), this.tint = const Color(0xB8FFFFFF)});
   final Widget child;
   final double radius;
   final EdgeInsets padding;
@@ -279,11 +265,7 @@ class DuoIconButton extends StatelessWidget {
                   child: Text(
                     label,
                     maxLines: 1,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: FinniColors.ink,
-                    ),
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: FinniColors.ink),
                   ),
                 ),
               ],
@@ -316,7 +298,7 @@ class DuoHeader extends StatelessWidget {
                 Text(title, style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w700, height: 1.1, letterSpacing: -0.8)),
                 if (subtitle != null) ...[
                   const SizedBox(height: 4),
-                  Text(subtitle!, style: const TextStyle(fontSize: 15, color: FinniColors.muted, letterSpacing: -0.2)),
+                  Text(subtitle!, style: const TextStyle(fontSize: 16, color: FinniColors.muted, letterSpacing: -0.2)),
                 ],
               ],
             ),
@@ -356,7 +338,12 @@ class GroupedSection extends StatelessWidget {
     for (var i = 0; i < children.length; i++) {
       rows.add(children[i]);
       if (i < children.length - 1) {
-        rows.add(const Padding(padding: EdgeInsets.only(left: 60), child: Divider(height: 0.5, thickness: 0.5, color: FinniColors.line)));
+        rows.add(
+          const Padding(
+            padding: EdgeInsets.only(left: 60),
+            child: Divider(height: 0.5, thickness: 0.5, color: FinniColors.line),
+          ),
+        );
       }
     }
     return Column(
@@ -367,7 +354,10 @@ class GroupedSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: ColoredBox(color: FinniColors.surface, child: Column(children: rows)),
+            child: ColoredBox(
+              color: FinniColors.surface,
+              child: Column(children: rows),
+            ),
           ),
         ),
         if (footer != null)
@@ -414,10 +404,7 @@ class GroupedRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: Row(
         children: [
-          if (leading != null)
-            leading!
-          else if (icon != null)
-            IconTile(done ? Icons.check_rounded : icon!, color: done ? FinniColors.need : iconColor),
+          if (leading != null) leading! else if (icon != null) IconTile(done ? Icons.check_rounded : icon!, color: done ? FinniColors.need : iconColor),
           if (leading != null || icon != null) const SizedBox(width: 14),
           Expanded(
             child: Column(
@@ -436,20 +423,14 @@ class GroupedRow extends StatelessWidget {
                 if (subtitle != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
-                    child: Text(subtitle!, style: const TextStyle(fontSize: 13, color: FinniColors.muted, letterSpacing: -0.1)),
+                    child: Text(subtitle!, style: const TextStyle(fontSize: 14, color: FinniColors.muted, letterSpacing: -0.1)),
                   ),
               ],
             ),
           ),
-          if (value != null) ...[
-            const SizedBox(width: 8),
-            Text(value!, style: const TextStyle(fontSize: 17, color: FinniColors.muted, letterSpacing: -0.4)),
-          ],
+          if (value != null) ...[const SizedBox(width: 8), Text(value!, style: const TextStyle(fontSize: 17, color: FinniColors.muted, letterSpacing: -0.4))],
           if (trailing != null) ...[const SizedBox(width: 8), trailing!],
-          if (chevron && onTap != null) ...[
-            const SizedBox(width: 6),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xFFC4C4C7), size: 22),
-          ],
+          if (chevron && onTap != null) ...[const SizedBox(width: 6), const Icon(Icons.chevron_right_rounded, color: Color(0xFFC4C4C7), size: 22)],
         ],
       ),
     );
@@ -513,7 +494,8 @@ class DuoTabBar extends StatelessWidget {
           child: SafeArea(
             top: false,
             child: SizedBox(
-              height: 58,
+              // Растёт вместе с системным размером шрифта (ТЗ 3.6, F-058): 58 dp при обычном.
+              height: 58 * MediaQuery.textScalerOf(context).scale(12) / 12,
               child: Row(
                 children: [
                   for (final tab in ShellTab.values)
@@ -546,11 +528,7 @@ class DuoTabBar extends StatelessWidget {
                                 const SizedBox(height: 2),
                                 Text(
                                   tab.title,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
-                                    color: tab == current ? FinniColors.primary : FinniColors.muted,
-                                  ),
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: tab == current ? FinniColors.primary : FinniColors.muted),
                                 ),
                               ],
                             ),

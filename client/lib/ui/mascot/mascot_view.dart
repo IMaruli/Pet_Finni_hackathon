@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
+import '../motion.dart';
 import '../../game/pet_wish.dart';
 import 'mascot_look.dart';
 import 'mascot_painter.dart';
@@ -144,7 +145,12 @@ class _MascotViewState extends State<MascotView> with SingleTickerProviderStateM
     var roll = 0.0;
 
     final emotion = widget.look.emotion;
-    if (widget.animated) {
+    final moving = widget.animated && !Motion.reduced; // F-058: «меньше движения» — только моргание
+    if (widget.animated && Motion.reduced) {
+      final b = (_t - _blinkStart) / 0.16;
+      if (b >= 0 && b <= 1 && emotion != PetEmotion.sleepy) blink = 1 - (2 * b - 1).abs();
+    }
+    if (moving) {
       yaw = 0.22 * sin(0.7 * _t) + _dragYaw;
       pitch = 0.06 * sin(1.1 * _t) + _dragPitch;
       squash = 0.05 * sin(2.2 * _t);
@@ -197,14 +203,7 @@ class _MascotViewState extends State<MascotView> with SingleTickerProviderStateM
     Widget child = RepaintBoundary(
       child: CustomPaint(
         size: Size.square(widget.size),
-        painter: MascotPainter(
-          look: widget.look,
-          pose: SpherePose(yaw, pitch),
-          blink: blink,
-          hop: hop,
-          squash: squash,
-          roll: roll,
-        ),
+        painter: MascotPainter(look: widget.look, pose: SpherePose(yaw, pitch), blink: blink, hop: hop, squash: squash, roll: roll),
       ),
     );
 
@@ -230,13 +229,17 @@ class _MascotViewState extends State<MascotView> with SingleTickerProviderStateM
     final sz = widget.size;
     final overlays = <Widget>[
       if (emotion == PetEmotion.sleepy && widget.animated)
-        for (var i = 0; i < 3; i++) _floating(
-          phase: (_t * 0.45 + i / 3) % 1.0,
-          left: (ph) => sz * (0.66 + ph * 0.22),
-          top: (ph) => sz * (0.2 - ph * 0.3),
-          child: (ph) => Text('z', style: TextStyle(fontSize: sz * (0.13 + ph * 0.1), fontWeight: FontWeight.w700, color: const Color(0xFF5E5CE6))),
-        ),
-      if (widget.look.joy != null && widget.animated) ..._joy(widget.look.joy!, sz),
+        for (var i = 0; i < 3; i++)
+          _floating(
+            phase: (_t * 0.45 + i / 3) % 1.0,
+            left: (ph) => sz * (0.66 + ph * 0.22),
+            top: (ph) => sz * (0.2 - ph * 0.3),
+            child: (ph) => Text(
+              'z',
+              style: TextStyle(fontSize: sz * (0.13 + ph * 0.1), fontWeight: FontWeight.w700, color: const Color(0xFF5E5CE6)),
+            ),
+          ),
+      if (widget.look.joy != null && widget.animated && !Motion.reduced) ..._joy(widget.look.joy!, sz),
     ];
     if (overlays.isNotEmpty) child = Stack(clipBehavior: Clip.none, children: [child, ...overlays]);
 
@@ -257,7 +260,9 @@ class _MascotViewState extends State<MascotView> with SingleTickerProviderStateM
   }) => Positioned(
     left: left(phase),
     top: top(phase),
-    child: IgnorePointer(child: Opacity(opacity: sin(phase * pi).clamp(0.0, 1.0), child: child(phase))),
+    child: IgnorePointer(
+      child: Opacity(opacity: sin(phase * pi).clamp(0.0, 1.0), child: child(phase)),
+    ),
   );
 
   /// Радость хотелки дня вокруг героя (F-031).
@@ -276,7 +281,10 @@ class _MascotViewState extends State<MascotView> with SingleTickerProviderStateM
           left: sz * 0.78,
           top: sz * 0.02 + bob,
           child: IgnorePointer(
-            child: CustomPaint(size: Size(sz * 0.28, sz * 0.62), painter: _BalloonPainter(sway: sin(_t * 1.1) * 0.08)),
+            child: CustomPaint(
+              size: Size(sz * 0.28, sz * 0.62),
+              painter: _BalloonPainter(sway: sin(_t * 1.1) * 0.08),
+            ),
           ),
         ),
       ];
@@ -345,7 +353,10 @@ class _BalloonPainter extends CustomPainter {
         ..close(),
       Paint()..color = const Color(0xFFD62846),
     );
-    canvas.drawOval(Rect.fromCenter(center: ball.center + Offset(-w * 0.18, -w * 0.22), width: w * 0.16, height: w * 0.26), Paint()..color = const Color(0x88FFFFFF));
+    canvas.drawOval(
+      Rect.fromCenter(center: ball.center + Offset(-w * 0.18, -w * 0.22), width: w * 0.16, height: w * 0.26),
+      Paint()..color = const Color(0x88FFFFFF),
+    );
   }
 
   @override

@@ -390,7 +390,7 @@ class _SortViewState extends State<SortView> {
           if (!_demo)
             const Padding(
               padding: EdgeInsets.only(top: 8),
-              child: Text('Перетащи карточку в корзину — или нажми карточку, потом корзину.', style: TextStyle(fontSize: 13, color: FinniColors.muted)),
+              child: Text('Перетащи карточку в корзину — или нажми карточку, потом корзину.', style: TextStyle(fontSize: 15, color: FinniColors.muted)),
             ),
         ],
       ),

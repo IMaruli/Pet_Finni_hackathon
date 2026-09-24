@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../motion.dart';
 import '../../game/game_controller.dart';
 import '../tabs/games_tab.dart';
 import '../tabs/home_tab.dart';
@@ -55,6 +56,8 @@ class _MainShellState extends State<MainShell> {
       builder: (context, _) {
         if (!game.hasProfile) return const SizedBox.shrink();
         Haptics.enabled = game.snapshot.soundOn;
+        Motion.setting = game.snapshot.reduceMotion; // F-058
+        Motion.system = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
         final reward = '+${game.content.config.gameWin}';
         return Scaffold(
           body: IndexedStack(
@@ -71,8 +74,7 @@ class _MainShellState extends State<MainShell> {
             onTap: _go,
             badges: {
               if (!game.gameRewardToday) ShellTab.games: reward,
-              if (!game.planConfirmed || game.dailyQuests.any((q) => !q.$2.done))
-                ShellTab.tasks: '!',
+              if (!game.planConfirmed || game.dailyQuests.any((q) => !q.$2.done)) ShellTab.tasks: '!',
             },
           ),
         );
