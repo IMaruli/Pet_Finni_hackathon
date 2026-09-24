@@ -118,12 +118,25 @@ final class GoalDef {
 
 /// Скин героя (SA F-023). [unlockStage] > 1 — открывается ростом героя.
 final class SkinDef {
-  const SkinDef({required this.id, required this.title, this.unlockStage = 1});
-  factory SkinDef.fromJson(Map<String, dynamic> j) =>
-      SkinDef(id: j['id'] as String, title: j['title'] as String, unlockStage: j['unlockStage'] as int? ?? 1);
+  const SkinDef({required this.id, required this.title, this.unlockStage = 1, this.unlockGoal, this.unlockTopics = 0});
+  factory SkinDef.fromJson(Map<String, dynamic> j) => SkinDef(
+    id: j['id'] as String,
+    title: j['title'] as String,
+    unlockStage: j['unlockStage'] as int? ?? 1,
+    unlockGoal: j['unlockGoal'] as String?,
+    unlockTopics: j['unlockTopics'] as int? ?? 0,
+  );
   final String id;
   final String title;
   final int unlockStage;
+
+  /// Облик копится: цель копилки, после которой он открыт (F-037).
+  final String? unlockGoal;
+
+  /// Облик за учёбу: сколько блоков уроков закончить (F-037).
+  final int unlockTopics;
+
+  bool get openAtStart => unlockStage <= 1 && unlockGoal == null && unlockTopics == 0;
 }
 
 /// Цвет палитры героя (SA F-023).

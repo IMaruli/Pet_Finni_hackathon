@@ -184,7 +184,7 @@ final class GameContent {
       problems.add('volume: every lesson game appears in content');
     }
     if (looks.length < 9) problems.add('volume: at least 9 looks');
-    if (skins.where((s) => s.unlockStage == 1).length < 3) problems.add('volume: at least 3 open skins');
+    if (skins.where((s) => s.openAtStart).length < 4) problems.add('volume: at least 4 open skins');
     if (palette.length < 8) problems.add('volume: at least 8 colors');
     if (config.demoPeriods < 5) problems.add('volume: at least 5 demo periods');
     if (sortCards.length < 6) problems.add('volume: at least 6 sort cards');

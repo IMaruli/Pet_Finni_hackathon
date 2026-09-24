@@ -80,9 +80,12 @@ final class MascotLook {
   bool get isMonkey => skin == 'monkey';
   bool get isCat => skin == 'cat';
   bool get isBunny => skin == 'bunny';
+  bool get isBear => skin == 'bear';
+  bool get isGiraffe => skin == 'giraffe';
+  bool get isElephant => skin == 'elephant';
 
   /// Причёска есть у Финика и Мартышки; у Котика и Зайки — ушки.
-  bool get hasHair => !isCat && !isBunny;
+  bool get hasHair => !isCat && !isBunny && !isBear && !isGiraffe && !isElephant;
   Color get bodyColor => isMonkey ? const Color(0xFF9A6234) : color;
 
   double get scale => switch (stage) {

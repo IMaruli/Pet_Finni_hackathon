@@ -69,6 +69,20 @@
       "title": "Зайка"
     },
     {
+      "id": "bear",
+      "title": "Мишка"
+    },
+    {
+      "id": "giraffe",
+      "title": "Жираф",
+      "unlockGoal": "skin_giraffe"
+    },
+    {
+      "id": "elephant",
+      "title": "Слон",
+      "unlockTopics": 2
+    },
+    {
       "id": "monkey",
       "title": "Мартышка",
       "unlockStage": 3

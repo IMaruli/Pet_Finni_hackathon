@@ -65,12 +65,16 @@ final class MascotPainter extends CustomPainter {
     _back(canvas);
     _body(canvas);
     if (look.isMonkey) _muzzle(canvas);
+    if (look.isGiraffe) _giraffeSpots(canvas);
+    if (look.isBear) _bearSnout(canvas);
     if (look.grubby) _mud(canvas);
     _cheeks(canvas);
     if (look.isCat) _whiskers(canvas);
     _eyes(canvas);
     _brows(canvas);
     _mouth(canvas);
+    if (look.isElephant) _trunk(canvas);
+    if (look.isGiraffe) _ossicones(canvas);
     if (look.hasHair) _hair(canvas, front: true);
     _accessories(canvas);
     if (look.grubby) _stink(canvas);
@@ -108,6 +112,8 @@ final class MascotPainter extends CustomPainter {
     }
     if (look.isCat) _catEars(canvas);
     if (look.isBunny) _bunnyEars(canvas);
+    if (look.isBear) _bearEars(canvas);
+    if (look.isElephant) _elephantEars(canvas);
     if (look.hasHair && look.hair == 'buns') _buns(canvas, front: false);
     if (look.accessories.contains('headphones')) _cups(canvas, front: false);
   }
@@ -340,6 +346,84 @@ final class MascotPainter extends CustomPainter {
         canvas.drawLine(p.offset, p.offset + Offset(side * _r * 0.42, tilt * _r * 1.6), paint);
       }
     }
+  }
+
+  // ---------- Мишка, Жираф, Слон (F-037) ----------
+
+  void _bearEars(Canvas canvas) {
+    for (final side in [-1.0, 1.0]) {
+      final p = _p(0.95, side * 0.78, lift: 1.08);
+      if (p.z < -0.45) continue;
+      canvas.drawCircle(p.offset, _r * 0.27, Paint()..color = _darken(look.bodyColor, 0.1));
+      canvas.drawCircle(p.offset, _r * 0.15, Paint()..color = _lighten(look.bodyColor, 0.35));
+    }
+  }
+
+  void _bearSnout(Canvas canvas) {
+    _patch(canvas, -0.2, 0, 0.2, 0.27, _lighten(look.bodyColor, 0.4));
+    _patch(canvas, -0.06, 0, 0.05, 0.08, const Color(0xFF3B2A20));
+  }
+
+  void _giraffeSpots(Canvas canvas) {
+    final spot = _darken(Color.lerp(look.bodyColor, const Color(0xFFB9772E), 0.6)!, 0.1);
+    for (final (lat, lon, ry, rx) in const [
+      (0.6, -0.9, 0.12, 0.14), (0.35, 1.05, 0.1, 0.12), (-0.55, -0.7, 0.11, 0.13), (-0.6, 0.62, 0.1, 0.11),
+      (0.85, 0.35, 0.08, 0.1), (-0.15, -1.2, 0.1, 0.09), (0.05, 1.25, 0.09, 0.08), (-0.85, 0.05, 0.08, 0.12),
+    ]) {
+      _patch(canvas, lat, lon, ry, rx, spot);
+    }
+  }
+
+  void _ossicones(Canvas canvas) {
+    final stick = Paint()
+      ..color = _darken(look.bodyColor, 0.3)
+      ..strokeWidth = _r * 0.09
+      ..strokeCap = StrokeCap.round;
+    for (final side in [-1.0, 1.0]) {
+      final base = _p(1.18, side * 0.4, lift: 0.98);
+      if (base.z < -0.3) continue;
+      final top = base.offset + Offset(side * _r * 0.06, -_r * 0.42);
+      canvas.drawLine(base.offset, top, stick);
+      canvas.drawCircle(top, _r * 0.09, Paint()..color = const Color(0xFF8B5A2B));
+    }
+  }
+
+  void _elephantEars(Canvas canvas) {
+    for (final side in [-1.0, 1.0]) {
+      final p = _p(0.12, side * 1.35, lift: 1.0);
+      if (p.z < -0.7) continue;
+      final c = p.offset + Offset(side * _r * 0.28, 0);
+      final flap = 1 + 0.06 * sin(pose.yaw * 4);
+      final rect = Rect.fromCenter(center: c, width: _r * 0.85 * flap, height: _r * 1.1);
+      canvas.drawOval(rect, Paint()..color = _darken(look.bodyColor, 0.08));
+      canvas.drawOval(rect.deflate(_r * 0.12), Paint()..color = Color.lerp(look.bodyColor, const Color(0xFFFFB3C7), 0.45)!);
+    }
+  }
+
+  void _trunk(Canvas canvas) {
+    final start = _p(-0.02, 0, lift: 1.02);
+    if (start.z < 0.1) return;
+    final s = start.offset;
+    final path = Path()
+      ..moveTo(s.dx, s.dy)
+      ..quadraticBezierTo(s.dx - _r * 0.08, s.dy + _r * 0.5, s.dx + _r * 0.14, s.dy + _r * 0.7)
+      ..quadraticBezierTo(s.dx + _r * 0.36, s.dy + _r * 0.82, s.dx + _r * 0.42, s.dy + _r * 0.58);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = _darken(look.bodyColor, 0.14)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = _r * 0.27
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = _lighten(look.bodyColor, 0.25).withValues(alpha: 0.6)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = _r * 0.05
+        ..strokeCap = StrokeCap.round,
+    );
   }
 
   // ---------- Неухоженный (F-027) ----------

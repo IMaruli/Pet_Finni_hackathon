@@ -136,7 +136,7 @@ void main() {
 
   test('skins and palette for Finik style (F-023)', () {
     final c = content;
-    expect(c.skins.map((s) => s.id), ['finik', 'cat', 'bunny', 'monkey']);
+    expect(c.skins.map((s) => s.id), ['finik', 'cat', 'bunny', 'bear', 'giraffe', 'elephant', 'monkey']);
     expect(c.skins.last.unlockStage, 3);
     expect(c.skins.first.unlockStage, 1);
     expect(c.palette.length, greaterThanOrEqualTo(8));

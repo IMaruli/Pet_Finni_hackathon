@@ -498,6 +498,30 @@ void main() {
       expect((await fresh()).profile.skin, 'cat');
     });
 
+    test('giraffe is saved up for, elephant opens after 2 lesson blocks (F-037)', () async {
+      expect(game.isSkinUnlocked('bear'), isTrue);
+      expect(game.isSkinUnlocked('giraffe'), isFalse);
+      expect(game.isSkinUnlocked('elephant'), isFalse);
+      expect((await game.restyle(skin: 'giraffe')).reason, FeedbackReason.locked);
+      expect(game.skinLockedText('giraffe'), contains('Копилк'));
+      await game.chooseGoal('skin_giraffe');
+      await planAll(game, need: game.todaysNeedSum);
+      await buyNeeds();
+      await game.toSavings(game.economy.available.value);
+      await game.finishLesson('needs_1');
+      await game.finishLesson('needs_2');
+      await game.toSavings(game.economy.available.value);
+      expect((await game.redeemGoal()).ok, isTrue);
+      expect(game.isSkinUnlocked('giraffe'), isTrue);
+      expect((await game.restyle(skin: 'giraffe')).ok, isTrue);
+      await game.endDay();
+      expect(game.isSkinUnlocked('elephant'), isFalse); // пройден 1 блок
+      await game.finishLesson('plan_1');
+      await game.finishLesson('plan_2');
+      expect(game.topicsDone, 2);
+      expect(game.isSkinUnlocked('elephant'), isTrue);
+    });
+
     test('monkey waits for the grown-up stage', () async {
       expect(game.isSkinUnlocked('bunny'), isTrue);
       expect(game.isSkinUnlocked('monkey'), isFalse);

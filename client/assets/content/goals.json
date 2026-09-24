@@ -1,6 +1,7 @@
 {
   "goals": [
     {"id": "room2", "title": "Вторая комната", "emoji": "🏠", "description": "Дом станет больше: появится игровая комната", "cost": 50, "reward": "room", "options": []},
+    {"id": "skin_giraffe", "title": "Облик «Жираф»", "emoji": "🦒", "description": "Накопи — и Финик сможет стать жирафом", "cost": 45, "reward": "skin", "options": []},
     {"id": "zoo", "title": "Поездка в зоопарк", "emoji": "🦒", "description": "Копим на день в зоопарке — фото с жирафом повесим на стену", "cost": 35, "reward": "item", "item": "zoo_photo", "options": []},
     {"id": "telescope", "title": "Телескоп", "emoji": "🔭", "description": "Смотреть на звёзды из окна", "cost": 45, "reward": "item", "item": "telescope", "options": []},
     {"id": "bike", "title": "Велосипед", "emoji": "🚲", "description": "Большая мечта: свой велосипед у стены", "cost": 60, "reward": "item", "item": "bike", "options": []},

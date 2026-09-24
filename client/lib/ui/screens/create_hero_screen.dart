@@ -30,7 +30,7 @@ class _FinikStyleScreenState extends State<FinikStyleScreen> {
   late int _color;
   late String _hair;
   bool _busy = false;
-  bool _showLockHint = false;
+  String? _lockHint;
 
   GameController get game => widget.game;
 
@@ -57,7 +57,7 @@ class _FinikStyleScreenState extends State<FinikStyleScreen> {
     super.dispose();
   }
 
-  bool _unlocked(SkinDef s) => widget.create ? s.unlockStage <= 1 : game.isSkinUnlocked(s.id);
+  bool _unlocked(SkinDef s) => widget.create ? s.openAtStart : game.isSkinUnlocked(s.id);
   bool get _valid => !widget.create || (_player.text.trim().isNotEmpty && _pet.text.trim().isNotEmpty);
   String get _petName => widget.create ? (_pet.text.trim().isEmpty ? 'Финик' : _pet.text.trim()) : game.profile.petName;
 
@@ -74,12 +74,12 @@ class _FinikStyleScreenState extends State<FinikStyleScreen> {
     if (!_unlocked(s)) {
       buzz(Buzz.heavy);
       _mascot.shake();
-      setState(() => _showLockHint = true);
+      setState(() => _lockHint = game.content.text('skin.${s.id}.locked', {'pet': _petName}));
       return;
     }
     setState(() {
       _skin = s.id;
-      _showLockHint = false;
+      _lockHint = null;
     });
     _mascot.jump();
   }
@@ -104,7 +104,6 @@ class _FinikStyleScreenState extends State<FinikStyleScreen> {
   @override
   Widget build(BuildContext context) {
     final content = game.content;
-    final monkey = content.skin('monkey');
     final body = ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       children: [
@@ -126,15 +125,17 @@ class _FinikStyleScreenState extends State<FinikStyleScreen> {
           ),
         ),
         _label('Облик'),
-        Row(
-          children: [
-            for (final s in content.skins)
-              Expanded(child: _skinTile(s)),
-          ],
+        GridView.count(
+          crossAxisCount: 4,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 8,
+          childAspectRatio: 0.62,
+          children: [for (final s in content.skins) _skinTile(s)],
         ),
         AnimatedSize(
           duration: const Duration(milliseconds: 200),
-          child: _showLockHint && monkey != null
+          child: _lockHint != null
               ? Padding(
                   key: const Key('hero.skin.lockHint'),
                   padding: const EdgeInsets.only(top: 10),
@@ -146,7 +147,7 @@ class _FinikStyleScreenState extends State<FinikStyleScreen> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            content.text('skin.monkey.locked', {'pet': _petName}),
+                            _lockHint!,
                             style: const TextStyle(fontSize: 14, color: FinniColors.ink),
                           ),
                         ),
@@ -254,7 +255,10 @@ class _FinikStyleScreenState extends State<FinikStyleScreen> {
                 child: Text(s.title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: open ? FinniColors.ink : FinniColors.muted)),
               ),
               if (!open)
-                const Text('за успехи', style: TextStyle(fontSize: 11, color: FinniColors.muted)),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(game.content.text('skin.${s.id}.badge'), style: const TextStyle(fontSize: 11, color: FinniColors.muted)),
+                ),
             ],
           ),
         ),

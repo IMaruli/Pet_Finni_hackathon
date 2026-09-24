@@ -159,13 +159,21 @@ final class GameController extends ChangeNotifier {
   bool isSkinUnlocked(String skin) {
     final def = content.skin(skin);
     if (def == null) return false;
-    return stage >= def.unlockStage || (skin == 'monkey' && inventory.skin == 'monkey');
+    final byStage = stage >= def.unlockStage || (skin == 'monkey' && inventory.skin == 'monkey');
+    final byGoal = def.unlockGoal == null || inventory.goalsDone.contains(def.unlockGoal);
+    return byStage && byGoal && topicsDone >= def.unlockTopics;
   }
+
+  /// Законченных блоков уроков (F-037).
+  int get topicsDone => content.topics.where((t) => blockDoneDay(t.id) != null).length;
+
+  /// Как открыть закрытый облик — своя подсказка (F-037).
+  String skinLockedText(String skin) => content.text('skin.$skin.locked', {'pet': profile.petName});
 
   /// Смена облика бесплатна.
   Future<GameFeedback> restyle({String? skin, int? color, String? hair}) async {
     if (skin != null && !isSkinUnlocked(skin)) {
-      return _fail(FeedbackReason.locked, [content.text('skin.monkey.locked', {'pet': profile.petName})]);
+      return _fail(FeedbackReason.locked, [skinLockedText(skin)]);
     }
     await _commit(snapshot.copyWith(profile: profile.restyled(skin: skin, color: color, hair: hair)));
     return const GameFeedback(ok: true);
@@ -309,7 +317,7 @@ final class GameController extends ChangeNotifier {
     var inv = inventory.copyWith(goalsDone: {...inventory.goalsDone, g.id});
     inv = switch (g.reward) {
       GoalReward.room => inv.copyWith(rooms: 2),
-      GoalReward.skin => inv.copyWith(skin: 'monkey'),
+      GoalReward.skin => inv, // облик открывается целью в goalsDone (F-037)
       GoalReward.furniture => inv.copyWith(furniture: snapshot.goalOption),
       GoalReward.gift => inv, // радость дарить: цель отмечена в goalsDone
       GoalReward.item => inv.copyWith(owned: {...inv.owned, ?g.item}), // вещь-награда в комнату (F-029)
