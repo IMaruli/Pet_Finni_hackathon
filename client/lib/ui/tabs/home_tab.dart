@@ -17,6 +17,7 @@ import '../screens/room_screen.dart';
 import '../screens/savings_screen.dart';
 import '../shell/main_shell.dart';
 import '../theme.dart';
+import '../../economy/economy_state.dart';
 import '../widgets/common.dart';
 import '../widgets/buy_sheet.dart';
 import '../widgets/duo.dart';
@@ -85,16 +86,15 @@ class _HomeTabState extends State<HomeTab> {
                 time: game.greeting
                     ? DayTime.morning
                     : game.isIntroDay && (wish.kind == WishKind.eat || wish.kind == WishKind.drink)
-                    ? DayTime.day // в день знакомства еда — днём, после урока (F-043)
+                    ? DayTime
+                          .day // в день знакомства еда — днём, после урока (F-043)
                     : wish.dayTime, // утро → день → вечер → ночь по шагам дня (F-028)
                 room: room,
                 feetY: feetY,
                 heroScale: 0.78,
                 fullBleed: true, // комната во весь экран (F-048)
                 hero: MascotView(
-                  look: MascotLook.fromGame(game).withEmotion(
-                    game.greeting ? PetEmotion.excited : (_moodLine == null ? wish.emotion : null),
-                  ),
+                  look: MascotLook.fromGame(game).withEmotion(game.greeting ? PetEmotion.excited : (_moodLine == null ? wish.emotion : null)),
                   controller: _mascot,
                   size: heroSize,
                   semanticsLabel: name,
@@ -143,6 +143,7 @@ class _HomeTabState extends State<HomeTab> {
                         if (game.inventory.rooms > 1) ...[const Spacer(), _roomToggle()],
                       ],
                     ),
+                    if (!game.greeting) ...[const SizedBox(height: 6), Align(alignment: Alignment.centerLeft, child: _statePanel(name))],
                   ],
                 ),
               ),
@@ -160,19 +161,51 @@ class _HomeTabState extends State<HomeTab> {
                   boxShadow: const [BoxShadow(color: Color(0x26000000), blurRadius: 18, offset: Offset(0, 6))],
                 ),
                 child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Четыре раздела; нужное — пузырями над героем (SA F-022, F-039, F-041).
-                      Expanded(child: DuoIconButton(key: const Key('home.treats'), icon: Icons.icecream_rounded, label: 'Хотелки', color: FinniColors.want, onTap: () => _open(CategoryScreen(game: game, category: ShopCategory.treats)))),
-                      Expanded(child: DuoIconButton(key: const Key('home.clothes'), icon: Icons.checkroom_rounded, label: 'Образ', color: FinniColors.primary, onTap: () => _open(LookScreen(game: game)))),
-                      Expanded(child: DuoIconButton(key: const Key('home.room'), icon: Icons.weekend_rounded, label: 'Дом', color: FinniColors.orange, onTap: () => _open(RoomScreen(game: game)))),
-                      Expanded(child: DuoIconButton(key: const Key('home.savings'), icon: Icons.savings_rounded, label: 'Копилка', color: FinniColors.save, onTap: () => _open(SavingsScreen(game: game)))),
-                    ],
-                  ),
-                ],
-              ),
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Четыре раздела; нужное — пузырями над героем (SA F-022, F-039, F-041).
+                        Expanded(
+                          child: DuoIconButton(
+                            key: const Key('home.treats'),
+                            icon: Icons.icecream_rounded,
+                            label: 'Хотелки',
+                            color: FinniColors.want,
+                            onTap: () => _open(CategoryScreen(game: game, category: ShopCategory.treats)),
+                          ),
+                        ),
+                        Expanded(
+                          child: DuoIconButton(
+                            key: const Key('home.clothes'),
+                            icon: Icons.checkroom_rounded,
+                            label: 'Образ',
+                            color: FinniColors.primary,
+                            onTap: () => _open(LookScreen(game: game)),
+                          ),
+                        ),
+                        Expanded(
+                          child: DuoIconButton(
+                            key: const Key('home.room'),
+                            icon: Icons.weekend_rounded,
+                            label: 'Дом',
+                            color: FinniColors.orange,
+                            onTap: () => _open(RoomScreen(game: game)),
+                          ),
+                        ),
+                        Expanded(
+                          child: DuoIconButton(
+                            key: const Key('home.savings'),
+                            icon: Icons.savings_rounded,
+                            label: 'Копилка',
+                            color: FinniColors.save,
+                            onTap: () => _open(SavingsScreen(game: game)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -217,6 +250,8 @@ class _HomeTabState extends State<HomeTab> {
                   children: [
                     const SizedBox(width: 30, height: 26, child: CustomPaint(painter: PiggyBankPainter())),
                     const SizedBox(width: 6),
+                    // Текущая цель на виду (ТЗ 2.5.3, F-057).
+                    if (goal != null) ...[Text(goal.emoji, key: const Key('home.piggy.goal'), style: const TextStyle(fontSize: 18)), const SizedBox(width: 4)],
                     Flexible(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -259,7 +294,11 @@ class _HomeTabState extends State<HomeTab> {
           child: Pressable(
             key: const Key('home.help'),
             onTap: _help,
-            child: const Glass(radius: 22, padding: EdgeInsets.all(10), child: Icon(Icons.more_horiz_rounded, size: 24, color: FinniColors.ink)),
+            child: const Glass(
+              radius: 22,
+              padding: EdgeInsets.all(10),
+              child: Icon(Icons.more_horiz_rounded, size: 24, color: FinniColors.ink),
+            ),
           ),
         ),
       ],
@@ -276,15 +315,85 @@ class _HomeTabState extends State<HomeTab> {
         // Имя видно всегда, ужимается стадия (F-051 BR-10).
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 110),
-          child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: -0.3)),
+          child: Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: -0.3),
+          ),
         ),
         const SizedBox(width: 6),
         Flexible(
-          child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: DuoChip(text: game.stageTitle, color: FinniColors.primary)),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: DuoChip(text: game.stageTitle, color: FinniColors.primary),
+          ),
         ),
       ],
     ),
   );
+
+  /// Показатели состояния героя (ТЗ 2.5.3, F-057): эмодзи + слово, не только цвет.
+  List<(String, String, String, String)> _state(String name) {
+    final (moodEmoji, moodWord) = switch (game.mood) {
+      PetMood.glad => ('😄', 'радуется'),
+      PetMood.steady => ('🙂', 'спокоен'),
+      PetMood.uneasy => ('😕', 'грустит'),
+    };
+    final hungry = game.needsShown.any((i) => i.need == 'food');
+    final dirty = game.isGrubby;
+    return [
+      ('mood', moodEmoji, moodWord, 'Настроение: $moodWord. Растёт, когда нужное куплено и ты держишься плана.'),
+      ('food', hungry ? '🍽️' : '😋', hungry ? 'голоден' : 'сыт', hungry ? '$name голоден: купи еду дня в пузыре над ним.' : '$name сыт: еда дня куплена.'),
+      (
+        'clean',
+        dirty ? '🫧' : '✨',
+        dirty ? 'испачкался' : 'чистый',
+        dirty ? '$name испачкался: купи умывание в пузыре над ним.' : '$name чистый: уход сегодня не нужен или куплен.',
+      ),
+    ];
+  }
+
+  Widget _statePanel(String name) {
+    final items = _state(name);
+    return Semantics(
+      button: true,
+      label: 'Состояние: ${items.map((e) => e.$3).join(', ')}',
+      child: Pressable(
+        key: const Key('home.state'),
+        onTap: () => showToast(context, [for (final e in items) e.$4], emoji: items.first.$2),
+        child: Glass(
+          radius: 16,
+          padding: const EdgeInsets.fromLTRB(10, 4, 12, 4),
+          // На узком экране и при крупном шрифте плашка ужимается, а не вылезает.
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final (i, e) in items.indexed) ...[
+                  if (i > 0)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 6),
+                      child: Text('·', style: TextStyle(color: FinniColors.muted)),
+                    ),
+                  Text(e.$2, style: const TextStyle(fontSize: 16)),
+                  const SizedBox(width: 3),
+                  Text(
+                    e.$3,
+                    key: Key('home.state.${e.$1}'),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _roomToggle() => Glass(
     radius: 18,

@@ -90,6 +90,9 @@ void main() {
     await settle(t, 30);
     await tapKey(t, 'nav.home');
     expect(find.byKey(const Key('home.need.breakfast')), findsOneWidget);
+    // F-057: состояние героя на Доме — словами, не только цветом.
+    expect(t.widget<Text>(find.byKey(const Key('home.state.food'))).data, 'голоден');
+    expect(find.byKey(const Key('home.state.mood')), findsOneWidget);
 
     // А.5 план.
     await tapKey(t, 'home.next');
