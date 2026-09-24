@@ -25,6 +25,7 @@ class RoomScene extends StatefulWidget {
     this.animated = true,
     this.bowls = const Bowls(),
     this.time = DayTime.day,
+    this.initialAzimuth,
   });
 
   final Inventory inventory;
@@ -34,6 +35,9 @@ class RoomScene extends StatefulWidget {
 
   /// Время суток (F-028); `night: true` — то же, что ночь.
   final DayTime time;
+
+  /// Стартовый угол камеры (превью и проверки ракурсов).
+  final double? initialAzimuth;
   DayTime get _time => night ? DayTime.night : time;
   final int room;
   final bool night;
@@ -57,7 +61,8 @@ class RoomScene extends StatefulWidget {
 
 class _RoomSceneState extends State<RoomScene> with SingleTickerProviderStateMixin {
   static const _az0 = 0.62, _el0 = 0.34;
-  double _az = _az0, _el = _el0;
+  late double _az = widget.initialAzimuth ?? _az0;
+  double _el = _el0;
   bool _dragging = false;
   Ticker? _ticker;
   Duration _last = Duration.zero;

@@ -345,10 +345,11 @@ abstract final class RoomBuilder {
   }
 
   static void _toyChest(List<Mesh> m) {
-    const at = Vec3(1.62, 0, 1.55);
-    m.add(Mesh.box(const Vec3(0.62, 0.36, 0.42), const Color(0xFF6C9BD2)).rotatedY(-0.35).translated(at));
-    m.add(Mesh.box(const Vec3(0.66, 0.05, 0.46), const Color(0xFF4F7FB8), castShadow: false).rotatedY(-0.35).translated(at + const Vec3(0, 0.36, 0)));
-    m.add(Mesh.box(const Vec3(0.3, 0.08, 0.02), const Color(0xFFF2CF6B), castShadow: false).rotatedY(-0.35).translated(at + const Vec3(0.08, 0.2, 0.22)).lifted(0.2));
+    // У задней стены слева — подальше от мисок (справа спереди).
+    const at = Vec3(-0.75, 0, -1.72);
+    m.add(Mesh.box(const Vec3(0.62, 0.36, 0.42), const Color(0xFF6C9BD2)).translated(at));
+    m.add(Mesh.box(const Vec3(0.66, 0.05, 0.46), const Color(0xFF4F7FB8), castShadow: false).translated(at + const Vec3(0, 0.36, 0)));
+    m.add(Mesh.box(const Vec3(0.3, 0.08, 0.01), const Color(0xFFF2CF6B), castShadow: false).translated(at + const Vec3(0, 0.2, 0.215)).lifted(0.2));
     // Мишка сидит сверху, рядом мяч.
     const bear = Color(0xFFB9855A);
     m.add(Mesh.sphere(0.13, bear, lat: 6, lon: 10).translated(at + const Vec3(-0.08, 0.41, 0)));
@@ -356,27 +357,32 @@ abstract final class RoomBuilder {
     for (final dx in [-0.07, 0.07]) {
       m.add(Mesh.sphere(0.035, bear, lat: 4, lon: 6, castShadow: false).translated(at + Vec3(-0.08 + dx, 0.68, 0.02)));
     }
-    m.add(Mesh.sphere(0.1, const Color(0xFFE85D5D)).translated(at + const Vec3(0.42, 0, 0.25)));
+    m.add(Mesh.sphere(0.1, const Color(0xFFE85D5D)).translated(at + const Vec3(0.45, 0, 0.2)));
   }
 
   static void _beanbag(List<Mesh> m) {
-    const at = Vec3(-0.55, 0, -0.95);
+    // Справа между задней мебелью и мисками.
+    const at = Vec3(1.5, 0, -0.45);
     const c = Color(0xFFE88A6B);
     m.add(Mesh.sphere(0.42, c, lat: 8, lon: 16).scaled(const Vec3(1.1, 0.55, 1)).translated(at));
-    m.add(Mesh.sphere(0.3, Color.lerp(c, const Color(0xFF000000), 0.08)!, lat: 6, lon: 12, castShadow: false).scaled(const Vec3(1, 0.7, 0.6)).translated(at + const Vec3(0, 0.22, -0.2)));
+    m.add(Mesh.sphere(0.3, Color.lerp(c, const Color(0xFF000000), 0.08)!, lat: 6, lon: 12, castShadow: false).scaled(const Vec3(1, 0.7, 0.6)).translated(at + const Vec3(0.12, 0.22, -0.2)));
   }
 
   static void _aquarium(List<Mesh> m) {
-    // Тумба под окном и аквариум на ней.
+    // Тумба под окном и аквариум: один цельный бак без вложенных слоёв (под любым углом без артефактов).
     const at = Vec3(-1.72, 0, 0.25);
     m.add(Mesh.box(const Vec3(0.4, 0.5, 0.7), const Color(0xFFEFE6DA)).translated(at));
-    m.add(Mesh.box(const Vec3(0.36, 0.38, 0.62), const Color(0xFF7FC8E8), castShadow: false).translated(at + const Vec3(0, 0.5, 0)).copyWith(emissive: true));
-    m.add(Mesh.box(const Vec3(0.37, 0.03, 0.63), const Color(0xFF3F6E8C), castShadow: false).translated(at + const Vec3(0, 0.88, 0)));
-    m.add(Mesh.box(const Vec3(0.34, 0.05, 0.6), const Color(0xFFE8D7A8), castShadow: false).translated(at + const Vec3(0, 0.5, 0)).lifted(0.1));
-    for (final (dz, y, c) in [(-0.12, 0.66, const Color(0xFFFF8C42)), (0.14, 0.76, const Color(0xFFFFD166)), (0.02, 0.6, const Color(0xFFFF6B9D))]) {
-      m.add(Mesh.sphere(0.04, c, lat: 4, lon: 6, castShadow: false).scaled(const Vec3(0.6, 0.8, 1.4)).translated(at + Vec3(0.19, y, dz)).lifted(0.3));
+    // Песок снизу, вода выше — два бака друг на друге, а не друг в друге.
+    m.add(Mesh.box(const Vec3(0.36, 0.07, 0.62), const Color(0xFFE8D7A8), castShadow: false).translated(at + const Vec3(0, 0.5, 0)));
+    m.add(Mesh.box(const Vec3(0.36, 0.3, 0.62), const Color(0xFF7FC8E8), castShadow: false).translated(at + const Vec3(0, 0.57, 0)).copyWith(emissive: true));
+    // Крышка с зазором над баком.
+    m.add(Mesh.box(const Vec3(0.39, 0.035, 0.65), const Color(0xFF3F6E8C), castShadow: false).translated(at + const Vec3(0, 0.885, 0)));
+    // Рыбки и водоросль — на лицевом стекле (смотрит в комнату), чуть снаружи.
+    for (final (dz, y, c) in [(-0.14, 0.7, const Color(0xFFFF8C42)), (0.12, 0.78, const Color(0xFFFFD166)), (0.0, 0.64, const Color(0xFFFF6B9D))]) {
+      m.add(Mesh.box(const Vec3(0.01, 0.045, 0.09), c, castShadow: false).translated(at + Vec3(0.185, y, dz)).lifted(0.2));
+      m.add(Mesh.box(const Vec3(0.01, 0.05, 0.03), c, castShadow: false).translated(at + Vec3(0.185, y - 0.003, dz - 0.06)).lifted(0.2));
     }
-    m.add(Mesh.box(const Vec3(0.02, 0.2, 0.02), const Color(0xFF3FA55B), castShadow: false).translated(at + const Vec3(0.1, 0.55, 0.22)).lifted(0.2));
+    m.add(Mesh.box(const Vec3(0.01, 0.2, 0.025), const Color(0xFF3FA55B), castShadow: false).translated(at + const Vec3(0.185, 0.57, 0.22)).lifted(0.2));
   }
 
   static void _zooPhoto(List<Mesh> m) {
