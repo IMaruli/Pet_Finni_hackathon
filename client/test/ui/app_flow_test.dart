@@ -98,10 +98,12 @@ void main() {
     await t.pageBack();
     await settle(t, 20);
     await tapKey(t, 'home.needs');
-    await tapKey(t, 'shopRow.water');
-    await tapKey(t, 'shop.buy');
-    await settle(t, 30);
-    expect(find.text('✓ куплено'), findsNWidgets(2));
+    for (final id in ['water', 'care']) {
+      await tapKey(t, 'shopRow.$id');
+      await tapKey(t, 'shop.buy');
+      await settle(t, 30);
+    }
+    expect(find.text('✓ куплено'), findsNWidgets(3));
     await t.pageBack();
     await settle(t, 20);
     await tapKey(t, 'home.clothes');
@@ -228,7 +230,7 @@ void main() {
     await tapKey(t, 'plan.done');
     await settle(t, 40); // тост плана уезжает с кнопок
     await tapKey(t, 'home.needs');
-    for (final id in ['breakfast', 'water']) {
+    for (final id in ['breakfast', 'water', 'care']) {
       await tapKey(t, 'shopRow.$id');
       await tapKey(t, 'shop.buy');
       await settle(t, 30);

@@ -1,8 +1,8 @@
 {
   "items": [
     {"id": "breakfast", "kind": "need", "price": 8, "title": "Завтрак", "emoji": "🥣", "effect": "Сытый и бодрый до вечера", "slot": "consumable"},
-    {"id": "water", "kind": "need", "price": 8, "title": "Вода", "emoji": "💧", "effect": "Без воды грустно и вяло", "slot": "consumable"},
-    {"id": "care", "kind": "need", "price": 10, "title": "Уход: зубы и умывание", "emoji": "🪥", "effect": "Чистый и свежий", "slot": "consumable"},
+    {"id": "water", "kind": "need", "price": 6, "title": "Вода", "emoji": "💧", "effect": "Без воды грустно и вяло", "slot": "consumable"},
+    {"id": "care", "kind": "need", "price": 6, "title": "Уход: зубы и умывание", "emoji": "🪥", "effect": "Чистый и свежий", "slot": "consumable"},
     {"id": "chocolate", "kind": "want", "price": 12, "title": "Шоколадка", "emoji": "🍫", "effect": "Вкусно! Радость до вечера", "slot": "consumable"},
     {"id": "icecream", "kind": "want", "price": 10, "title": "Мороженое", "emoji": "🍦", "effect": "Холодное и сладкое! Радость до вечера", "slot": "consumable"},
     {"id": "lemonade", "kind": "want", "price": 9, "title": "Лимонад", "emoji": "🧃", "effect": "Шипучий праздник! Радость до вечера", "slot": "consumable"},

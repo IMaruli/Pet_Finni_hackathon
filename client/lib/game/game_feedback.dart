@@ -12,6 +12,7 @@ enum FeedbackReason {
   withdrawNotPending,
   needsFirst,
   locked,
+  planLocked,
 }
 
 /// Результат действия игрока: удалось ли и что сказать ребёнку.

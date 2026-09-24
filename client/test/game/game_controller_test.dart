@@ -70,8 +70,29 @@ void main() {
     expect(game.planConfirmed, isFalse);
   });
 
+  test('food and care are needed every period (TZ: обязательные расходы)', () async {
+    for (var d = 1; d <= 5; d++) {
+      final ids = game.todaysNeeds.map((i) => i.id);
+      expect(ids, contains('breakfast'), reason: 'day $d');
+      expect(ids, contains('care'), reason: 'day $d');
+      expect(game.todaysNeedSum, lessThanOrEqualTo(game.content.config.pocketMoney));
+      await goodDay();
+      await game.endDay();
+    }
+  });
+
+  test('confirmed plan is fixed until the period ends (TZ: план → факт)', () async {
+    await game.confirmPlan(need: game.todaysNeedSum, want: 10, save: 5);
+    final f = await game.confirmPlan(need: game.todaysNeedSum, want: 0, save: 30);
+    expect(f.ok, isFalse);
+    expect(f.reason, FeedbackReason.planLocked);
+    expect(game.economy.plan!.want.value, 10);
+    await game.endDay();
+    expect((await game.confirmPlan(need: game.todaysNeedSum, want: 0, save: 5)).ok, isTrue);
+  });
+
   test('plan bigger than wallet is refused', () async {
-    final f = await game.confirmPlan(need: 16, want: 40, save: 10);
+    final f = await game.confirmPlan(need: 20, want: 40, save: 10);
     expect(f.reason, FeedbackReason.planTooBig);
     expect(f.messages, isNotEmpty);
   });
@@ -82,6 +103,7 @@ void main() {
   });
 
   test('needs: only today list, once a day', () async {
+    await game.endDay(); // день 2: без воды
     await game.confirmPlan(need: game.todaysNeedSum, want: 20, save: 0);
     final notToday = game.content.needItems.firstWhere((i) => !game.todaysNeeds.contains(i));
     expect((await game.buy(notToday.id, commandId: game.newCommandId())).reason, FeedbackReason.notToday);
@@ -180,13 +202,14 @@ void main() {
   test('goal: choose, save, redeem, reward lands in inventory', () async {
     expect((await game.chooseGoal('furniture')).reason, FeedbackReason.needOption);
     expect((await game.chooseGoal('furniture', option: 'tv')).ok, isTrue);
-    await game.confirmPlan(need: game.todaysNeedSum, want: 0, save: 44);
+    await game.confirmPlan(need: game.todaysNeedSum, want: 0, save: 40);
     expect((await game.redeemGoal()).reason, FeedbackReason.insufficient);
-    await game.toSavings(44);
-    expect(game.goalRemaining, 6);
+    await buyNeeds();
+    await game.toSavings(40);
+    expect(game.goalRemaining, 10);
     expect(game.canRedeem, isFalse);
     await game.answerQuest(0);
-    await game.toSavings(6);
+    await game.toSavings(10);
     expect(game.canRedeem, isTrue);
     final f = await game.redeemGoal();
     expect(f.ok, isTrue);
@@ -229,7 +252,7 @@ void main() {
     expect(s.day, 1);
     expect(s.good, isTrue);
     expect(s.saved, 10);
-    expect(s.spentNeed, 16);
+    expect(s.spentNeed, 20);
     expect(game.day, 2);
     expect(game.economy.available.value, availableBefore + 20);
     expect(game.economy.lastCreditSourceId, 'pocket:2');
@@ -340,11 +363,12 @@ void main() {
 
     test('needs themselves are never blocked, wants open after them', () async {
       await game.confirmPlan(need: game.todaysNeedSum, want: 20, save: 0);
-      expect(game.needsLeft.map((i) => i.id), ['breakfast', 'water']);
-      expect(game.needsLeftCost, 16);
+      expect(game.needsLeft.map((i) => i.id), ['breakfast', 'water', 'care']);
+      expect(game.needsLeftCost, 20);
       expect((await game.buy('breakfast', commandId: game.newCommandId())).ok, isTrue);
-      expect(game.needsLeftTitles, 'Вода');
+      expect(game.needsLeftTitles, startsWith('Вода, Уход'));
       expect((await game.buy('water', commandId: game.newCommandId())).ok, isTrue);
+      expect((await game.buy('care', commandId: game.newCommandId())).ok, isTrue);
       expect(game.needsLeft, isEmpty);
       expect((await game.buy('glasses', commandId: game.newCommandId())).ok, isTrue);
     });

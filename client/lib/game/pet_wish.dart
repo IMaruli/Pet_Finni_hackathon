@@ -39,10 +39,15 @@ PetWish wishFor(GameController g) {
     if (g.economy.savedThisPeriod.value == 0) return WishKind.save;
     return WishKind.sleep;
   }();
+  // Первый день: подписываем, откуда монеты (ТЗ: доход).
+  final first = kind == WishKind.plan && g.day == 1;
+  final config = g.content.config;
   return PetWish(
     kind: kind,
     emotion: _emotion[kind]!,
-    text: g.content.text('wish.${kind.name}', {'pet': g.profile.petName}),
+    text: first
+        ? g.content.text('wish.plan.first', {'start': '${config.startCoins}', 'pocket': '${config.pocketMoney}'})
+        : g.content.text('wish.${kind.name}', {'pet': g.profile.petName}),
     action: g.content.text('wish.${kind.name}.action'),
   );
 }

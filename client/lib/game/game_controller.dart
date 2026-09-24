@@ -152,6 +152,8 @@ final class GameController extends ChangeNotifier {
   // ---------- Бюджет и покупки ----------
 
   Future<GameFeedback> confirmPlan({required int need, required int want, required int save}) async {
+    // Подтверждённый план не переписывают: с ним сравнивают факт до конца периода (ТЗ: план → факт).
+    if (planConfirmed) return _fail(FeedbackReason.planLocked, [content.text('exp.plan_locked')]);
     if (need < todaysNeedSum) {
       return _fail(FeedbackReason.planNeedLow, [
         'В банку «Нужное» положи хотя бы $todaysNeedSum: столько стоит нужное на сегодня.',

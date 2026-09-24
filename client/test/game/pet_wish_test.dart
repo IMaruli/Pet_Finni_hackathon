@@ -29,6 +29,7 @@ void main() {
     expect(w.emotion, PetEmotion.curious);
     expect(w.action, 'План');
     expect(w.text, isNot(startsWith('wish.')));
+    expect(w.text, contains('40 на старт и 20 карманных')); // ТЗ: доход подписан
   });
 
   test('needs come in list order with matching emotions', () async {

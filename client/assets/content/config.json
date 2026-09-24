@@ -5,7 +5,7 @@
   "rewardTry": 6,
   "demoPeriods": 5,
   "needRotation": [
-    ["breakfast", "water"],
+    ["breakfast", "water", "care"],
     ["breakfast", "care"]
   ]
 }
