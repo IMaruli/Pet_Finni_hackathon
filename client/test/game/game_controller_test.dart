@@ -6,6 +6,8 @@ import 'package:finni/content/game_content.dart';
 import 'package:finni/economy/economy.dart';
 import 'package:finni/game/game_controller.dart';
 import 'package:finni/game/game_feedback.dart';
+import 'package:finni/game/quests.dart';
+import 'package:finni/content/lesson_models.dart';
 import 'package:finni/store/profile_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -182,25 +184,76 @@ void main() {
     expect(game.inventory.owned, isNot(contains('chocolate')));
   });
 
-  test('quest pays once a day, repeat only explains', () async {
-    final wise = game.todaysQuest.choices.indexWhere((c) => c.wise);
-    final before = game.economy.available.value;
-    final f = await game.answerQuest(wise);
-    expect(f.reward, 12);
-    expect(game.economy.available.value, before + 12);
-    expect(game.economy.lastCreditSourceId, 'quest:${game.todaysQuest.id}');
-    expect(f.messages.single, game.todaysQuest.choices[wise].explanation);
-    final again = await game.answerQuest(wise);
-    expect(again.reward, 0);
-    expect(again.repeat, isTrue);
-    expect(game.snapshot.questsDone, [game.todaysQuest.id]);
+  group('lessons (F-025)', () {
+    test('first lesson of the day pays, labelled; repeat is practice', () async {
+      final before = game.economy.available.value;
+      final f = await game.finishLesson('needs_1');
+      expect(f.reward, 12);
+      expect(game.economy.available.value, before + 12);
+      expect(game.economy.lastCreditSourceId, 'lesson:needs_1');
+      expect(f.messages.single, contains('за урок'));
+      final again = await game.finishLesson('needs_1');
+      expect(again.reward, 0);
+      expect(again.repeat, isTrue);
+      expect(game.snapshot.lessonLog.length, 2);
+    });
+
+    test('path opens lesson by lesson; first run of a topic is new, next ones are review', () async {
+      expect(game.isLessonOpen('needs_1'), isTrue);
+      expect(game.isLessonOpen('needs_2'), isFalse);
+      expect(game.recommendedLesson.id, 'needs_1');
+      await game.finishLesson('needs_1');
+      expect(game.snapshot.lessonLog.last.newTopic, isTrue);
+      expect(game.isLessonOpen('needs_2'), isTrue);
+      expect(game.recommendedLesson.id, 'needs_2');
+      await game.finishLesson('needs_2');
+      expect(game.snapshot.lessonLog.last.review, isTrue);
+      expect(game.snapshot.lessonLog.last.kinds, containsAll(['card', 'pairs', 'next']));
+    });
+
+    test('closing mid-lesson keeps the step; finishing later counts as resumed', () async {
+      expect(await game.startLesson('needs_1'), 0);
+      await game.saveLessonStep('needs_1', 2);
+      await game.addLearnTime(90);
+      final restarted = await fresh();
+      expect(restarted.lessonProgress!.step, 2);
+      expect(restarted.recommendedLesson.id, 'needs_1');
+      expect(await game.startLesson('needs_1'), 2);
+      await game.finishLesson('needs_1');
+      expect(game.lessonProgress, isNull);
+      expect(game.snapshot.lessonLog.single.resumed, isTrue);
+      expect(game.snapshot.learnSeconds[1], 90);
+    });
   });
 
-  test('weak quest choice still pays and explains', () async {
-    final weak = game.todaysQuest.choices.indexWhere((c) => !c.wise);
-    final f = await game.answerQuest(weak);
-    expect(f.reward, 6);
-    expect(f.messages, isNotEmpty);
+  group('quests (F-026)', () {
+    test('three daily quests are fixed in the morning and pay nothing', () async {
+      final ids = game.dailyQuests.map((q) => q.$1).toList();
+      expect(ids.length, 3);
+      expect(game.snapshot.dailyQuests, [for (final q in ids) q.name]);
+      final coins = game.economy.available.value;
+      await game.finishLesson('needs_1');
+      expect(game.economy.available.value, coins + 12); // только награда урока
+      await game.endDay();
+      expect(game.snapshot.dailyQuests.length, 3);
+    });
+
+    test('needs day is recorded for quests', () async {
+      await planAll(game, need: game.todaysNeedSum);
+      await buyNeeds();
+      expect(game.snapshot.needsDays, [1]);
+      final weekly = {for (final w in game.weeklyQuests) w.$1: w.$2};
+      expect(weekly[WeeklyId.needs3]!.value, 1);
+    });
+
+    test('quests lead to a fitting lesson', () async {
+      expect(game.lessonFor(QuestId.newTopic).id, 'needs_1');
+      await game.finishLesson('needs_1');
+      await game.finishLesson('needs_2');
+      expect(game.lessonFor(QuestId.newTopic).topic, isNot('needs'));
+      expect(game.lessonFor(QuestId.review).topic, 'needs');
+      expect(game.lessonFor(QuestId.sortStep).kinds, contains(StepKind.sort));
+    });
   });
 
   test('mini game pays once a day and keeps best score', () async {
@@ -221,7 +274,7 @@ void main() {
     await game.toSavings(40);
     expect(game.goalRemaining, 10);
     expect(game.canRedeem, isFalse);
-    await game.answerQuest(0);
+    await game.finishLesson('needs_1');
     await game.toSavings(10);
     expect(game.canRedeem, isTrue);
     final f = await game.redeemGoal();
@@ -236,7 +289,7 @@ void main() {
     await game.chooseGoal('room2');
     await planAll(game, need: game.todaysNeedSum, want: 0);
     await game.toSavings(40);
-    await game.answerQuest(0);
+    await game.finishLesson('needs_1');
     await game.toSavings(10);
     await game.redeemGoal();
     expect(game.inventory.rooms, 2);
@@ -258,7 +311,7 @@ void main() {
 
   test('end day: summary, new day, pocket money, flags reset', () async {
     await goodDay(save: 10);
-    await game.answerQuest(0);
+    await game.finishLesson('needs_1');
     await game.finishMiniGame('sort', win: true, score: 10);
     final availableBefore = game.economy.available.value;
     final s = await game.endDay();
@@ -270,7 +323,7 @@ void main() {
     expect(game.economy.available.value, availableBefore + 20);
     expect(game.economy.lastCreditSourceId, 'pocket:2');
     expect(game.planConfirmed, isFalse);
-    expect(game.questDoneToday, isFalse);
+    expect(game.lessonPaidToday, isFalse);
     expect(game.gameRewardToday, isFalse);
     expect(game.snapshot.boughtToday, isEmpty);
     expect(game.snapshot.lastSummary!.day, 1);

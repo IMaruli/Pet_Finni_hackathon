@@ -3,8 +3,6 @@ import '../economy/game_coins.dart';
 
 enum ItemSlot { consumable, hero, room }
 
-enum QuestTheme { budget, save, buy }
-
 enum GoalReward { room, skin, furniture, gift }
 
 T _enum<T extends Enum>(List<T> values, Object? raw, String field) {
@@ -96,62 +94,6 @@ final class GoalDef {
   final List<GoalOption> options;
 
   GameCoins get coins => GameCoins(cost);
-}
-
-final class QuestLine {
-  const QuestLine({required this.speaker, required this.text});
-  factory QuestLine.fromJson(Map<String, dynamic> j) =>
-      QuestLine(speaker: j['speaker'] as String, text: j['text'] as String);
-
-  /// narrator|pet|friend|seller
-  final String speaker;
-  final String text;
-}
-
-final class QuestChoice {
-  const QuestChoice({
-    required this.text,
-    required this.reward,
-    required this.wise,
-    required this.explanation,
-  });
-  factory QuestChoice.fromJson(Map<String, dynamic> j) => QuestChoice(
-    text: j['text'] as String,
-    reward: j['reward'] as int,
-    wise: j['wise'] as bool,
-    explanation: j['explanation'] as String,
-  );
-  final String text;
-  final int reward;
-  final bool wise;
-  final String explanation;
-}
-
-final class Quest {
-  const Quest({
-    required this.id,
-    required this.theme,
-    required this.title,
-    required this.emoji,
-    required this.lines,
-    required this.choices,
-  });
-
-  factory Quest.fromJson(Map<String, dynamic> j) => Quest(
-    id: j['id'] as String,
-    theme: _enum(QuestTheme.values, j['theme'], 'theme'),
-    title: j['title'] as String,
-    emoji: j['emoji'] as String,
-    lines: [for (final l in j['lines'] as List) QuestLine.fromJson(l as Map<String, dynamic>)],
-    choices: [for (final c in j['choices'] as List) QuestChoice.fromJson(c as Map<String, dynamic>)],
-  );
-
-  final String id;
-  final QuestTheme theme;
-  final String title;
-  final String emoji;
-  final List<QuestLine> lines;
-  final List<QuestChoice> choices;
 }
 
 /// Скин героя (SA F-023). [unlockStage] > 1 — открывается ростом героя.

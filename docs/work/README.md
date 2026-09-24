@@ -40,6 +40,8 @@
 | F-022 | Разделы без общего магазина | [ui/F-022](ui/F-022_SECTIONS_SA_SPEC.md) | `ui/screens/category_screen.dart`, `ui/tabs/home_tab.dart`, `ui/shell/main_shell.dart` | `app_flow_test` |
 | F-023 | Настройка Финика: скины и цвета | [ui/F-023](ui/F-023_FINIK_STYLE_SA_SPEC.md) | `ui/screens/create_hero_screen.dart`, `ui/mascot/`, `store/snapshot.dart` | `game_controller_test`, `store_test`, `content_test`, `mascot_test`, `app_flow_test` |
 | F-024 | План раскладывает все монеты | [game/F-024](game/F-024_PLAN_ALL_COINS_SA_SPEC.md) | `game/game_controller.dart`, `ui/screens/plan_screen.dart` | `game_controller_test` |
+| F-025 | Уроки как в Duolingo: 6 игр по рецепту | [ui/F-025](ui/F-025_LESSON_ENGINE_SA_SPEC.md) | `content/lesson_models.dart`, `game/lesson_logic.dart`, `ui/lesson/`, `assets/content/lessons.json` | `lesson_logic_test`, `lesson_test`, `content_test`, `app_flow_test` |
+| F-026 | Задания дня и недели | [game/F-026](game/F-026_DAILY_WEEKLY_QUESTS_SA_SPEC.md) | `game/quests.dart`, `ui/tabs/tasks_tab.dart` | `lesson_logic_test`, `game_controller_test` |
 
 **Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
 См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.

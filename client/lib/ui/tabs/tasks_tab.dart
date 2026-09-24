@@ -6,14 +6,14 @@ import '../../game/game_controller.dart';
 import '../screens/night_screen.dart';
 import '../screens/category_screen.dart';
 import '../screens/plan_screen.dart';
-import '../screens/quest_screen.dart';
+import '../../game/quests.dart';
+import '../lesson/lesson_screen.dart';
 import '../screens/savings_screen.dart';
-import '../shell/main_shell.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/duo.dart';
 
-/// Задания (Figma 04): «Сегодня» и «На неделю» (SA F-017 BR-08, F-018 BR-06).
+/// Задания: 3 дня и 5 недели как квесты Duolingo, без монет сверху (SA F-026).
 class TasksTab extends StatelessWidget {
   const TasksTab({super.key, required this.game});
   final GameController game;
@@ -23,82 +23,64 @@ class TasksTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final reward = game.content.config.rewardWise;
-    final plan = game.economy.plan;
-    final savedToday = game.economy.savedThisPeriod.value;
+    final daily = game.dailyQuests;
+    final weekly = game.weeklyQuests;
+    final doneCount = daily.where((q) => q.$2.done).length;
     final good = game.economy.goodPeriods;
     final nextStageAt = good < 2 ? 2 : 4;
     final goal = game.goal;
-    final doneCount = [
-      game.planConfirmed,
-      game.needsDone,
-      game.questDoneToday,
-      game.gameRewardToday,
-      savedToday > 0,
-    ].where((d) => d).length;
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.only(bottom: 32),
         children: [
           DuoHeader(
             title: 'Задания',
-            subtitle: 'День ${game.day} · выполнено $doneCount из 5',
+            subtitle: 'День ${game.day} · задания дня $doneCount из ${daily.length}',
             trailing: CoinChip(value: game.economy.available.value),
           ),
           GroupedSection(
-            header: 'Сегодня',
+            header: 'План',
             children: [
               GroupedRow(
                 key: const Key('tasks.plan'),
                 icon: Icons.pie_chart_rounded,
                 iconColor: FinniColors.primary,
                 title: 'План дня',
-                subtitle: 'Три банки: нужное, хочу, отложить',
+                subtitle: 'Все монеты — по трём банкам',
                 done: game.planConfirmed,
                 onTap: () => _push(context, PlanScreen(game: game)),
               ),
-              GroupedRow(
-                key: const Key('tasks.needs'),
-                icon: Icons.shopping_basket_rounded,
-                iconColor: FinniColors.need,
-                title: 'Купить нужное',
-                subtitle: game.todaysNeeds.map((i) => i.title.toLowerCase()).join(', '),
-                value: '${game.todaysNeedSum}',
-                done: game.needsDone,
-                onTap: () => _push(context, CategoryScreen(game: game, category: ShopCategory.needs)),
-              ),
-              GroupedRow(
-                key: const Key('tasks.quest'),
-                icon: Icons.auto_stories_rounded,
-                iconColor: FinniColors.orange,
-                title: 'Квест дня',
-                subtitle: game.todaysQuest.title,
-                trailing: game.questDoneToday ? null : DuoChip(text: '+$reward', color: FinniColors.coin),
-                done: game.questDoneToday,
-                onTap: () => _push(context, QuestScreen(game: game)),
-              ),
-              GroupedRow(
-                key: const Key('tasks.game'),
-                icon: Icons.sports_esports_rounded,
-                iconColor: FinniColors.blue,
-                title: 'Игра дня',
-                subtitle: 'Любая из раздела «Игры»',
-                trailing: game.gameRewardToday ? null : DuoChip(text: '+$reward', color: FinniColors.coin),
-                done: game.gameRewardToday,
-                onTap: () => ShellScope.go(context, ShellTab.games),
-              ),
-              GroupedRow(
-                key: const Key('tasks.save'),
-                icon: Icons.savings_rounded,
-                iconColor: FinniColors.teal,
-                title: 'Отложить в копилку',
-                subtitle: plan == null ? 'Сумму решишь в плане' : 'По плану ${plan.save.value}, отложено $savedToday',
-                done: plan != null && savedToday > 0 && savedToday >= plan.save.value,
-                onTap: () => _push(context, SavingsScreen(game: game)),
-              ),
             ],
           ),
-          const DuoSection('На неделю'),
+          const DuoSection('Задания дня'),
+          for (final (id, p) in daily)
+            _quest(
+              context,
+              key: 'tasks.q.${id.name}',
+              title: game.content.text('quest.${id.name}'),
+              progress: p,
+              icon: _icon[id]!,
+              onTap: () => id == QuestId.needs
+                  ? _push(context, CategoryScreen(game: game, category: ShopCategory.needs))
+                  : _push(context, LessonScreen(game: game, lesson: game.lessonFor(id))),
+            ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 2, 20, 0),
+            child: Text('Задания ведут в урок. Монеты даёт сам урок — первый за день.', style: TextStyle(fontSize: 13, color: FinniColors.muted)),
+          ),
+          const DuoSection('Задания недели'),
+          for (final (id, p) in weekly)
+            _quest(
+              context,
+              key: 'tasks.w.${id.name}',
+              title: game.content.text('weekly.${id.name}'),
+              progress: p,
+              icon: _weeklyIcon[id]!,
+              onTap: () => id == WeeklyId.needs3
+                  ? _push(context, CategoryScreen(game: game, category: ShopCategory.needs))
+                  : _push(context, LessonScreen(game: game, lesson: game.recommendedLesson)),
+            ),
+          const DuoSection('Копилка и рост'),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: DuoCard(
@@ -180,4 +162,70 @@ class TasksTab extends StatelessWidget {
       ),
     );
   }
+
+  Widget _quest(
+    BuildContext context, {
+    required String key,
+    required String title,
+    required QuestProgress progress,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    final done = progress.done;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      child: DuoCard(
+        key: Key(key),
+        padding: const EdgeInsets.all(14),
+        onTap: done ? null : onTap,
+        child: Row(
+          children: [
+            IconTile(done ? Icons.check_rounded : icon, color: done ? FinniColors.need : FinniColors.orange),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, letterSpacing: -0.3)),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(child: ProgressBar(value: progress.ratio, color: done ? FinniColors.need : FinniColors.orange)),
+                      const SizedBox(width: 10),
+                      Text(
+                        '${progress.value} / ${progress.target}',
+                        style: const TextStyle(fontSize: 13, color: FinniColors.muted, fontFeatures: [FontFeature.tabularFigures()]),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            if (!done) const Icon(Icons.chevron_right_rounded, color: Color(0xFFC4C4C7)),
+          ],
+        ),
+      ),
+    );
+  }
 }
+
+const _icon = {
+  QuestId.lesson1: Icons.school_rounded,
+  QuestId.lesson2: Icons.school_rounded,
+  QuestId.min5: Icons.timer_rounded,
+  QuestId.min10: Icons.timer_rounded,
+  QuestId.review: Icons.replay_rounded,
+  QuestId.newTopic: Icons.explore_rounded,
+  QuestId.nextStep: Icons.alt_route_rounded,
+  QuestId.sortStep: Icons.view_column_rounded,
+  QuestId.needs: Icons.shopping_basket_rounded,
+  QuestId.resume: Icons.play_arrow_rounded,
+};
+
+const _weeklyIcon = {
+  WeeklyId.lessons8: Icons.school_rounded,
+  WeeklyId.days4: Icons.calendar_month_rounded,
+  WeeklyId.needs3: Icons.shopping_basket_rounded,
+  WeeklyId.newTopics2: Icons.explore_rounded,
+  WeeklyId.review3: Icons.replay_rounded,
+};

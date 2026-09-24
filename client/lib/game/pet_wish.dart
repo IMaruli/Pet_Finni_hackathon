@@ -34,7 +34,7 @@ PetWish wishFor(GameController g) {
     for (final item in g.todaysNeeds) {
       if (!g.isBoughtToday(item.id)) return _needWish[item.id] ?? WishKind.eat;
     }
-    if (!g.questDoneToday) return WishKind.quest;
+    if (!g.lessonPaidToday) return WishKind.quest; // урок дня (F-025)
     if (!g.gameRewardToday) return WishKind.play;
     if (g.economy.savedThisPeriod.value == 0) return WishKind.save;
     return WishKind.sleep;

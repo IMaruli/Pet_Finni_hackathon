@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'game_content.dart';
 
 abstract final class ContentLoader {
-  static const files = ['config', 'items', 'goals', 'quests', 'looks', 'copy', 'minigames'];
+  static const files = ['config', 'items', 'goals', 'lessons', 'looks', 'copy', 'minigames'];
 
   /// Читает `assets/content/*.json`. Бросает [ContentException], если пакет невалиден.
   static Future<GameContent> load([AssetBundle? bundle]) async {

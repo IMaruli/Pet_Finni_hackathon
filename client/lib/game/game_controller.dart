@@ -3,11 +3,13 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 
 import '../content/game_content.dart';
+import '../content/lesson_models.dart';
 import '../content/models.dart';
 import '../economy/economy.dart';
 import '../store/profile_store.dart';
 import '../store/snapshot.dart';
 import 'game_feedback.dart';
+import 'quests.dart';
 
 /// Единая точка изменения состояния игры (SA F-006).
 final class GameController extends ChangeNotifier {
@@ -59,8 +61,8 @@ final class GameController extends ChangeNotifier {
       : content.text('rule.games_no_plan');
 
   bool get planConfirmed => economy.plan != null;
-  Quest get todaysQuest => content.questForDay(day);
-  bool get questDoneToday => snapshot.questDoneToday;
+  /// Награда урока за сегодня уже получена (F-025).
+  bool get lessonPaidToday => snapshot.questDoneToday;
   bool get gameRewardToday => snapshot.gameRewardToday;
 
   GoalDef? get goal => snapshot.goalId == null ? null : content.goal(snapshot.goalId!);
@@ -119,6 +121,7 @@ final class GameController extends ChangeNotifier {
         gameBest: const {},
         lastSummary: null,
         soundOn: true,
+        dailyQuests: [for (final q in pickDailyQuests(day: 1, hasNewTopic: true, hasStarted: false)) q.name],
       ),
     );
   }
@@ -205,11 +208,14 @@ final class GameController extends ChangeNotifier {
         worn: item.slot == ItemSlot.hero ? {...inv.worn, itemId} : inv.worn,
       );
     }
+    final bought = [...snapshot.boughtToday, itemId];
+    final allNeeds = todaysNeeds.every((i) => bought.contains(i.id));
     await _commit(
       snapshot.copyWith(
         economy: r.state,
         inventory: inv,
-        boughtToday: [...snapshot.boughtToday, itemId],
+        boughtToday: bought,
+        needsDays: allNeeds && !snapshot.needsDays.contains(day) ? [...snapshot.needsDays, day] : null,
       ),
     );
     return GameFeedback(ok: true, messages: [..._texts(r), item.effect]);
@@ -294,21 +300,104 @@ final class GameController extends ChangeNotifier {
 
   // ---------- Задания и мини-игры ----------
 
-  Future<GameFeedback> answerQuest(int choiceIndex) async {
-    final q = todaysQuest;
-    final choice = q.choices[choiceIndex];
-    if (questDoneToday) {
-      return GameFeedback(ok: true, repeat: true, messages: [choice.explanation]);
+  // ---------- Уроки (SA F-025) ----------
+
+  bool isLessonDone(String id) => snapshot.lessonLog.any((r) => r.lessonId == id);
+  bool isTopicStarted(String topicId) =>
+      snapshot.lessonLog.any((r) => content.lesson(r.lessonId).topic == topicId);
+  LessonProgress? get lessonProgress => snapshot.lessonProgress;
+
+  /// Путь: первый урок открыт, следующий — после предыдущего; пройденные можно повторять.
+  bool isLessonOpen(String id) {
+    final i = content.lessons.indexWhere((l) => l.id == id);
+    return i == 0 || isLessonDone(id) || (i > 0 && isLessonDone(content.lessons[i - 1].id));
+  }
+
+  /// Что пройти сейчас: начатый, иначе следующий по пути, иначе повтор первого.
+  Lesson get recommendedLesson {
+    final p = lessonProgress;
+    if (p != null) return content.lesson(p.lessonId);
+    return content.lessons.firstWhere((l) => !isLessonDone(l.id), orElse: () => content.lessons.first);
+  }
+
+  bool get hasNewTopic => content.topics.any((t) => !isTopicStarted(t.id));
+
+  /// Открывает урок; возвращает шаг, с которого продолжить.
+  Future<int> startLesson(String id) async {
+    final p = lessonProgress;
+    if (p != null && p.lessonId == id) {
+      if (p.step > 0 && !p.resumed) {
+        await _commit(snapshot.copyWith(lessonProgress: LessonProgress(lessonId: id, step: p.step, resumed: true)));
+      }
+      return p.step;
     }
-    final r = _engine.apply(economy, Credit(GameCoins(choice.reward), 'quest:${q.id}'));
-    await _commit(
-      snapshot.copyWith(
-        economy: r.state,
-        questDoneToday: true,
-        questsDone: [...snapshot.questsDone, q.id],
-      ),
+    await _commit(snapshot.copyWith(lessonProgress: LessonProgress(lessonId: id, step: 0)));
+    return 0;
+  }
+
+  Future<void> saveLessonStep(String id, int step) async {
+    final resumed = lessonProgress?.lessonId == id && lessonProgress!.resumed;
+    await _commit(snapshot.copyWith(lessonProgress: LessonProgress(lessonId: id, step: step, resumed: resumed)));
+  }
+
+  Future<void> addLearnTime(int seconds) async {
+    if (seconds <= 0) return;
+    final learn = {...snapshot.learnSeconds};
+    learn[day] = (learn[day] ?? 0) + seconds;
+    await _commit(snapshot.copyWith(learnSeconds: learn));
+  }
+
+  /// Урок закончен: журнал, награда урока за первый урок дня (ТЗ: награда урока).
+  Future<GameFeedback> finishLesson(String id) async {
+    final lesson = content.lesson(id);
+    final topicKnown = isTopicStarted(lesson.topic);
+    final p = lessonProgress;
+    final run = LessonRun(
+      lessonId: id,
+      day: day,
+      newTopic: !topicKnown,
+      review: topicKnown,
+      kinds: [for (final k in lesson.kinds) k.name],
+      resumed: p != null && p.lessonId == id && p.resumed,
     );
-    return GameFeedback(ok: true, reward: choice.reward, messages: [choice.explanation]);
+    var next = snapshot.copyWith(lessonLog: [...snapshot.lessonLog, run], clearLessonProgress: true);
+    if (lessonPaidToday) {
+      await _commit(next);
+      return GameFeedback(ok: true, repeat: true, messages: [content.text('lesson.repeat')]);
+    }
+    final reward = content.config.rewardWise;
+    final r = _engine.apply(economy, Credit(GameCoins(reward), 'lesson:$id'));
+    next = next.copyWith(economy: r.state, questDoneToday: true);
+    await _commit(next);
+    return GameFeedback(ok: true, reward: reward, messages: [content.text('lesson.reward', {'n': '$reward'})]);
+  }
+
+  // ---------- Задания дня и недели (SA F-026) ----------
+
+  LearnFacts get _facts =>
+      LearnFacts(day: day, runs: snapshot.lessonLog, learnSeconds: snapshot.learnSeconds, needsDays: snapshot.needsDays);
+
+  List<(QuestId, QuestProgress)> get dailyQuests {
+    final ids = snapshot.dailyQuests.isEmpty
+        ? pickDailyQuests(day: day, hasNewTopic: hasNewTopic, hasStarted: lessonProgress != null)
+        : [for (final n in snapshot.dailyQuests) QuestId.values.byName(n)];
+    return [for (final q in ids) (q, dailyProgress(q, _facts))];
+  }
+
+  List<(WeeklyId, QuestProgress)> get weeklyQuests => [for (final w in WeeklyId.values) (w, weeklyProgress(w, _facts))];
+
+  /// Урок, в который ведёт задание.
+  Lesson lessonFor(QuestId q) {
+    final open = [for (final l in content.lessons) if (isLessonOpen(l.id)) l];
+    Lesson pick(bool Function(Lesson l) test) =>
+        open.where((l) => test(l) && !isLessonDone(l.id)).firstOrNull ?? open.where(test).firstOrNull ?? recommendedLesson;
+    return switch (q) {
+      QuestId.review => open.where((l) => isTopicStarted(l.topic)).firstOrNull ?? recommendedLesson,
+      QuestId.newTopic => pick((l) => !isTopicStarted(l.topic)),
+      QuestId.nextStep => pick((l) => l.kinds.contains(StepKind.next)),
+      QuestId.sortStep => pick((l) => l.kinds.contains(StepKind.sort)),
+      _ => recommendedLesson,
+    };
   }
 
   Future<GameFeedback> finishMiniGame(String gameId, {required bool win, required int score}) async {
@@ -361,6 +450,9 @@ final class GameController extends ChangeNotifier {
         questDoneToday: false,
         gameRewardToday: false,
         lastSummary: summary,
+        dailyQuests: [
+          for (final q in pickDailyQuests(day: nextDay, hasNewTopic: hasNewTopic, hasStarted: lessonProgress != null)) q.name,
+        ],
       ),
     );
     return summary;

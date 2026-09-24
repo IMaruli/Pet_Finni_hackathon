@@ -12,7 +12,7 @@ import '../screens/glossary_screen.dart';
 import '../screens/intro_screen.dart';
 import '../screens/night_screen.dart';
 import '../screens/plan_screen.dart';
-import '../screens/quest_screen.dart';
+import '../lesson/lesson_screen.dart';
 import '../screens/room_screen.dart';
 import '../screens/savings_screen.dart';
 import '../shell/main_shell.dart';
@@ -211,7 +211,7 @@ class _HomeTabState extends State<HomeTab> {
   void _fulfil(WishKind kind) => switch (kind) {
     WishKind.plan => _open(PlanScreen(game: game)),
     WishKind.eat || WishKind.drink || WishKind.wash => _open(CategoryScreen(game: game, category: ShopCategory.needs)),
-    WishKind.quest => _open(QuestScreen(game: game)),
+    WishKind.quest => _open(LessonScreen(game: game, lesson: game.recommendedLesson)),
     WishKind.play => ShellScope.go(context, ShellTab.games),
     WishKind.save => _open(SavingsScreen(game: game)),
     WishKind.sleep => goToSleep(context, game),

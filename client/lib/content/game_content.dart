@@ -1,4 +1,5 @@
 import '../economy/catalog_item.dart';
+import 'lesson_models.dart';
 import 'models.dart';
 
 final class ContentException implements Exception {
@@ -14,7 +15,8 @@ final class GameContent {
     required this.config,
     required this.items,
     required this.goals,
-    required this.quests,
+    required this.topics,
+    required this.lessons,
     required this.looks,
     required this.skins,
     required this.palette,
@@ -36,7 +38,8 @@ final class GameContent {
       config: GameConfig.fromJson(files['config'] as Map<String, dynamic>),
       items: list('items', 'items', ShopItem.fromJson),
       goals: list('goals', 'goals', GoalDef.fromJson),
-      quests: list('quests', 'quests', Quest.fromJson),
+      topics: list('lessons', 'topics', Topic.fromJson),
+      lessons: list('lessons', 'lessons', Lesson.fromJson),
       looks: list('looks', 'looks', Look.fromJson),
       skins: list('looks', 'skins', SkinDef.fromJson),
       palette: list('looks', 'palette', PaletteColor.fromJson),
@@ -53,7 +56,10 @@ final class GameContent {
   final GameConfig config;
   final List<ShopItem> items;
   final List<GoalDef> goals;
-  final List<Quest> quests;
+  final List<Topic> topics;
+
+  /// Путь уроков по порядку (SA F-025).
+  final List<Lesson> lessons;
   final List<Look> looks;
   final List<SkinDef> skins;
   final List<PaletteColor> palette;
@@ -76,7 +82,9 @@ final class GameContent {
 
   List<ShopItem> needsForDay(int day) =>
       [for (final id in config.needRotation[(day - 1) % config.needRotation.length]) item(id)];
-  Quest questForDay(int day) => quests[(day - 1) % quests.length];
+  Lesson lesson(String id) => lessons.firstWhere((l) => l.id == id);
+  Topic topic(String id) => topics.firstWhere((t) => t.id == id);
+  List<Lesson> lessonsOf(String topicId) => [for (final l in lessons) if (l.topic == topicId) l];
   BudgetPuzzle puzzleForDay(int day) => puzzles[(day - 1) % puzzles.length];
 
   String text(String id, [Map<String, String> vars = const {}]) {
@@ -97,7 +105,8 @@ final class GameContent {
 
     unique('items', items.map((i) => i.id));
     unique('goals', goals.map((g) => g.id));
-    unique('quests', quests.map((q) => q.id));
+    unique('topics', topics.map((t) => t.id));
+    unique('lessons', lessons.map((l) => l.id));
     unique('looks', looks.map((l) => l.id));
     unique('skins', skins.map((s) => s.id));
     unique('palette', palette.map((p) => p.id));
@@ -115,13 +124,10 @@ final class GameContent {
         problems.add('goals: ${g.id} furniture needs options');
       }
     }
-    for (final q in quests) {
-      if (q.choices.length < 2) problems.add('quests: ${q.id} needs at least 2 choices');
-      if (q.lines.isEmpty) problems.add('quests: ${q.id} needs lines');
-      for (final c in q.choices) {
-        if (c.explanation.trim().isEmpty) problems.add('quests: ${q.id} choice without explanation');
-        if (c.reward <= 0) problems.add('quests: ${q.id} choice reward must be > 0');
-      }
+    final topicIds = {for (final t in topics) t.id};
+    for (final l in lessons) {
+      if (!topicIds.contains(l.topic)) problems.add('lessons: ${l.id} has unknown topic ${l.topic}');
+      problems.addAll(l.problems());
     }
 
     final ids = {for (final i in items) i.id: i};
@@ -147,8 +153,11 @@ final class GameContent {
     if (items.length < 8) problems.add('volume: at least 8 shop items');
     if (needItems.isEmpty || wantItems.isEmpty) problems.add('volume: both need and want items');
     if (goals.length < 3) problems.add('volume: at least 3 goals');
-    if (quests.length < 6) problems.add('volume: at least 6 quests');
-    if (quests.map((q) => q.theme).toSet().length < 3) problems.add('volume: 3 quest themes');
+    if (topics.length < 4) problems.add('volume: at least 4 lesson topics');
+    if (lessons.length < 8) problems.add('volume: at least 8 lessons');
+    if ({for (final l in lessons) ...l.kinds}.length < StepKind.values.length) {
+      problems.add('volume: every lesson game appears in content');
+    }
     if (looks.length < 9) problems.add('volume: at least 9 looks');
     if (skins.where((s) => s.unlockStage == 1).length < 3) problems.add('volume: at least 3 open skins');
     if (palette.length < 8) problems.add('volume: at least 8 colors');

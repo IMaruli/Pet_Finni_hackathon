@@ -1,42 +1,73 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
-import '../../content/models.dart';
+import '../../content/lesson_models.dart';
 import '../../game/game_controller.dart';
+import '../lesson/lesson_screen.dart';
 import '../screens/glossary_screen.dart';
-import '../screens/quest_screen.dart';
 import '../theme.dart';
+import '../widgets/common.dart';
 import '../widgets/duo.dart';
 
-const _themeTitle = {QuestTheme.budget: 'Бюджет', QuestTheme.save: 'Копилка', QuestTheme.buy: 'Покупки'};
-const _themeIcon = {
-  QuestTheme.budget: Icons.pie_chart_rounded,
-  QuestTheme.save: Icons.savings_rounded,
-  QuestTheme.buy: Icons.shopping_cart_rounded,
-};
-const _themeColor = {QuestTheme.budget: FinniColors.primary, QuestTheme.save: FinniColors.teal, QuestTheme.buy: FinniColors.orange};
+const _topicColor = [FinniColors.need, FinniColors.primary, FinniColors.save, FinniColors.orange];
 
-/// Уроки (Figma 05): пройденные сцены можно пересмотреть (SA F-017 BR-09, F-018 BR-06).
+/// Уроки: путь по темам, как в Duolingo (SA F-025 BR-13).
 class LessonsTab extends StatelessWidget {
   const LessonsTab({super.key, required this.game});
   final GameController game;
 
+  void _open(BuildContext context, Lesson l) =>
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => LessonScreen(game: game, lesson: l)));
+
   @override
   Widget build(BuildContext context) {
-    final done = game.snapshot.questsDone.toSet();
-    final today = game.todaysQuest;
+    final content = game.content;
+    final done = content.lessons.where((l) => game.isLessonDone(l.id)).length;
+    final current = game.recommendedLesson;
+    var n = 0;
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.only(bottom: 32),
         children: [
-          DuoHeader(title: 'Уроки', subtitle: 'Пройдено ${done.length} из ${game.content.quests.length}'),
-          for (final theme in QuestTheme.values)
-            GroupedSection(
-              header: _themeTitle[theme],
-              children: [
-                for (final q in game.content.quests.where((q) => q.theme == theme))
-                  _lesson(context, q, done: done.contains(q.id), today: q.id == today.id && !game.questDoneToday),
-              ],
+          DuoHeader(
+            title: 'Уроки',
+            subtitle: game.lessonPaidToday
+                ? 'Пройдено $done из ${content.lessons.length} · награда за сегодня получена'
+                : 'Пройдено $done из ${content.lessons.length} · первый урок дня +${content.config.rewardWise} 🪙',
+          ),
+          for (final (ti, topic) in content.topics.indexed) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: DuoCard(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    Text(topic.emoji, style: const TextStyle(fontSize: 28)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(topic.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, letterSpacing: -0.3)),
+                          Text(
+                            game.isTopicStarted(topic.id) ? 'Знакомая тема' : 'Новая тема',
+                            style: const TextStyle(fontSize: 13, color: FinniColors.muted),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      '${content.lessonsOf(topic.id).where((l) => game.isLessonDone(l.id)).length}/${content.lessonsOf(topic.id).length}',
+                      style: const TextStyle(fontSize: 15, color: FinniColors.muted, fontFeatures: [FontFeature.tabularFigures()]),
+                    ),
+                  ],
+                ),
+              ),
             ),
+            for (final l in content.lessonsOf(topic.id))
+              _node(context, l, color: _topicColor[ti % _topicColor.length], offset: sin(n++ * 1.1) * 70, current: l.id == current.id),
+          ],
           GroupedSection(
             header: 'Справка',
             children: [
@@ -45,8 +76,8 @@ class LessonsTab extends StatelessWidget {
                 icon: Icons.menu_book_rounded,
                 iconColor: FinniColors.muted,
                 title: 'Словарик',
-                subtitle: '${game.content.glossary.length} слов простыми словами',
-                onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => GlossaryScreen(content: game.content))),
+                subtitle: '${content.glossary.length} слов простыми словами',
+                onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => GlossaryScreen(content: content))),
               ),
             ],
           ),
@@ -55,18 +86,64 @@ class LessonsTab extends StatelessWidget {
     );
   }
 
-  Widget _lesson(BuildContext context, Quest q, {required bool done, required bool today}) {
-    final open = done || today;
-    return GroupedRow(
-      key: Key('lessons.${q.id}'),
-      icon: open ? _themeIcon[q.theme] : Icons.lock_rounded,
-      iconColor: open ? _themeColor[q.theme]! : const Color(0xFFC7C7CC),
-      title: q.title,
-      subtitle: done ? 'Пройден · можно повторить' : today ? 'Доступен сегодня' : 'Откроется позже',
-      trailing: today ? const DuoChip(text: 'Новый', color: FinniColors.orange) : null,
-      onTap: open
-          ? () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => QuestScreen(game: game, review: done ? q : null)))
-          : null,
+  Widget _node(BuildContext context, Lesson l, {required Color color, required double offset, required bool current}) {
+    final open = game.isLessonOpen(l.id);
+    final done = game.isLessonDone(l.id);
+    final resume = game.lessonProgress?.lessonId == l.id;
+    final fill = !open ? const Color(0xFFD1D1D6) : color;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Transform.translate(
+        offset: Offset(offset, 0),
+        child: Column(
+          children: [
+            if (current)
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: FinniColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: color, width: 1.5),
+                ),
+                child: Text(resume ? 'Доиграть' : 'Начать', style: TextStyle(fontWeight: FontWeight.w700, color: color)),
+              ),
+            Semantics(
+              button: true,
+              label: '${l.title}, ${done ? 'пройден' : open ? 'открыт' : 'закрыт'}',
+              child: GestureDetector(
+                key: Key('lessons.${l.id}'),
+                onTap: open
+                    ? () {
+                        buzz(Buzz.light);
+                        _open(context, l);
+                      }
+                    : () {
+                        buzz(Buzz.heavy);
+                        showToast(context, ['Сначала пройди урок перед этим.'], emoji: '🔒');
+                      },
+                child: Container(
+                  width: current ? 82 : 72,
+                  height: current ? 82 : 72,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: fill,
+                    boxShadow: [BoxShadow(color: Color.lerp(fill, Colors.black, 0.25)!, offset: const Offset(0, 5))],
+                  ),
+                  alignment: Alignment.center,
+                  child: !open
+                      ? const Icon(Icons.lock_rounded, color: Colors.white, size: 30)
+                      : done && !current
+                      ? const Icon(Icons.check_rounded, color: Colors.white, size: 36)
+                      : Text(l.emoji, style: const TextStyle(fontSize: 32)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(l.title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: open ? FinniColors.ink : FinniColors.muted)),
+          ],
+        ),
+      ),
     );
   }
 }

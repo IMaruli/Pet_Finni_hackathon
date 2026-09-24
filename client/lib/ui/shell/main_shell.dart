@@ -71,7 +71,7 @@ class _MainShellState extends State<MainShell> {
             onTap: _go,
             badges: {
               if (!game.gameRewardToday) ShellTab.games: reward,
-              if (!game.planConfirmed || !game.questDoneToday)
+              if (!game.planConfirmed || game.dailyQuests.any((q) => !q.$2.done))
                 ShellTab.tasks: '!',
             },
           ),

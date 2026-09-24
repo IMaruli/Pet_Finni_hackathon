@@ -9,6 +9,8 @@ import 'package:finni/ui/widgets/duo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'lesson_helpers.dart';
+
 /// Анимации героя бесконечны, поэтому вместо pumpAndSettle — фиксированные кадры.
 Future<void> settle(WidgetTester t, [int frames = 12]) async {
   for (var i = 0; i < frames; i++) {
@@ -114,15 +116,12 @@ void main() {
     await t.pageBack();
     await settle(t, 20);
 
-    // А.6 квест с Дома.
+    // А.6 урок дня из облачка героя (F-025): «Хочу узнать новое!» → урок.
     await tapKey(t, 'home.next');
-    for (var i = 0; i < 5; i++) {
-      await t.tap(find.byKey(const Key('quest.tap')), warnIfMissed: false);
-      await settle(t, 4);
-    }
-    await tapKey(t, 'quest.choice.0');
-    expect(find.textContaining('+12 🪙'), findsOneWidget);
-    await tapKey(t, 'quest.home');
+    await playLesson(t, content.lesson('needs_1'));
+    expect(find.text('+12 за урок'), findsOneWidget);
+    await tapKey(t, 'lesson.done');
+    await settle(t, 20);
 
     // Игра дня во вкладке «Игры».
     await tapKey(t, 'nav.games');
@@ -183,12 +182,19 @@ void main() {
     await scrollTo(t, find.textContaining('День 2'));
     expect(find.textContaining('День 2'), findsOneWidget);
 
-    // Уроки: пройденную сцену можно пересмотреть без монет.
+    // Уроки: путь — следующий урок открыт, за первый урок дня 2 снова награда.
     await tapKey(t, 'nav.lessons');
-    await tapKey(t, 'lessons.q_budget_breakfast');
-    await tapKey(t, 'quest.choice.1');
-    expect(find.textContaining('повтор урока'), findsOneWidget);
-    await tapKey(t, 'quest.home');
+    await tapKey(t, 'lessons.needs_2');
+    await playLesson(t, content.lesson('needs_2'));
+    expect(find.text('+12 за урок'), findsOneWidget);
+    await tapKey(t, 'lesson.done');
+    await settle(t, 20);
+
+    // F-026: задания дня и недели без монет сверху.
+    await tapKey(t, 'nav.tasks');
+    expect(find.text('ЗАДАНИЯ ДНЯ'), findsOneWidget);
+    await scrollTo(t, find.byKey(const Key('tasks.w.lessons8')));
+    expect(find.textContaining('2 / 8'), findsOneWidget);
 
     // А.11 перезапуск.
     await t.pumpWidget(const SizedBox());

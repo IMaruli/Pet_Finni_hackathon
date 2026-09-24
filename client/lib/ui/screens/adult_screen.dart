@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../content/models.dart';
 import '../../game/game_controller.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
@@ -136,9 +135,8 @@ class _AdultScreenState extends State<AdultScreen> {
 
   Widget _content() {
     final g = widget.game;
-    final done = g.snapshot.questsDone.toSet();
-    int byTheme(QuestTheme t) => g.content.quests.where((q) => q.theme == t && done.contains(q.id)).length;
-    int total(QuestTheme t) => g.content.quests.where((q) => q.theme == t).length;
+    int doneIn(String topic) => g.content.lessonsOf(topic).where((l) => g.isLessonDone(l.id)).length;
+    final minutes = g.snapshot.learnSeconds.values.fold(0, (s, v) => s + v) ~/ 60;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -169,9 +167,8 @@ class _AdultScreenState extends State<AdultScreen> {
               _row('Хороших дней всего', '${g.economy.goodPeriods}'),
               _row('В копилке', '${g.economy.savings.value} 🪙'),
               _row('Цели достигнуты', '${g.inventory.goalsDone.length} из ${g.content.goals.length}'),
-              _row('Задания: бюджет', '${byTheme(QuestTheme.budget)} из ${total(QuestTheme.budget)}'),
-              _row('Задания: копилка', '${byTheme(QuestTheme.save)} из ${total(QuestTheme.save)}'),
-              _row('Задания: покупки', '${byTheme(QuestTheme.buy)} из ${total(QuestTheme.buy)}'),
+              for (final t in g.content.topics) _row('Уроки: ${t.title}', '${doneIn(t.id)} из ${g.content.lessonsOf(t.id).length}'),
+              _row('Время в уроках', '$minutes мин'),
               if (g.snapshot.lastSummary case final s?)
                 _row('Вчера: план → факт', 'нужное ${s.planNeed}→${s.spentNeed}, хочу ${s.planWant}→${s.spentWant}, отложить ${s.planSave}→${s.saved}'),
             ],

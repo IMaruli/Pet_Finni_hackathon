@@ -8,7 +8,7 @@ import '../../game/pet_wish.dart';
 import '../mascot/mascot_look.dart';
 import '../mascot/mascot_view.dart';
 import '../screens/plan_screen.dart';
-import '../screens/quest_screen.dart';
+import '../lesson/lesson_screen.dart';
 import '../shell/main_shell.dart';
 import '../theme.dart';
 import 'common.dart';
@@ -73,12 +73,12 @@ Future<void> buyFlow(BuildContext context, GameController game, ShopItem item, {
         text: 'Монеты не списаны. Что можно сделать:',
         actions: [
           DuoButton(
-            label: 'Заработать заданием',
-            icon: Icons.auto_stories_rounded,
+            label: 'Заработать уроком',
+            icon: Icons.school_rounded,
             color: FinniColors.teal,
             onPressed: () {
               Navigator.of(sheet).pop();
-              Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => QuestScreen(game: game)));
+              Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => LessonScreen(game: game, lesson: game.recommendedLesson)));
             },
           ),
           const SizedBox(height: 10),

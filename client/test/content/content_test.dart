@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:finni/content/content_loader.dart';
 import 'package:finni/content/game_content.dart';
+import 'package:finni/content/lesson_models.dart';
 import 'package:finni/content/models.dart';
 import 'package:finni/economy/catalog_item.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -26,8 +27,8 @@ void main() {
     expect(content.needItems, isNotEmpty);
     expect(content.wantItems, isNotEmpty);
     expect(content.goals.length, greaterThanOrEqualTo(3));
-    expect(content.quests.length, greaterThanOrEqualTo(6));
-    expect(content.quests.map((q) => q.theme).toSet(), QuestTheme.values.toSet());
+    expect(content.lessons.length, greaterThanOrEqualTo(8));
+    expect(content.topics.length, greaterThanOrEqualTo(4));
     expect(content.looks.length, greaterThanOrEqualTo(9));
     expect(content.glossary.length, greaterThanOrEqualTo(10));
     expect(content.config.demoPeriods, greaterThanOrEqualTo(5));
@@ -41,9 +42,7 @@ void main() {
     }
   });
 
-  test('quests and puzzles rotate by day', () {
-    expect(content.questForDay(1).id, content.quests.first.id);
-    expect(content.questForDay(content.quests.length + 1).id, content.quests.first.id);
+  test('puzzles rotate by day', () {
     expect(content.puzzleForDay(2).id, content.puzzles[1].id);
   });
 
@@ -66,19 +65,37 @@ void main() {
     expect(content.text('no.such.key'), 'no.such.key');
   });
 
-  test('seventh quest is added by data only', () {
+  test('a new lesson is added by data only (TZ: контент)', () {
     final files = readFiles();
-    (files['quests']['quests'] as List).add({
-      'id': 'q_new', 'theme': 'save', 'title': 'Новое', 'emoji': '⭐',
-      'lines': [{'speaker': 'pet', 'text': 'Привет'}],
-      'choices': [
-        {'text': 'А', 'reward': 12, 'wise': true, 'explanation': 'Потому что'},
-        {'text': 'Б', 'reward': 6, 'wise': false, 'explanation': 'Потому что'},
+    (files['lessons']['lessons'] as List).add({
+      'id': 'new_1', 'topic': 'save', 'title': 'Новое', 'emoji': '⭐',
+      'steps': [
+        {'type': 'card', 'title': 'Мысль', 'lines': ['Одна фраза.']},
+        {'type': 'pick', 'question': 'Верно?', 'options': ['Да', 'Нет'], 'answer': 0, 'why': 'Потому что', 'hint': 'Подумай'},
+        {'type': 'next', 'situation': 'Ситуация', 'outcomes': [
+          {'text': 'А', 'good': true, 'result': 'Хорошо'},
+          {'text': 'Б', 'good': false, 'result': 'Не очень'},
+        ], 'why': 'Потому что'},
+        {'type': 'card', 'title': 'Запомни', 'lines': ['Итог.']},
       ],
     });
     final extended = GameContent.fromJson(files);
     expect(extended.validate(), isEmpty);
-    expect(extended.quests.length, content.quests.length + 1);
+    expect(extended.lessons.length, content.lessons.length + 1);
+  });
+
+  test('lessons follow the recipe and use all six games (F-025)', () {
+    for (final l in content.lessons) {
+      expect(l.steps.first, isA<CardStep>(), reason: l.id);
+      expect(l.steps.last, isA<CardStep>(), reason: l.id);
+      expect(l.problems(), isEmpty, reason: l.id);
+    }
+    expect({for (final l in content.lessons) ...l.kinds}, StepKind.values.toSet());
+    expect(content.lessons.where((l) => l.isShort), isNotEmpty);
+    expect(content.lessons.where((l) => !l.isShort), isNotEmpty);
+    final sort = content.lesson('needs_1').steps[1] as SortStep;
+    expect(sort.demo, isTrue);
+    expect(sort.bins.map((b) => b.id), ['need', 'want']);
   });
 
   test('validation catches duplicates, bad prices, weak quests, bad rotation', () {
@@ -86,13 +103,13 @@ void main() {
     final items = files['items']['items'] as List;
     items.add(Map<String, dynamic>.from(items.first));
     items.add({...items[3] as Map<String, dynamic>, 'id': 'free', 'price': 0});
-    final quest = (files['quests']['quests'] as List).first as Map<String, dynamic>;
-    quest['choices'] = [(quest['choices'] as List).first];
+    final lesson = (files['lessons']['lessons'] as List).first as Map<String, dynamic>;
+    ((lesson['steps'] as List)[2] as Map)['outcomes'] = [{'text': 'А', 'good': false, 'result': 'Хм'}];
     files['config']['needRotation'] = [['chocolate']];
     final problems = GameContent.fromJson(files).validate();
     expect(problems.any((p) => p.contains('duplicate id breakfast')), isTrue);
     expect(problems.any((p) => p.contains('free')), isTrue);
-    expect(problems.any((p) => p.contains('q_budget_breakfast')), isTrue);
+    expect(problems.any((p) => p.contains('needs_1')), isTrue);
     expect(problems.any((p) => p.contains('needRotation')), isTrue);
   });
 

@@ -65,7 +65,7 @@ void main() {
     }
     expect(wishFor(game).kind, WishKind.quest);
     expect(wishFor(game).emotion, PetEmotion.excited);
-    await game.answerQuest(0);
+    await game.finishLesson('needs_1');
     expect(wishFor(game).kind, WishKind.play);
     await game.finishMiniGame('sort', win: true, score: 9);
     expect(wishFor(game).kind, WishKind.save);

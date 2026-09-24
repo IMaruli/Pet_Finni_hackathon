@@ -182,6 +182,62 @@ final class DaySummary {
   };
 }
 
+/// Законченный урок в журнале (SA F-025, F-026).
+final class LessonRun {
+  const LessonRun({
+    required this.lessonId,
+    required this.day,
+    required this.newTopic,
+    required this.review,
+    required this.kinds,
+    required this.resumed,
+  });
+  factory LessonRun.fromJson(Map<String, dynamic> j) => LessonRun(
+    lessonId: j['lessonId'] as String,
+    day: j['day'] as int,
+    newTopic: j['newTopic'] as bool,
+    review: j['review'] as bool,
+    kinds: _strings(j['kinds']),
+    resumed: j['resumed'] as bool,
+  );
+  final String lessonId;
+  final int day;
+
+  /// Первый законченный урок темы.
+  final bool newTopic;
+
+  /// Урок темы, где уже был законченный урок.
+  final bool review;
+
+  /// Типы шагов урока (`StepKind.name`).
+  final List<String> kinds;
+
+  /// Доигран после выхода по ×.
+  final bool resumed;
+
+  Map<String, dynamic> toJson() => {
+    'lessonId': lessonId,
+    'day': day,
+    'newTopic': newTopic,
+    'review': review,
+    'kinds': kinds,
+    'resumed': resumed,
+  };
+}
+
+/// Начатый и не законченный урок: с какого шага доиграть.
+final class LessonProgress {
+  const LessonProgress({required this.lessonId, required this.step, this.resumed = false});
+  factory LessonProgress.fromJson(Map<String, dynamic> j) =>
+      LessonProgress(lessonId: j['lessonId'] as String, step: j['step'] as int, resumed: j['resumed'] as bool? ?? false);
+  final String lessonId;
+  final int step;
+
+  /// Урок уже прерывали: при окончании засчитается «доиграй».
+  final bool resumed;
+  Map<String, dynamic> toJson() => {'lessonId': lessonId, 'step': step, 'resumed': resumed};
+}
+
 final class GameSnapshot {
   const GameSnapshot({
     required this.profile,
@@ -197,6 +253,11 @@ final class GameSnapshot {
     required this.gameBest,
     required this.lastSummary,
     required this.soundOn,
+    this.lessonLog = const [],
+    this.lessonProgress,
+    this.learnSeconds = const {},
+    this.needsDays = const [],
+    this.dailyQuests = const [],
   });
 
   static const version = 1;
@@ -220,6 +281,17 @@ final class GameSnapshot {
       gameBest: (j['gameBest'] as Map<String, dynamic>).cast<String, int>(),
       lastSummary: summary == null ? null : DaySummary.fromJson(summary),
       soundOn: j['soundOn'] as bool,
+      lessonLog: [
+        for (final r in j['lessonLog'] as List? ?? const []) LessonRun.fromJson(r as Map<String, dynamic>),
+      ],
+      lessonProgress: j['lessonProgress'] == null
+          ? null
+          : LessonProgress.fromJson(j['lessonProgress'] as Map<String, dynamic>),
+      learnSeconds: {
+        for (final e in (j['learnSeconds'] as Map<String, dynamic>? ?? const {}).entries) int.parse(e.key): e.value as int,
+      },
+      needsDays: [for (final d in j['needsDays'] as List? ?? const []) d as int],
+      dailyQuests: _strings(j['dailyQuests'] ?? const <String>[]),
     );
   }
 
@@ -232,6 +304,7 @@ final class GameSnapshot {
 
   /// Id товаров, купленных сегодня.
   final List<String> boughtToday;
+  /// Награда урока за сегодня уже выдана (поле от прежних квестов, F-025).
   final bool questDoneToday;
   final bool gameRewardToday;
 
@@ -242,6 +315,19 @@ final class GameSnapshot {
   final Map<String, int> gameBest;
   final DaySummary? lastSummary;
   final bool soundOn;
+
+  /// Журнал законченных уроков (F-025).
+  final List<LessonRun> lessonLog;
+  final LessonProgress? lessonProgress;
+
+  /// Секунды на экране урока по дням (F-026).
+  final Map<int, int> learnSeconds;
+
+  /// Дни, когда куплено всё нужное (F-026).
+  final List<int> needsDays;
+
+  /// Три задания дня, выбранные утром (F-026).
+  final List<String> dailyQuests;
 
   GameSnapshot copyWith({
     Profile? profile,
@@ -259,6 +345,12 @@ final class GameSnapshot {
     DaySummary? lastSummary,
     bool clearSummary = false,
     bool? soundOn,
+    List<LessonRun>? lessonLog,
+    LessonProgress? lessonProgress,
+    bool clearLessonProgress = false,
+    Map<int, int>? learnSeconds,
+    List<int>? needsDays,
+    List<String>? dailyQuests,
   }) => GameSnapshot(
     profile: profile ?? this.profile,
     economy: economy ?? this.economy,
@@ -273,6 +365,11 @@ final class GameSnapshot {
     gameBest: gameBest ?? this.gameBest,
     lastSummary: clearSummary ? null : (lastSummary ?? this.lastSummary),
     soundOn: soundOn ?? this.soundOn,
+    lessonLog: lessonLog ?? this.lessonLog,
+    lessonProgress: clearLessonProgress ? null : (lessonProgress ?? this.lessonProgress),
+    learnSeconds: learnSeconds ?? this.learnSeconds,
+    needsDays: needsDays ?? this.needsDays,
+    dailyQuests: dailyQuests ?? this.dailyQuests,
   );
 
   Map<String, dynamic> toJson() => {
@@ -290,5 +387,10 @@ final class GameSnapshot {
     'gameBest': gameBest,
     'lastSummary': lastSummary?.toJson(),
     'soundOn': soundOn,
+    'lessonLog': [for (final r in lessonLog) r.toJson()],
+    'lessonProgress': lessonProgress?.toJson(),
+    'learnSeconds': {for (final e in learnSeconds.entries) '${e.key}': e.value},
+    'needsDays': needsDays,
+    'dailyQuests': dailyQuests,
   };
 }
