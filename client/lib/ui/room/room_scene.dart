@@ -27,7 +27,11 @@ class RoomScene extends StatefulWidget {
     this.time = DayTime.day,
     this.initialAzimuth,
     this.orbit = const [],
+    this.fullBleed = false,
   });
+
+  /// Комната во весь экран: стены и пол уходят за края кадра (F-048).
+  final bool fullBleed;
 
   final Inventory inventory;
 
@@ -104,10 +108,10 @@ class _RoomSceneState extends State<RoomScene> with SingleTickerProviderStateMix
 
   void _ensureScene() {
     final inv = widget.inventory;
-    final key = '${inv.owned.toList()..sort()}|${inv.furniture}|${widget.room}|${widget._time}|${widget.bowls.key}';
+    final key = '${inv.owned.toList()..sort()}|${inv.furniture}|${widget.room}|${widget._time}|${widget.bowls.key}|${widget.fullBleed}';
     if (key == _key) return;
     _key = key;
-    _meshes = RoomBuilder.build(inventory: inv, room: widget.room, time: widget._time, bowls: widget.bowls);
+    _meshes = RoomBuilder.build(inventory: inv, room: widget.room, time: widget._time, bowls: widget.bowls, fullBleed: widget.fullBleed);
     _lighting = RoomBuilder.lighting(inventory: inv, room: widget.room, time: widget._time);
   }
 
@@ -203,7 +207,8 @@ class _RoomSceneState extends State<RoomScene> with SingleTickerProviderStateMix
       minX = min(minX, p.dx);
       maxX = max(maxX, p.dx);
     }
-    final zoom = size.width * 1.32 / max(1, maxX - minX);
+    // Во весь экран комната крупнее: меньше пустой стены над героем (F-048).
+    final zoom = size.width * (widget.fullBleed ? 1.62 : 1.32) / max(1, maxX - minX);
     final hero = cam.project(cam.toView(RoomBuilder.heroSpot), size, zoom: zoom)!;
     final target = Offset(size.width / 2, size.height * widget.feetY);
     return (zoom, target - hero);

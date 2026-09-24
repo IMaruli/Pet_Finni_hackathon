@@ -92,6 +92,17 @@ void main() {
       }
     });
 
+    test('full-bleed room extends floor and walls beyond the frame (F-048)', () {
+      final diorama = RoomBuilder.build(inventory: Inventory.empty);
+      final full = RoomBuilder.build(inventory: Inventory.empty, fullBleed: true);
+      expect(full.length, greaterThan(diorama.length));
+      double maxOf(List<Mesh> ms, double Function(Vec3) f) => ms.expand((m) => m.vertices).map(f).reduce((a, b) => a > b ? a : b);
+      expect(maxOf(full, (v) => v.y), greaterThanOrEqualTo(RoomBuilder.top - 0.01));
+      expect(maxOf(full, (v) => v.x), greaterThanOrEqualTo(RoomBuilder.far - 0.01));
+      expect(maxOf(full, (v) => v.z), greaterThanOrEqualTo(RoomBuilder.far - 0.01));
+      expect(maxOf(diorama, (v) => v.y), lessThan(RoomBuilder.top));
+    });
+
     test('full bowls add food and water to the room (F-027)', () {
       int bowls(Bowls b, {int room = 1}) => RoomBuilder.build(inventory: Inventory.empty, room: room, bowls: b).length;
       final empty = bowls(const Bowls(food: false, water: false));

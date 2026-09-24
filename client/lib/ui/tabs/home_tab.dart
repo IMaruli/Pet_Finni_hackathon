@@ -90,6 +90,7 @@ class _HomeTabState extends State<HomeTab> {
                 room: room,
                 feetY: feetY,
                 heroScale: 0.78,
+                fullBleed: true, // комната во весь экран (F-048)
                 hero: MascotView(
                   look: MascotLook.fromGame(game).withEmotion(
                     game.greeting ? PetEmotion.excited : (_moodLine == null ? wish.emotion : null),

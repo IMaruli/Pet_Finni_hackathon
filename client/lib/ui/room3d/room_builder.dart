@@ -21,6 +21,10 @@ abstract final class RoomBuilder {
   /// Где стоит Финик.
   static const heroSpot = Vec3(0.35, 0, 0.5);
 
+  /// Комната во весь экран (F-048): стены и пол уходят за края кадра.
+  /// [far] — докуда тянутся пол, задняя и левая стены к камере и вправо; [top] — высота стен.
+  static const far = 3.8, top = 6.0;
+
   static const _lampPos = Vec3(-1.2, 0, 0.95);
   static const _pendantPos = Vec3(0.2, 2.75, -0.2);
 
@@ -30,13 +34,14 @@ abstract final class RoomBuilder {
     bool night = false,
     Bowls bowls = const Bowls(),
     DayTime time = DayTime.day,
+    bool fullBleed = false,
   }) {
     if (night) time = DayTime.night;
     night = time == DayTime.night;
     final lampsOn = night || time == DayTime.evening; // вечером лампы уже горят
     final play = room == 2;
     final meshes = <Mesh>[];
-    _shell(meshes, play: play, time: time);
+    _shell(meshes, play: play, time: time, fullBleed: fullBleed);
     if (play) {
       _playroom(meshes);
     } else {
@@ -66,7 +71,7 @@ abstract final class RoomBuilder {
       }
     }
     _bowls(meshes, bowls);
-    _pendant(meshes, night: lampsOn);
+    _pendant(meshes, night: lampsOn, ceiling: fullBleed ? top : h);
     return meshes;
   }
 
@@ -141,7 +146,9 @@ abstract final class RoomBuilder {
 
   // ---------- Коробка комнаты ----------
 
-  static void _shell(List<Mesh> m, {required bool play, required DayTime time}) {
+  static void _shell(List<Mesh> m, {required bool play, required DayTime time, bool fullBleed = false}) {
+    // Во весь экран: пол и стены длиннее и выше, срезов диорамы нет (F-048).
+    final x1 = fullBleed ? far : 2.0, z1 = fullBleed ? far : 2.0, wh = fullBleed ? top : h;
     final wallC = play ? const Color(0xFFCFE3D7) : const Color(0xFFE9DED2);
     final panelC = play ? const Color(0xFFE6F0EA) : const Color(0xFFF3ECE3);
     final capC = const Color(0xFFFBF8F3);
@@ -149,36 +156,46 @@ abstract final class RoomBuilder {
     const panelTop = 0.95;
 
     // Пол из досок (полосы вдоль z) + основание-срез диорамы.
-    const n = 10;
+    const plank = 0.4;
     const tones = [0.0, 0.05, -0.04, 0.02, -0.06, 0.04, -0.02, 0.06, -0.03, 0.01];
+    final n = ((x1 + 2) / plank).round();
+    final nz = ((z1 + 2) / 0.5).round();
     for (var i = 0; i < n; i++) {
-      final x0 = -2 + 4 * i / n;
-      final t = tones[i];
+      final x0 = -2 + plank * i;
+      final t = tones[i % tones.length];
       final c = t >= 0 ? Color.lerp(woodA, const Color(0xFFFFFFFF), t)! : Color.lerp(woodA, const Color(0xFF000000), -t)!;
-      m.add(Mesh.grid(Vec3(x0, 0, -2), const Vec3(0, 0, 4), const Vec3(4 / n, 0, 0), c, nu: 8, nv: 1));
+      m.add(Mesh.grid(Vec3(x0, 0, -2), Vec3(0, 0, z1 + 2), const Vec3(plank, 0, 0), c, nu: nz, nv: 1));
     }
-    const slabC = Color(0xFF9C7A57);
-    m.add(Mesh.grid(const Vec3(-2 - wall, -slab, 2), const Vec3(4 + wall, 0, 0), const Vec3(0, slab, 0), slabC, nu: 1, nv: 1));
-    m.add(Mesh.grid(const Vec3(2, -slab, 2), const Vec3(0, 0, -4 - wall), const Vec3(0, slab, 0), Color.lerp(slabC, const Color(0xFF000000), 0.15)!, nu: 1, nv: 1));
+    if (!fullBleed) {
+      const slabC = Color(0xFF9C7A57);
+      m.add(Mesh.grid(const Vec3(-2 - wall, -slab, 2), const Vec3(4 + wall, 0, 0), const Vec3(0, slab, 0), slabC, nu: 1, nv: 1));
+      m.add(Mesh.grid(const Vec3(2, -slab, 2), const Vec3(0, 0, -4 - wall), const Vec3(0, slab, 0), Color.lerp(slabC, const Color(0xFF000000), 0.15)!, nu: 1, nv: 1));
+    }
 
     // Задняя стена: панели снизу, стена сверху, срезы сверху и справа.
-    m.add(Mesh.grid(const Vec3(-2, 0, -2), const Vec3(4, 0, 0), const Vec3(0, panelTop, 0), panelC, nu: 10, nv: 3));
-    m.add(Mesh.grid(const Vec3(-2, panelTop, -2), const Vec3(4, 0, 0), const Vec3(0, h - panelTop, 0), wallC, nu: 10, nv: 6));
-    m.add(Mesh.grid(const Vec3(-2 - wall, h, -2 - wall), const Vec3(0, 0, wall), const Vec3(4 + wall, 0, 0), capC, nu: 1, nv: 1));
-    m.add(Mesh.grid(const Vec3(2, -slab, -2), const Vec3(0, 0, -wall), const Vec3(0, h + slab, 0), capC, nu: 1, nv: 1));
+    final nx = ((x1 + 2) / 0.4).round();
+    m.add(Mesh.grid(const Vec3(-2, 0, -2), Vec3(x1 + 2, 0, 0), const Vec3(0, panelTop, 0), panelC, nu: nx, nv: 3));
+    m.add(Mesh.grid(const Vec3(-2, panelTop, -2), Vec3(x1 + 2, 0, 0), Vec3(0, wh - panelTop, 0), wallC, nu: nx, nv: fullBleed ? 10 : 6));
+    if (!fullBleed) {
+      m.add(Mesh.grid(const Vec3(-2 - wall, h, -2 - wall), const Vec3(0, 0, wall), const Vec3(4 + wall, 0, 0), capC, nu: 1, nv: 1));
+      m.add(Mesh.grid(const Vec3(2, -slab, -2), const Vec3(0, 0, -wall), const Vec3(0, h + slab, 0), capC, nu: 1, nv: 1));
+    }
 
     // Левая стена с проёмом окна: z ∈ [−0.6, 0.8], y ∈ [1.0, 2.1].
     // Окно высокое: небо видно над облачком реплики героя (F-028).
     const wz0 = -0.75, wz1 = 0.85, wy0 = 1.35, wy1 = 2.75;
     void left(double z0, double z1, double y0, double y1, Color c, {int nu = 6, int nv = 3}) =>
         m.add(Mesh.grid(Vec3(-2, y0, z1), Vec3(0, 0, -(z1 - z0)), Vec3(0, y1 - y0, 0), c, nu: nu, nv: nv));
-    left(-2, 2, 0, panelTop, panelC, nu: 10);
-    left(-2, 2, panelTop, wy0, wallC, nu: 10, nv: 1);
-    left(-2, 2, wy1, h, wallC, nu: 10, nv: 3);
+    final nzw = ((z1 + 2) / 0.4).round();
+    left(-2, z1, 0, panelTop, panelC, nu: nzw);
+    left(-2, z1, panelTop, wy0, wallC, nu: nzw, nv: 1);
+    left(-2, z1, wy1, wh, wallC, nu: nzw, nv: fullBleed ? 8 : 3);
     left(-2, wz0, wy0, wy1, wallC, nu: 4, nv: 3);
-    left(wz1, 2, wy0, wy1, wallC, nu: 4, nv: 3);
-    m.add(Mesh.grid(const Vec3(-2 - wall, h, 2), const Vec3(wall, 0, 0), const Vec3(0, 0, -4 - wall), capC, nu: 1, nv: 1));
-    m.add(Mesh.grid(const Vec3(-2 - wall, -slab, 2), const Vec3(wall, 0, 0), const Vec3(0, h + slab, 0), capC, nu: 1, nv: 1));
+    left(wz1, z1, wy0, wy1, wallC, nu: fullBleed ? 8 : 4, nv: 3);
+    if (!fullBleed) {
+      m.add(Mesh.grid(const Vec3(-2 - wall, h, 2), const Vec3(wall, 0, 0), const Vec3(0, 0, -4 - wall), capC, nu: 1, nv: 1));
+      m.add(Mesh.grid(const Vec3(-2 - wall, -slab, 2), const Vec3(wall, 0, 0), const Vec3(0, h + slab, 0), capC, nu: 1, nv: 1));
+    }
     // Откосы проёма.
     const reveal = Color(0xFFF6F1EA);
     m.add(Mesh.grid(const Vec3(-2 - wall, wy0, wz1), const Vec3(wall, 0, 0), const Vec3(0, 0, -(wz1 - wz0)), reveal, nu: 1, nv: 1));
@@ -206,13 +223,14 @@ abstract final class RoomBuilder {
     const skirt = Color(0xFFFFFDFA);
     // Плинтус и молдинг — короткими кусками: у длинной планки центр ближе к камере,
     // и она «прорезала» предметы в углу (монстеру). Куски сортируются каждый на своём месте.
-    const pieces = 8;
+    final pieces = fullBleed ? 12 : 8;
+    final len = (x1 + 2) / pieces, lenZ = (z1 + 2) / pieces;
     for (var i = 0; i < pieces; i++) {
-      final c = -2 + 4 * (i + 0.5) / pieces;
-      m.add(Mesh.box(const Vec3(4 / pieces, 0.1, 0.03), skirt, castShadow: false).translated(Vec3(c, 0, -1.985)));
-      m.add(Mesh.box(const Vec3(0.03, 0.1, 4 / pieces), skirt, castShadow: false).translated(Vec3(-1.985, 0, c)));
-      m.add(Mesh.box(const Vec3(4 / pieces, 0.035, 0.035), skirt, castShadow: false).translated(Vec3(c, panelTop, -1.98)));
-      m.add(Mesh.box(const Vec3(0.035, 0.035, 4 / pieces), skirt, castShadow: false).translated(Vec3(-1.98, panelTop, c)));
+      final c = -2 + len * (i + 0.5), cz = -2 + lenZ * (i + 0.5);
+      m.add(Mesh.box(Vec3(len, 0.1, 0.03), skirt, castShadow: false).translated(Vec3(c, 0, -1.985)));
+      m.add(Mesh.box(Vec3(0.03, 0.1, lenZ), skirt, castShadow: false).translated(Vec3(-1.985, 0, cz)));
+      m.add(Mesh.box(Vec3(len, 0.035, 0.035), skirt, castShadow: false).translated(Vec3(c, panelTop, -1.98)));
+      m.add(Mesh.box(Vec3(0.035, 0.035, lenZ), skirt, castShadow: false).translated(Vec3(-1.98, panelTop, cz)));
     }
 
     // Шторы.
@@ -264,9 +282,9 @@ abstract final class RoomBuilder {
     m.add(Mesh.sphere(0.12 * s * 2, const Color(0xFF6BA35A), lat: 6, lon: 10, castShadow: false).translated(at + Vec3(0, 0.12 * s * 2, 0)));
   }
 
-  static void _pendant(List<Mesh> m, {required bool night}) {
+  static void _pendant(List<Mesh> m, {required bool night, double ceiling = h}) {
     final p = _pendantPos;
-    m.add(Mesh.box(Vec3(0.015, h - p.y - 0.2, 0.015), const Color(0xFF6B5A4A), castShadow: false).translated(p + const Vec3(0, 0.25, 0)));
+    m.add(Mesh.box(Vec3(0.015, ceiling - p.y - 0.2, 0.015), const Color(0xFF6B5A4A), castShadow: false).translated(p + const Vec3(0, 0.25, 0)));
     m.add(Mesh.cylinder(0.34, 0.3, const Color(0xFFE9C58E), topR: 0.1, castShadow: false).translated(p - const Vec3(0, 0.05, 0)));
     m.add(Mesh.sphere(0.07, night ? const Color(0xFFFFF2C6) : const Color(0xFFFFF6E0), lat: 6, lon: 8, castShadow: false, emissive: true).translated(p - const Vec3(0, 0.12, 0)));
   }
