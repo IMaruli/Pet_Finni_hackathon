@@ -67,6 +67,7 @@
 | F-048 | Комната во весь экран | [ui/F-048](ui/F-048_FULL_SCREEN_ROOM_SA_SPEC.md) | `ui/room3d/room_builder.dart`, `ui/room/room_scene.dart`, `ui/tabs/home_tab.dart` | `room3d_test` |
 | F-049 | CI: релизный APK в GitHub Actions | [ops/F-049](ops/F-049_CI_RELEASE_APK_SA_SPEC.md) | `.github/workflows/android-apk.yml`, `android/app/build.gradle.kts` | запуск Actions |
 | F-051 | Качество комнаты, повороты героя, места одежды | [ui/F-051](ui/F-051_ROOM_QUALITY_WEAR_SLOTS_SA_SPEC.md) | `ui/room3d/*`, `ui/mascot/mascot_view.dart`, `game/game_controller.dart`, `ui/tabs/home_tab.dart` | `room3d_test`, `game_controller_test`, `content_test` |
+| F-052 | Обои в полоску | [ui/F-052](ui/F-052_STRIPED_WALLPAPER_SA_SPEC.md) | `ui/room3d/room_builder.dart` | `room3d_test` |
 
 **Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
 См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.

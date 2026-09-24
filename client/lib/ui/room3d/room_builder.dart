@@ -191,7 +191,11 @@ abstract final class RoomBuilder {
     // Задняя стена: панели снизу, стена сверху, срезы сверху и справа.
     final nx = ((x1 + 2) / 0.4).round();
     m.add(Mesh.grid(const Vec3(-2, 0, -2), Vec3(x1 + 2, 0, 0), const Vec3(0, panelTop, 0), panelC, nu: nx, nv: 3));
-    m.add(Mesh.grid(const Vec3(-2, panelTop, -2), Vec3(x1 + 2, 0, 0), Vec3(0, wh - panelTop, 0), wallC, nu: nx, nv: fullBleed ? 10 : 6));
+    if (play) {
+      m.add(Mesh.grid(const Vec3(-2, panelTop, -2), Vec3(x1 + 2, 0, 0), Vec3(0, wh - panelTop, 0), wallC, nu: nx, nv: fullBleed ? 10 : 6));
+    } else {
+      _stripes(m, -2, x1, panelTop, wh, back: true, nv: fullBleed ? 10 : 6); // обои в полоску (F-052)
+    }
     if (!fullBleed) {
       m.add(Mesh.grid(const Vec3(-2 - wall, h, -2 - wall), const Vec3(0, 0, wall), const Vec3(4 + wall, 0, 0), capC, nu: 1, nv: 1));
       m.add(Mesh.grid(const Vec3(2, -slab, -2), const Vec3(0, 0, -wall), const Vec3(0, h + slab, 0), capC, nu: 1, nv: 1));
@@ -204,10 +208,18 @@ abstract final class RoomBuilder {
         m.add(Mesh.grid(Vec3(-2, y0, z1), Vec3(0, 0, -(z1 - z0)), Vec3(0, y1 - y0, 0), c, nu: nu, nv: nv));
     final nzw = ((z1 + 2) / 0.4).round();
     left(-2, z1, 0, panelTop, panelC, nu: nzw);
-    left(-2, z1, panelTop, wy0, wallC, nu: nzw, nv: 1);
-    left(-2, z1, wy1, wh, wallC, nu: nzw, nv: fullBleed ? 8 : 3);
-    left(-2, wz0, wy0, wy1, wallC, nu: 4, nv: 3);
-    left(wz1, z1, wy0, wy1, wallC, nu: fullBleed ? 8 : 4, nv: 3);
+    if (play) {
+      left(-2, z1, panelTop, wy0, wallC, nu: nzw, nv: 1);
+      left(-2, z1, wy1, wh, wallC, nu: nzw, nv: fullBleed ? 8 : 3);
+      left(-2, wz0, wy0, wy1, wallC, nu: 4, nv: 3);
+      left(wz1, z1, wy0, wy1, wallC, nu: fullBleed ? 8 : 4, nv: 3);
+    } else {
+      // Полосы идут по общей сетке, поэтому совпадают в углу и вокруг окна (F-052).
+      _stripes(m, -2, z1, panelTop, wy0, back: false, nv: 1);
+      _stripes(m, -2, z1, wy1, wh, back: false, nv: fullBleed ? 8 : 3);
+      _stripes(m, -2, wz0, wy0, wy1, back: false, nv: 3);
+      _stripes(m, wz1, z1, wy0, wy1, back: false, nv: 3);
+    }
     if (!fullBleed) {
       m.add(Mesh.grid(const Vec3(-2 - wall, h, 2), const Vec3(wall, 0, 0), const Vec3(0, 0, -4 - wall), capC, nu: 1, nv: 1));
       m.add(Mesh.grid(const Vec3(-2 - wall, -slab, 2), const Vec3(wall, 0, 0), const Vec3(0, h + slab, 0), capC, nu: 1, nv: 1));
@@ -320,6 +332,27 @@ abstract final class RoomBuilder {
   static void _pottedPlant(List<Mesh> m, Vec3 at, double s) {
     m.add(Mesh.cylinder(0.08 * s * 2, 0.14 * s * 2, const Color(0xFFF7F1E8), castShadow: false).translated(at));
     m.add(Mesh.sphere(0.12 * s * 2, const Color(0xFF6BA35A), lat: 6, lon: 10, castShadow: false).translated(at + Vec3(0, 0.12 * s * 2, 0)));
+  }
+
+  /// Обои в вертикальную полоску, белую и розовую (F-052). [back] — задняя стена (вдоль x), иначе левая (вдоль z).
+  static const stripe = 0.2;
+  static const stripeLight = Color(0xFFFBF5F2), stripePink = Color(0xFFF4D3DA);
+
+  static void _stripes(List<Mesh> m, double a0, double a1, double y0, double y1, {required bool back, int nv = 3}) {
+    var k = ((a0 + 2) / stripe).floor();
+    while (true) {
+      final s0 = max(a0, -2 + k * stripe), s1 = min(a1, -2 + (k + 1) * stripe);
+      if (s0 >= a1) break;
+      if (s1 > s0 + 1e-6) {
+        final c = k.isEven ? stripeLight : stripePink;
+        m.add(
+          back
+              ? Mesh.grid(Vec3(s0, y0, -2), Vec3(s1 - s0, 0, 0), Vec3(0, y1 - y0, 0), c, nu: 1, nv: nv)
+              : Mesh.grid(Vec3(-2, y0, s1), Vec3(0, 0, -(s1 - s0)), Vec3(0, y1 - y0, 0), c, nu: 1, nv: nv),
+        );
+      }
+      k++;
+    }
   }
 
   static void _pendant(List<Mesh> m, {required bool night, double ceiling = h}) {

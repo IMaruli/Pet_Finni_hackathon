@@ -117,6 +117,15 @@ void main() {
       expect(Renderer.render(room, cam, const Size(360, 700), RoomBuilder.lighting(inventory: Inventory.empty)).walls, isNotNull);
     });
 
+    test('bedroom walls have white and pink stripes, playroom does not (F-052)', () {
+      bool has(List<Mesh> ms, Color c) => ms.any((m) => m.color == c && m.layer == MeshLayer.background);
+      final bed = RoomBuilder.build(inventory: Inventory.empty);
+      expect(has(bed, RoomBuilder.stripeLight), isTrue);
+      expect(has(bed, RoomBuilder.stripePink), isTrue);
+      final play = RoomBuilder.build(inventory: Inventory.empty, room: 2);
+      expect(has(play, RoomBuilder.stripePink), isFalse);
+    });
+
     test('full bowls add food and water to the room (F-027)', () {
       int bowls(Bowls b, {int room = 1}) => RoomBuilder.build(inventory: Inventory.empty, room: room, bowls: b).length;
       final empty = bowls(const Bowls(food: false, water: false));
