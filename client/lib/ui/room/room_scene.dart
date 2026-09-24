@@ -1,4 +1,5 @@
 import '../../game/bowls.dart';
+import '../../game/pet_wish.dart';
 import 'dart:math';
 
 import 'package:flutter/scheduler.dart';
@@ -23,12 +24,17 @@ class RoomScene extends StatefulWidget {
     this.feetY = 0.68,
     this.animated = true,
     this.bowls = const Bowls(),
+    this.time = DayTime.day,
   });
 
   final Inventory inventory;
 
   /// Миски с едой и водой: полные, если нужное куплено (F-027).
   final Bowls bowls;
+
+  /// Время суток (F-028); `night: true` — то же, что ночь.
+  final DayTime time;
+  DayTime get _time => night ? DayTime.night : time;
   final int room;
   final bool night;
   final Widget? hero;
@@ -89,11 +95,11 @@ class _RoomSceneState extends State<RoomScene> with SingleTickerProviderStateMix
 
   void _ensureScene() {
     final inv = widget.inventory;
-    final key = '${inv.owned.toList()..sort()}|${inv.furniture}|${widget.room}|${widget.night}|${widget.bowls.key}';
+    final key = '${inv.owned.toList()..sort()}|${inv.furniture}|${widget.room}|${widget._time}|${widget.bowls.key}';
     if (key == _key) return;
     _key = key;
-    _meshes = RoomBuilder.build(inventory: inv, room: widget.room, night: widget.night, bowls: widget.bowls);
-    _lighting = RoomBuilder.lighting(inventory: inv, room: widget.room, night: widget.night);
+    _meshes = RoomBuilder.build(inventory: inv, room: widget.room, time: widget._time, bowls: widget.bowls);
+    _lighting = RoomBuilder.lighting(inventory: inv, room: widget.room, time: widget._time);
   }
 
   @override
@@ -110,10 +116,10 @@ class _RoomSceneState extends State<RoomScene> with SingleTickerProviderStateMix
         final unit = (heroBase.dy - heroTop.dy).abs();
         final heroSize = unit * widget.heroScale * 3.125;
         final glows = [
-          if (widget.night)
-            for (final g in RoomBuilder.glowSpots(inventory: widget.inventory, room: widget.room))
-              cam.project(cam.toView(g), size, shift: shift, zoom: zoom),
+          for (final g in RoomBuilder.glowSpots(inventory: widget.inventory, room: widget.room, time: widget._time))
+            cam.project(cam.toView(g), size, shift: shift, zoom: zoom),
         ].whereType<Offset>().toList();
+        final window = [for (final c in RoomBuilder.windowCorners) cam.project(cam.toView(c), size, shift: shift, zoom: zoom)];
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
           onPanStart: (_) {
@@ -140,7 +146,8 @@ class _RoomSceneState extends State<RoomScene> with SingleTickerProviderStateMix
                     heroBase: heroBase,
                     heroUnit: unit,
                     glows: glows,
-                    night: widget.night,
+                    time: widget._time,
+                    window: window.contains(null) ? null : window.cast<Offset>(),
                   ),
                 ),
               ),
@@ -187,12 +194,22 @@ class _RoomSceneState extends State<RoomScene> with SingleTickerProviderStateMix
 }
 
 class _RoomPainter extends CustomPainter {
-  _RoomPainter({required this.frame, required this.heroBase, required this.heroUnit, required this.glows, required this.night});
+  _RoomPainter({
+    required this.frame,
+    required this.heroBase,
+    required this.heroUnit,
+    required this.glows,
+    required this.time,
+    required this.window,
+  });
   final Frame frame;
   final Offset heroBase;
   final double heroUnit;
   final List<Offset> glows;
-  final bool night;
+  final DayTime time;
+
+  /// Углы стекла окна на экране (для солнца, облаков, звёзд).
+  final List<Offset>? window;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -203,11 +220,17 @@ class _RoomPainter extends CustomPainter {
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: night ? const [Color(0xFF1C1F3A), Color(0xFF2A2E52)] : const [Color(0xFFF2F2F7), Color(0xFFE4E2EA)],
+          colors: switch (time) {
+            DayTime.morning => const [Color(0xFFFBF3EA), Color(0xFFEFE6E0)],
+            DayTime.day => const [Color(0xFFF2F2F7), Color(0xFFE4E2EA)],
+            DayTime.evening => const [Color(0xFFE9DEEA), Color(0xFFD9CCDD)],
+            DayTime.night => const [Color(0xFF1C1F3A), Color(0xFF2A2E52)],
+          },
         ).createShader(Offset.zero & size),
     );
     final paint = Paint();
     if (frame.background != null) canvas.drawVertices(frame.background!, BlendMode.dst, paint);
+    if (window != null) _sky(canvas, window!);
     if (frame.decals != null) canvas.drawVertices(frame.decals!, BlendMode.dst, paint);
     final shadow = Paint()
       ..color = const Color(0x40000000)
@@ -226,6 +249,57 @@ class _RoomPainter extends CustomPainter {
         Paint()..shader = const RadialGradient(colors: [Color(0x66FFD98A), Color(0x00FFD98A)]).createShader(Rect.fromCircle(center: g, radius: r)),
       );
     }
+  }
+
+  /// Солнце, облака, закат, месяц и звёзды в окне — поверх неба, под рамой и шторами (F-028).
+  void _sky(Canvas canvas, List<Offset> w) {
+    // w: низ-ближний, низ-дальний, верх-дальний, верх-ближний. u — вдоль окна, v — снизу вверх.
+    Offset at(double u, double v) => Offset.lerp(Offset.lerp(w[0], w[1], u)!, Offset.lerp(w[3], w[2], u)!, v)!;
+    final height = (w[3] - w[0]).distance;
+    canvas.save();
+    canvas.clipPath(Path()..addPolygon(w, true));
+    void glow(Offset c, double r, Color color) => canvas.drawCircle(
+      c,
+      r,
+      Paint()..shader = RadialGradient(colors: [color, color.withValues(alpha: 0)]).createShader(Rect.fromCircle(center: c, radius: r)),
+    );
+    void cloud(Offset c, double s) {
+      final p = Paint()..color = const Color(0xE6FFFFFF);
+      for (final (dx, dy, r) in const [(-0.5, 0.1, 0.32), (0.0, -0.1, 0.42), (0.5, 0.1, 0.3), (0.2, 0.18, 0.3), (-0.2, 0.2, 0.3)]) {
+        canvas.drawCircle(c + Offset(dx * s, dy * s), r * s, p);
+      }
+    }
+    switch (time) {
+      case DayTime.morning:
+        final sun = at(0.32, 0.55);
+        glow(sun, height * 0.45, const Color(0x99FFE7A0));
+        canvas.drawCircle(sun, height * 0.11, Paint()..color = const Color(0xFFFFD66B));
+        cloud(at(0.72, 0.7), height * 0.14);
+      case DayTime.day:
+        final sun = at(0.7, 0.78);
+        glow(sun, height * 0.4, const Color(0x80FFF3B0));
+        canvas.drawCircle(sun, height * 0.1, Paint()..color = const Color(0xFFFFE066));
+        cloud(at(0.3, 0.62), height * 0.15);
+        cloud(at(0.85, 0.35), height * 0.1);
+      case DayTime.evening:
+        final sun = at(0.5, 0.42);
+        glow(sun, height * 0.6, const Color(0xAAFF8A4C));
+        canvas.drawCircle(sun, height * 0.16, Paint()..color = const Color(0xFFFF7043));
+        cloud(at(0.2, 0.6), height * 0.1);
+      case DayTime.night:
+        final moon = at(0.72, 0.72);
+        glow(moon, height * 0.35, const Color(0x55CFD8FF));
+        canvas.drawCircle(moon, height * 0.1, Paint()..color = const Color(0xFFFFF3C4));
+        canvas.drawCircle(moon + Offset(height * 0.045, -height * 0.03), height * 0.085, Paint()..color = const Color(0xFF222A62));
+        final star = Paint()..color = const Color(0xFFFFFFFF);
+        for (final (u, v, r) in const [
+          (0.12, 0.85, 1.0), (0.3, 0.62, 0.7), (0.22, 0.4, 0.8), (0.45, 0.88, 0.9), (0.52, 0.5, 0.6),
+          (0.08, 0.55, 0.6), (0.9, 0.45, 0.8), (0.62, 0.28, 0.7), (0.38, 0.25, 0.5), (0.85, 0.9, 0.6),
+        ]) {
+          canvas.drawCircle(at(u, v), height * 0.012 * r + 0.8, star);
+        }
+    }
+    canvas.restore();
   }
 
   @override

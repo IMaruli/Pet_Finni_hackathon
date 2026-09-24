@@ -58,6 +58,17 @@ void main() {
     expect(wishFor(game).emotion, PetEmotion.grubby);
   });
 
+  test('day time follows the day: morning, day, evening, night (F-028)', () {
+    expect(WishKind.plan.dayTime, DayTime.morning);
+    expect(WishKind.eat.dayTime, DayTime.morning);
+    expect(WishKind.wash.dayTime, DayTime.morning);
+    expect(WishKind.quest.dayTime, DayTime.day);
+    expect(WishKind.play.dayTime, DayTime.day);
+    expect(WishKind.save.dayTime, DayTime.evening);
+    expect(WishKind.sleep.dayTime, DayTime.night);
+    expect(wishFor(game).dayTime, DayTime.morning);
+  });
+
   test('after needs: quest, then play, then save, then sleep', () async {
     await planAll(game, need: game.todaysNeedSum, want: 0);
     for (final i in game.todaysNeeds) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../content/models.dart';
 import '../../game/game_controller.dart';
+import '../../game/pet_wish.dart';
 import '../room/room_scene.dart';
 import '../theme.dart';
 import '../widgets/buy_sheet.dart';
@@ -41,7 +42,7 @@ class _RoomScreenState extends State<RoomScreen> {
           ),
           body: Column(
             children: [
-              Expanded(child: RoomScene(inventory: game.inventory, room: _room, bowls: game.bowls)),
+              Expanded(child: RoomScene(inventory: game.inventory, room: _room, bowls: game.bowls, time: wishFor(game).dayTime)),
               Container(
                 color: FinniColors.surface,
                 child: SafeArea(

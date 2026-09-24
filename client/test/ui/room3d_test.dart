@@ -5,6 +5,7 @@ import 'package:finni/ui/room3d/mesh.dart';
 import 'package:finni/ui/room3d/renderer.dart';
 import 'package:finni/ui/room3d/room_builder.dart';
 import 'package:finni/game/bowls.dart';
+import 'package:finni/game/pet_wish.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -100,6 +101,16 @@ void main() {
       expect(count(Inventory.empty, room: 2), isNot(count(Inventory.empty)));
     });
 
+    test('lamps are on in the evening and at night, off in the morning and day (F-028)', () {
+      final inv = Inventory.empty.copyWith(owned: {'lamp'});
+      expect(RoomBuilder.lighting(inventory: inv, time: DayTime.morning).points, isEmpty);
+      expect(RoomBuilder.lighting(inventory: inv, time: DayTime.day).points, isEmpty);
+      expect(RoomBuilder.lighting(inventory: inv, time: DayTime.evening).points, hasLength(2));
+      expect(RoomBuilder.lighting(inventory: inv, time: DayTime.night).points, hasLength(2));
+      expect(RoomBuilder.glowSpots(inventory: inv, time: DayTime.day), isEmpty);
+      expect(RoomBuilder.glowSpots(inventory: inv, time: DayTime.night), hasLength(2));
+    });
+
     test('night adds warm point lights, day has none', () {
       final inv = Inventory.empty.copyWith(owned: {'lamp'});
       expect(RoomBuilder.lighting(inventory: inv).points, isEmpty);
@@ -132,6 +143,23 @@ void main() {
         await t.pump(const Duration(milliseconds: 50));
       }
       expect(t.takeException(), isNull);
+    }
+  });
+
+  testWidgets('room scene renders every time of day (F-028)', (t) async {
+    for (final time in DayTime.values) {
+      await t.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: SizedBox(
+            width: 360,
+            height: 700,
+            child: RoomScene(inventory: Inventory.empty.copyWith(owned: {'lamp'}), time: time, animated: false, hero: const SizedBox()),
+          ),
+        ),
+      );
+      await t.pump();
+      expect(t.takeException(), isNull, reason: '$time');
     }
   });
 }

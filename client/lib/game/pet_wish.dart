@@ -5,6 +5,19 @@ enum PetEmotion { curious, hungry, thirsty, grubby, excited, calm, sleepy }
 
 enum WishKind { plan, eat, drink, wash, quest, play, save, sleep }
 
+/// Время суток в комнате (SA F-028).
+enum DayTime { morning, day, evening, night }
+
+/// План и нужное — утро, урок и игра — день, копилка — вечер, сон — ночь.
+extension WishDayTime on WishKind {
+  DayTime get dayTime => switch (this) {
+    WishKind.plan || WishKind.eat || WishKind.drink || WishKind.wash => DayTime.morning,
+    WishKind.quest || WishKind.play => DayTime.day,
+    WishKind.save => DayTime.evening,
+    WishKind.sleep => DayTime.night,
+  };
+}
+
 /// Чего герой хочет прямо сейчас: реплика, эмоция и куда вести кнопку.
 final class PetWish {
   const PetWish({required this.kind, required this.emotion, required this.text, required this.action});
@@ -12,6 +25,8 @@ final class PetWish {
   final PetEmotion emotion;
   final String text;
   final String action;
+
+  DayTime get dayTime => kind.dayTime;
 }
 
 const _needWish = {'breakfast': WishKind.eat, 'water': WishKind.drink, 'care': WishKind.wash};

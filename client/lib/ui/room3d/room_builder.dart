@@ -4,6 +4,7 @@ import 'dart:ui';
 import '../../store/snapshot.dart';
 import 'math3d.dart';
 import '../../game/bowls.dart';
+import '../../game/pet_wish.dart';
 import 'mesh.dart';
 import 'renderer.dart';
 
@@ -23,17 +24,26 @@ abstract final class RoomBuilder {
   static const _lampPos = Vec3(-1.2, 0, 0.95);
   static const _pendantPos = Vec3(0.2, 2.75, -0.2);
 
-  static List<Mesh> build({required Inventory inventory, int room = 1, bool night = false, Bowls bowls = const Bowls()}) {
+  static List<Mesh> build({
+    required Inventory inventory,
+    int room = 1,
+    bool night = false,
+    Bowls bowls = const Bowls(),
+    DayTime time = DayTime.day,
+  }) {
+    if (night) time = DayTime.night;
+    night = time == DayTime.night;
+    final lampsOn = night || time == DayTime.evening; // вечером лампы уже горят
     final play = room == 2;
     final meshes = <Mesh>[];
-    _shell(meshes, play: play, night: night);
+    _shell(meshes, play: play, time: time);
     if (play) {
       _playroom(meshes);
     } else {
       _decor(meshes, night: night);
       if (inventory.owned.contains('rug')) _rug(meshes, const Color(0xFFE2B8AE), const Color(0xFFF6E9E2));
       if (inventory.owned.contains('poster')) _poster(meshes);
-      if (inventory.owned.contains('lamp')) _lamp(meshes, night: night);
+      if (inventory.owned.contains('lamp')) _lamp(meshes, night: lampsOn);
       switch (inventory.furniture) {
         case 'sofa':
           _sofa(meshes);
@@ -46,7 +56,7 @@ abstract final class RoomBuilder {
       }
     }
     _bowls(meshes, bowls);
-    _pendant(meshes, night: night);
+    _pendant(meshes, night: lampsOn);
     return meshes;
   }
 
@@ -75,38 +85,53 @@ abstract final class RoomBuilder {
     }
   }
 
-  static Lighting lighting({required Inventory inventory, int room = 1, bool night = false}) {
-    // Основной тёплый свет сверху-слева-спереди, заполняющий — со стороны камеры.
+  /// Свет по времени суток (SA F-028): утро тёплое и мягкое, день яркий, вечер — закат и лампы, ночь — только лампы.
+  static Lighting lighting({required Inventory inventory, int room = 1, bool night = false, DayTime time = DayTime.day}) {
+    if (night) time = DayTime.night;
+    // Основной свет сверху-слева-спереди (со стороны окна), заполняющий — со стороны камеры.
     final key = const Vec3(0.55, -0.75, -0.4).normalized;
+    final low = const Vec3(0.85, -0.35, -0.2).normalized; // низкое солнце через окно
     final fill = const Vec3(-0.6, -0.35, -0.7).normalized;
-    if (!night) {
-      return Lighting(
-        dirs: [
-          DirLight(key, _rgb(1, 0.95, 0.87), 0.5),
-          DirLight(fill, _rgb(0.93, 0.95, 1), 0.34),
-        ],
+    List<PointLight> lamps(double k) => [
+      if (room == 1 && inventory.owned.contains('lamp')) PointLight(_lampPos + const Vec3(0, 0.45, 0), _rgb(1, 0.82, 0.5), 1.6 * k),
+      PointLight(_pendantPos - const Vec3(0, 0.25, 0), _rgb(1, 0.85, 0.6), 1.1 * k, radius: 3),
+    ];
+    return switch (time) {
+      DayTime.morning => Lighting(
+        dirs: [DirLight(low, _rgb(1, 0.86, 0.66), 0.5), DirLight(fill, _rgb(0.95, 0.93, 1), 0.3)],
+        ambient: _rgb(0.6, 0.56, 0.52),
+      ),
+      DayTime.day => Lighting(
+        dirs: [DirLight(key, _rgb(1, 0.95, 0.87), 0.5), DirLight(fill, _rgb(0.93, 0.95, 1), 0.34)],
         ambient: _rgb(0.6, 0.59, 0.58),
-      );
-    }
-    return Lighting(
-      dirs: [DirLight(key, _rgb(0.55, 0.64, 1), 0.28), DirLight(fill, _rgb(0.5, 0.55, 0.9), 0.08)],
-      ambient: _rgb(0.2, 0.22, 0.33),
-      points: [
-        if (room == 1 && inventory.owned.contains('lamp')) PointLight(_lampPos + const Vec3(0, 0.45, 0), _rgb(1, 0.82, 0.5), 1.6),
-        PointLight(_pendantPos - const Vec3(0, 0.25, 0), _rgb(1, 0.85, 0.6), 1.1, radius: 3),
-      ],
-    );
+      ),
+      DayTime.evening => Lighting(
+        dirs: [DirLight(low, _rgb(1, 0.6, 0.38), 0.42), DirLight(fill, _rgb(0.75, 0.68, 0.95), 0.16)],
+        ambient: _rgb(0.45, 0.38, 0.42),
+        points: lamps(0.7),
+      ),
+      DayTime.night => Lighting(
+        dirs: [DirLight(key, _rgb(0.55, 0.64, 1), 0.28), DirLight(fill, _rgb(0.5, 0.55, 0.9), 0.08)],
+        ambient: _rgb(0.2, 0.22, 0.33),
+        points: lamps(1),
+      ),
+    };
   }
 
-  /// Точки мягкого свечения ночью (рисуются поверх 2D).
-  static List<Vec3> glowSpots({required Inventory inventory, int room = 1}) => [
-    if (room == 1 && inventory.owned.contains('lamp')) _lampPos + const Vec3(0, 0.42, 0),
-    _pendantPos - const Vec3(0, 0.22, 0),
+  /// Точки мягкого свечения ламп вечером и ночью (рисуются поверх 2D).
+  static List<Vec3> glowSpots({required Inventory inventory, int room = 1, DayTime time = DayTime.night}) => [
+    if (time == DayTime.evening || time == DayTime.night) ...[
+      if (room == 1 && inventory.owned.contains('lamp')) _lampPos + const Vec3(0, 0.42, 0),
+      _pendantPos - const Vec3(0, 0.22, 0),
+    ],
   ];
+
+  /// Углы стекла окна (снаружи стены): низ-ближний, низ-дальний, верх-дальний, верх-ближний.
+  static const windowCorners = [Vec3(-2.1, 1.35, 0.85), Vec3(-2.1, 1.35, -0.75), Vec3(-2.1, 2.75, -0.75), Vec3(-2.1, 2.75, 0.85)];
 
   // ---------- Коробка комнаты ----------
 
-  static void _shell(List<Mesh> m, {required bool play, required bool night}) {
+  static void _shell(List<Mesh> m, {required bool play, required DayTime time}) {
     final wallC = play ? const Color(0xFFCFE3D7) : const Color(0xFFE9DED2);
     final panelC = play ? const Color(0xFFE6F0EA) : const Color(0xFFF3ECE3);
     final capC = const Color(0xFFFBF8F3);
@@ -133,7 +158,8 @@ abstract final class RoomBuilder {
     m.add(Mesh.grid(const Vec3(2, -slab, -2), const Vec3(0, 0, -wall), const Vec3(0, h + slab, 0), capC, nu: 1, nv: 1));
 
     // Левая стена с проёмом окна: z ∈ [−0.6, 0.8], y ∈ [1.0, 2.1].
-    const wz0 = -0.6, wz1 = 0.8, wy0 = 1.0, wy1 = 2.1;
+    // Окно высокое: небо видно над облачком реплики героя (F-028).
+    const wz0 = -0.75, wz1 = 0.85, wy0 = 1.35, wy1 = 2.75;
     void left(double z0, double z1, double y0, double y1, Color c, {int nu = 6, int nv = 3}) =>
         m.add(Mesh.grid(Vec3(-2, y0, z1), Vec3(0, 0, -(z1 - z0)), Vec3(0, y1 - y0, 0), c, nu: nu, nv: nv));
     left(-2, 2, 0, panelTop, panelC, nu: 10);
@@ -148,9 +174,14 @@ abstract final class RoomBuilder {
     m.add(Mesh.grid(const Vec3(-2 - wall, wy0, wz1), const Vec3(wall, 0, 0), const Vec3(0, 0, -(wz1 - wz0)), reveal, nu: 1, nv: 1));
     m.add(Mesh.grid(const Vec3(-2 - wall, wy0, wz0), const Vec3(wall, 0, 0), const Vec3(0, wy1 - wy0, 0), reveal, nu: 1, nv: 1));
     // Стекло с небом (светится само).
-    final sky = night
-        ? [const Color(0xFF1B2250), const Color(0xFF1B2250), const Color(0xFF222A62), const Color(0xFF222A62), const Color(0xFF2D3478), const Color(0xFF2D3478), const Color(0xFF151B42), const Color(0xFF151B42)]
-        : [const Color(0xFF9CCB84), const Color(0xFF9CCB84), const Color(0xFFD4ECFA), const Color(0xFFD4ECFA), const Color(0xFFA8D6F5), const Color(0xFFA8D6F5), const Color(0xFF7CBDEB), const Color(0xFF7CBDEB)];
+    // Небо снизу вверх (4 ряда вершин): горизонт → зенит.
+    List<Color> rows(Color a, Color b, Color c, Color d) => [a, a, b, b, c, c, d, d];
+    final sky = switch (time) {
+      DayTime.morning => rows(const Color(0xFFA9CF8C), const Color(0xFFFFE3B8), const Color(0xFFFFD6C2), const Color(0xFFB9DDF5)),
+      DayTime.day => rows(const Color(0xFF9CCB84), const Color(0xFFD4ECFA), const Color(0xFFA8D6F5), const Color(0xFF7CBDEB)),
+      DayTime.evening => rows(const Color(0xFF6E7F5A), const Color(0xFFFFA566), const Color(0xFFF07A8C), const Color(0xFF6D5BA8)),
+      DayTime.night => rows(const Color(0xFF1B2250), const Color(0xFF222A62), const Color(0xFF2D3478), const Color(0xFF151B42)),
+    };
     m.add(
       Mesh.grid(const Vec3(-2.1, wy0, wz1), const Vec3(0, 0, -(wz1 - wz0)), const Vec3(0, wy1 - wy0, 0), const Color(0xFFBFE0F5), nu: 1, nv: 3, colors: sky)
           .copyWith(emissive: true),
@@ -172,9 +203,9 @@ abstract final class RoomBuilder {
     if (!play) {
       const curtain = Color(0xFFF4ECE0);
       for (final z in [wz0 - 0.22, wz1 + 0.22]) {
-        m.add(Mesh.box(const Vec3(0.07, 1.55, 0.36), curtain, castShadow: false).translated(Vec3(-1.93, 0.72, z)));
+        m.add(Mesh.box(const Vec3(0.07, 1.65, 0.36), curtain, castShadow: false).translated(Vec3(-1.93, 1.2, z)));
       }
-      m.add(Mesh.box(const Vec3(0.03, 0.03, wz1 - wz0 + 1.2), const Color(0xFFB08A63), castShadow: false).translated(Vec3(-1.9, 2.28, (wz0 + wz1) / 2)));
+      m.add(Mesh.box(const Vec3(0.03, 0.03, wz1 - wz0 + 1.2), const Color(0xFFB08A63), castShadow: false).translated(Vec3(-1.9, 2.86, (wz0 + wz1) / 2)));
     }
   }
 

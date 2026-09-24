@@ -76,6 +76,7 @@ class _HomeTabState extends State<HomeTab> {
               child: RoomScene(
                 inventory: game.inventory,
                 bowls: game.bowls,
+                time: wish.dayTime, // утро → день → вечер → ночь по шагам дня (F-028)
                 room: room,
                 feetY: feetY,
                 heroScale: 0.78,
