@@ -73,7 +73,7 @@ void main() {
     expect(wishFor(game).dayTime, DayTime.morning);
   });
 
-  test('after needs: quest, then play, then save, then sleep', () async {
+  test('after needs: lesson, then save, then sleep — playing is optional (F-036)', () async {
     await planAll(game, need: game.todaysNeedSum, want: 0);
     for (final i in game.todaysNeeds) {
       await game.buy(i.id, commandId: game.newCommandId());
@@ -81,9 +81,7 @@ void main() {
     expect(wishFor(game).kind, WishKind.quest);
     expect(wishFor(game).emotion, PetEmotion.excited);
     await game.finishLesson('needs_1');
-    expect(wishFor(game).kind, WishKind.play);
-    await game.finishMiniGame('sort', win: true, score: 9);
-    expect(wishFor(game).kind, WishKind.save);
+    expect(wishFor(game).kind, WishKind.save); // без «Хочу поиграть»
     expect(wishFor(game).emotion, PetEmotion.calm);
     await game.toSavings(4);
     final w = wishFor(game);

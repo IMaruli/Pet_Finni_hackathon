@@ -55,7 +55,7 @@ class _MainShellState extends State<MainShell> {
       builder: (context, _) {
         if (!game.hasProfile) return const SizedBox.shrink();
         Haptics.enabled = game.snapshot.soundOn;
-        final reward = '+${game.content.config.rewardWise}';
+        final reward = '+${game.content.config.gameWin}';
         return Scaffold(
           body: IndexedStack(
             index: _tab.index,

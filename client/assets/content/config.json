@@ -39,5 +39,9 @@
       "every": 5,
       "offset": 4
     }
-  ]
+  ],
+  "gameWin": 6,
+  "gameTry": 3,
+  "questReward": 3,
+  "weeklyReward": 10
 }

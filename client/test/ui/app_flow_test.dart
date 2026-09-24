@@ -130,7 +130,7 @@ void main() {
       await tapKey(t, 'budget.item.$i');
     }
     await tapKey(t, 'budget.check');
-    expect(find.text('+12 🪙 в кошелёк'), findsOneWidget);
+    expect(find.text('+6 🪙 в кошелёк'), findsOneWidget);
     await tapKey(t, 'game.exit');
     await settle(t, 30);
 
@@ -187,13 +187,25 @@ void main() {
     await tapKey(t, 'lessons.needs_2');
     await playLesson(t, content.lesson('needs_2'));
     expect(find.text('+12 за урок'), findsOneWidget);
+    expect(find.byKey(const Key('lesson.nextBlockAfterSleep')), findsOneWidget); // F-035: блок в день
     await tapKey(t, 'lesson.done');
     await settle(t, 20);
 
-    // F-026: задания дня и недели без монет сверху.
+    // F-026 / F-036: задания дня и недели, награда — по кнопке «Забрать».
     await tapKey(t, 'nav.tasks');
     expect(find.text('ЗАДАНИЯ ДНЯ'), findsOneWidget);
-    await scrollTo(t, find.byKey(const Key('tasks.w.lessons8')));
+    final claim = find.byWidgetPredicate((w) => w.key is ValueKey<String> && (w.key! as ValueKey<String>).value.endsWith('.claim'));
+    if (claim.evaluate().isNotEmpty) {
+      await t.tap(claim.first);
+      await settle(t, 10);
+      expect(find.textContaining('за задание'), findsWidgets);
+      await settle(t, 30);
+    }
+    await t.scrollUntilVisible(
+      find.byKey(const Key('tasks.w.lessons8')),
+      200,
+      scrollable: find.byWidgetPredicate((w) => w is Scrollable && w.axisDirection == AxisDirection.down && w.physics is! NeverScrollableScrollPhysics).first,
+    );
     expect(find.textContaining('2 / 8'), findsOneWidget);
 
     // А.11 перезапуск.

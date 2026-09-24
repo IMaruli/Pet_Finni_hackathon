@@ -240,6 +240,43 @@ void main() {
     });
   });
 
+  group('quest rewards (F-036)', () {
+    test('a done daily quest is claimed once for +3, labelled', () async {
+      await planAll(game, need: game.todaysNeedSum);
+      await buyNeeds();
+      await game.finishLesson('needs_1');
+      final done = game.dailyQuests.where((q) => q.$2.done).map((q) => q.$1).toList();
+      final open = game.dailyQuests.where((q) => !q.$2.done).map((q) => q.$1).toList();
+      expect(done, isNotEmpty);
+      final coins = game.economy.available.value;
+      final f = await game.claimQuest(done.first);
+      expect(f.ok, isTrue);
+      expect(f.reward, 3);
+      expect(game.economy.available.value, coins + 3);
+      expect(game.economy.lastCreditSourceId, 'quest:${done.first.name}');
+      expect(game.isQuestClaimed(done.first), isTrue);
+      expect((await game.claimQuest(done.first)).ok, isFalse);
+      if (open.isNotEmpty) expect((await game.claimQuest(open.first)).ok, isFalse);
+      await game.endDay();
+      expect(game.snapshot.claimed.where((c) => c.startsWith('d1:')), isNotEmpty); // история остаётся
+    });
+
+    test('a done weekly quest is claimed once for +10', () async {
+      await planAll(game, need: game.todaysNeedSum);
+      await buyNeeds();
+      await game.finishLesson('needs_1');
+      await game.finishLesson('needs_2');
+      await game.finishLesson('needs_1');
+      final coins = game.economy.available.value;
+      expect((await game.claimWeekly(WeeklyId.review3)).ok, isFalse);
+      await game.finishLesson('needs_2');
+      final f = await game.claimWeekly(WeeklyId.review3);
+      expect(f.reward, 10);
+      expect(game.economy.available.value, coins + 10);
+      expect((await game.claimWeekly(WeeklyId.review3)).ok, isFalse);
+    });
+  });
+
   group('quests (F-026)', () {
     test('three daily quests are fixed in the morning and pay nothing', () async {
       final ids = game.dailyQuests.map((q) => q.$1).toList();
@@ -275,7 +312,7 @@ void main() {
 
   test('mini game pays once a day and keeps best score', () async {
     final f = await game.finishMiniGame('sort', win: true, score: 9);
-    expect(f.reward, 12);
+    expect(f.reward, 6); // игра по желанию — дешевле (F-036)
     final g = await game.finishMiniGame('sort', win: false, score: 4);
     expect(g.reward, 0);
     expect(game.snapshot.gameBest['sort'], 9);

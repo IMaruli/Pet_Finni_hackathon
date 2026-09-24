@@ -37,7 +37,7 @@ class GamesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final reward = game.content.config.rewardWise;
+    final reward = game.content.config.gameWin;
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.only(bottom: 32),

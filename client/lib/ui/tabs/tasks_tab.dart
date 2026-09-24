@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../game/game_controller.dart';
+import '../../game/game_feedback.dart';
 import '../screens/night_screen.dart';
 import '../screens/category_screen.dart';
 import '../screens/plan_screen.dart';
@@ -60,13 +61,16 @@ class TasksTab extends StatelessWidget {
               title: game.content.text('quest.${id.name}'),
               progress: p,
               icon: _icon[id]!,
+              reward: game.content.config.questReward,
+              claimed: game.isQuestClaimed(id),
+              onClaim: () => _claim(context, game.claimQuest(id)),
               onTap: () => id == QuestId.needs
                   ? _push(context, CategoryScreen(game: game, category: ShopCategory.needs))
                   : _push(context, LessonScreen(game: game, lesson: game.lessonFor(id))),
             ),
           const Padding(
             padding: EdgeInsets.fromLTRB(20, 2, 20, 0),
-            child: Text('Задания ведут в урок. Монеты даёт сам урок — первый за день.', style: TextStyle(fontSize: 13, color: FinniColors.muted)),
+            child: Text('Выполнил задание — забери монеты. Урок дня платит отдельно.', style: TextStyle(fontSize: 13, color: FinniColors.muted)),
           ),
           const DuoSection('Задания недели'),
           for (final (id, p) in weekly)
@@ -76,6 +80,9 @@ class TasksTab extends StatelessWidget {
               title: game.content.text('weekly.${id.name}'),
               progress: p,
               icon: _weeklyIcon[id]!,
+              reward: game.content.config.weeklyReward,
+              claimed: game.isWeeklyClaimed(id),
+              onClaim: () => _claim(context, game.claimWeekly(id)),
               onTap: () => id == WeeklyId.needs3
                   ? _push(context, CategoryScreen(game: game, category: ShopCategory.needs))
                   : _push(context, LessonScreen(game: game, lesson: game.recommendedLesson)),
@@ -163,6 +170,13 @@ class TasksTab extends StatelessWidget {
     );
   }
 
+  Future<void> _claim(BuildContext context, Future<GameFeedback> claim) async {
+    final f = await claim;
+    if (!context.mounted) return;
+    buzz(f.ok ? Buzz.medium : Buzz.heavy);
+    showToast(context, f.messages, emoji: f.ok ? '🪙' : '🤔', color: f.ok ? FinniColors.coin : null);
+  }
+
   Widget _quest(
     BuildContext context, {
     required String key,
@@ -170,6 +184,9 @@ class TasksTab extends StatelessWidget {
     required QuestProgress progress,
     required IconData icon,
     required VoidCallback onTap,
+    required int reward,
+    required bool claimed,
+    required VoidCallback onClaim,
   }) {
     final done = progress.done;
     return Padding(
@@ -201,7 +218,21 @@ class TasksTab extends StatelessWidget {
                 ],
               ),
             ),
-            if (!done) const Icon(Icons.chevron_right_rounded, color: Color(0xFFC4C4C7)),
+            if (!done)
+              const Icon(Icons.chevron_right_rounded, color: Color(0xFFC4C4C7))
+            else if (claimed)
+              Text('✓ +$reward', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: FinniColors.need))
+            else
+              // Награда за задание — по кнопке (F-036).
+              GestureDetector(
+                key: Key('$key.claim'),
+                onTap: onClaim,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(color: FinniColors.coin, borderRadius: BorderRadius.circular(16)),
+                  child: Text('Забрать +$reward', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
+                ),
+              ),
           ],
         ),
       ),

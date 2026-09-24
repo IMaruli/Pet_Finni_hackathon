@@ -50,7 +50,7 @@ PetWish wishFor(GameController g) {
       if (!g.isBoughtToday(item.id)) return _needWish[item.need] ?? WishKind.eat;
     }
     if (!g.lessonPaidToday) return WishKind.quest; // урок дня (F-025)
-    if (!g.gameRewardToday) return WishKind.play;
+    // Поиграть — по желанию, в цепочку дня не входит (F-036).
     if (g.economy.savedThisPeriod.value == 0) return WishKind.save;
     return WishKind.sleep;
   }();

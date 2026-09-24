@@ -448,6 +448,31 @@ final class GameController extends ChangeNotifier {
 
   List<(WeeklyId, QuestProgress)> get weeklyQuests => [for (final w in WeeklyId.values) (w, weeklyProgress(w, _facts))];
 
+  bool isQuestClaimed(QuestId q) => snapshot.claimed.contains('d$day:${q.name}');
+  bool isWeeklyClaimed(WeeklyId w) => snapshot.claimed.contains('w${weekOf(day)}:${w.name}');
+
+  /// Забрать награду выполненного задания дня (F-036).
+  Future<GameFeedback> claimQuest(QuestId q) async {
+    final entry = dailyQuests.where((e) => e.$1 == q).firstOrNull;
+    if (entry == null || !entry.$2.done || isQuestClaimed(q)) {
+      return _fail(FeedbackReason.none, [content.text('quest.claim.no')]);
+    }
+    return _claim('d$day:${q.name}', 'quest:${q.name}', content.config.questReward);
+  }
+
+  /// Забрать награду выполненного задания недели (F-036).
+  Future<GameFeedback> claimWeekly(WeeklyId w) async {
+    final entry = weeklyQuests.where((e) => e.$1 == w).first;
+    if (!entry.$2.done || isWeeklyClaimed(w)) return _fail(FeedbackReason.none, [content.text('quest.claim.no')]);
+    return _claim('w${weekOf(day)}:${w.name}', 'weekly:${weekOf(day)}:${w.name}', content.config.weeklyReward);
+  }
+
+  Future<GameFeedback> _claim(String key, String source, int reward) async {
+    final r = _engine.apply(economy, Credit(GameCoins(reward), source));
+    await _commit(snapshot.copyWith(economy: r.state, claimed: [...snapshot.claimed, key]));
+    return GameFeedback(ok: true, reward: reward, messages: [content.text('quest.claim.ok', {'n': '$reward'})]);
+  }
+
   /// Урок, в который ведёт задание.
   Lesson lessonFor(QuestId q) {
     final open = [for (final l in content.lessons) if (isLessonOpen(l.id)) l];
@@ -473,7 +498,7 @@ final class GameController extends ChangeNotifier {
         messages: ['Награда за игру сегодня уже получена. Играй для тренировки!'],
       );
     }
-    final reward = win ? content.config.rewardWise : content.config.rewardTry;
+    final reward = win ? content.config.gameWin : content.config.gameTry;
     final r = _engine.apply(economy, Credit(GameCoins(reward), 'game:$gameId'));
     await _commit(snapshot.copyWith(economy: r.state, gameRewardToday: true, gameBest: best));
     return GameFeedback(ok: true, reward: reward, messages: ['+$reward монет за игру!']);

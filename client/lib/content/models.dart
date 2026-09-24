@@ -265,6 +265,10 @@ final class GameConfig {
     required this.pocketMoney,
     required this.rewardWise,
     required this.rewardTry,
+    this.gameWin = 6,
+    this.gameTry = 3,
+    this.questReward = 3,
+    this.weeklyReward = 10,
     required this.demoPeriods,
     required this.needSchedule,
     required this.firstDayNeeds,
@@ -274,6 +278,10 @@ final class GameConfig {
     pocketMoney: j['pocketMoney'] as int,
     rewardWise: j['rewardWise'] as int,
     rewardTry: j['rewardTry'] as int,
+    gameWin: j['gameWin'] as int? ?? 6,
+    gameTry: j['gameTry'] as int? ?? 3,
+    questReward: j['questReward'] as int? ?? 3,
+    weeklyReward: j['weeklyReward'] as int? ?? 10,
     demoPeriods: j['demoPeriods'] as int,
     needSchedule: [for (final r in j['needSchedule'] as List) NeedRule.fromJson(r as Map<String, dynamic>)],
     firstDayNeeds: [for (final id in j['firstDayNeeds'] as List? ?? const []) id as String],
@@ -282,6 +290,14 @@ final class GameConfig {
   final int pocketMoney;
   final int rewardWise;
   final int rewardTry;
+
+  /// Мини-игра по желанию — дешевле урока (F-036).
+  final int gameWin;
+  final int gameTry;
+
+  /// За выполненное задание дня / недели по кнопке «Забрать» (F-036).
+  final int questReward;
+  final int weeklyReward;
   final int demoPeriods;
   /// Расписание нужного по приоритету (F-032).
   final List<NeedRule> needSchedule;
