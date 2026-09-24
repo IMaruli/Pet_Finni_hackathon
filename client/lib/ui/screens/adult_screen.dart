@@ -4,6 +4,7 @@ import '../../content/models.dart';
 import '../../game/game_controller.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
+import '../widgets/duo.dart';
 
 /// Барьер: удерживать кнопку [hold] (SA F-016).
 class AdultGate extends StatefulWidget {
@@ -119,7 +120,14 @@ class _AdultScreenState extends State<AdultScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Взрослым')),
       body: SafeArea(
-        child: _passed
+        child: !widget.game.hasProfile
+            ? const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text('Профиля ещё нет. Пусть ребёнок сначала создаст героя.', textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
+                ),
+              )
+            : _passed
             ? _content()
             : Center(child: AdultGate(onPassed: () => setState(() => _passed = true))),
       ),
@@ -184,11 +192,11 @@ class _AdultScreenState extends State<AdultScreen> {
           },
         ),
         const SizedBox(height: 16),
-        OutlinedButton(
+        DuoButton(
           key: const Key('adult.reset'),
-          style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
+          label: 'Сбросить профиль (тест)',
+          color: const Color(0xFFE06A5A),
           onPressed: _reset,
-          child: const Text('Сбросить профиль (тестовый режим)'),
         ),
       ],
     );

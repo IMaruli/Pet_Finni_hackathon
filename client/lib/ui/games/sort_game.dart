@@ -5,6 +5,7 @@ import '../../game/game_controller.dart';
 import '../../game/minigames.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
+import '../widgets/duo.dart';
 import 'games_hub.dart';
 
 /// «Нужно или хочу?» (SA F-013).
@@ -197,10 +198,12 @@ class _SortGameState extends State<SortGame> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _bigButton(Basket b, ItemKind kind, Key key) => FilledButton(
+  Widget _bigButton(Basket b, ItemKind kind, Key key) => DuoButton(
     key: key,
-    style: FilledButton.styleFrom(backgroundColor: b.color, minimumSize: const Size.fromHeight(72)),
+    label: kind == ItemKind.need ? 'Нужно' : 'Хочу',
+    emoji: b.emoji,
+    color: b.color,
+    height: 68,
     onPressed: () => _answer(kind),
-    child: Text('${b.emoji} ${kind == ItemKind.need ? 'Нужно' : 'Хочу'}', style: const TextStyle(fontSize: 22)),
   );
 }

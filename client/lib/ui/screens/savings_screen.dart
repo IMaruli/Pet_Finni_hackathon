@@ -8,6 +8,7 @@ import '../mascot/mascot_look.dart';
 import '../mascot/mascot_view.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
+import '../widgets/duo.dart';
 import '../widgets/confetti.dart';
 import '../widgets/jar_view.dart';
 
@@ -81,16 +82,18 @@ class _SavingsScreenState extends State<SavingsScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              FilledButton(
+              DuoButton(
                 key: const Key('withdraw.keep'),
+                label: 'Оставить в копилке',
+                color: FinniColors.teal,
                 onPressed: () => Navigator.of(sheet).pop(false),
-                child: const Text('Оставить в копилке'),
               ),
-              const SizedBox(height: 8),
-              OutlinedButton(
+              const SizedBox(height: 10),
+              DuoButton(
                 key: const Key('withdraw.confirm'),
+                label: 'Да, снять',
+                color: FinniColors.surface,
                 onPressed: () => Navigator.of(sheet).pop(true),
-                child: const Text('Да, снять'),
               ),
             ],
           ),
@@ -221,11 +224,11 @@ class _SavingsScreenState extends State<SavingsScreen> {
                     ),
                     if (game.canRedeem) ...[
                       const SizedBox(height: 10),
-                      FilledButton(
+                      DuoButton(
                         key: const Key('goal.redeem'),
-                        style: FilledButton.styleFrom(backgroundColor: FinniColors.need),
+                        label: 'Забрать: ${goal.title} 🎉',
+                        color: FinniColors.need,
                         onPressed: _redeem,
-                        child: Text('Забрать: ${goal.title} 🎉'),
                       ),
                     ],
                   ] else
@@ -238,17 +241,22 @@ class _SavingsScreenState extends State<SavingsScreen> {
                     runSpacing: 8,
                     children: [
                       for (final a in [1, 5, 10])
-                        FilledButton.tonal(
+                        DuoButton(
                           key: Key('save.$a'),
+                          label: '+$a 🪙',
+                          expand: false,
+                          height: 48,
+                          color: FinniColors.primary,
                           onPressed: wallet >= a ? () => _save(a) : null,
-                          child: Text('+$a 🪙'),
                         ),
                       if (planLeft > 0)
-                        FilledButton(
+                        DuoButton(
                           key: const Key('save.plan'),
-                          style: FilledButton.styleFrom(backgroundColor: FinniColors.save),
+                          label: 'По плану: +$planLeft',
+                          expand: false,
+                          height: 48,
+                          color: FinniColors.save,
                           onPressed: wallet >= planLeft ? () => _save(planLeft) : null,
-                          child: Text('По плану: +$planLeft'),
                         ),
                     ],
                   ),
@@ -263,7 +271,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                       children: [
                         for (final a in [5, 10])
                           if (saved >= a)
-                            OutlinedButton(key: Key('withdraw.$a'), onPressed: () => _withdraw(a), child: Text('Снять $a')),
+                            DuoButton(key: Key('withdraw.$a'), label: 'Снять $a', expand: false, height: 44, color: FinniColors.surface, onPressed: () => _withdraw(a)),
                       ],
                     ),
                   ],

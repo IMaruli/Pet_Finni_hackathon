@@ -5,6 +5,7 @@ import '../../game/game_controller.dart';
 import '../../game/minigames.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
+import '../widgets/duo.dart';
 import 'games_hub.dart';
 
 /// «Копилка-ловец» (SA F-013).
@@ -190,7 +191,7 @@ class _CatcherGameState extends State<CatcherGame> with SingleTickerProviderStat
                                     style: const TextStyle(fontSize: 18, color: FinniColors.muted),
                                   ),
                                   const SizedBox(height: 20),
-                                  FilledButton(key: const Key('catcher.start'), onPressed: _start, child: const Text('Старт!')),
+                                  DuoButton(key: const Key('catcher.start'), label: 'Старт!', expand: false, color: FinniColors.teal, onPressed: _start),
                                 ],
                               ),
                             ),

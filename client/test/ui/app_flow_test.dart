@@ -5,6 +5,7 @@ import 'package:finni/content/content_loader.dart';
 import 'package:finni/content/game_content.dart';
 import 'package:finni/store/profile_store.dart';
 import 'package:finni/ui/app.dart';
+import 'package:finni/ui/widgets/duo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -40,54 +41,57 @@ final content = GameContent.fromJson({
     name: jsonDecode(File('assets/content/$name.json').readAsStringSync()),
 });
 
-void main() {
-  testWidgets('Appendix A path on a 360dp phone: onboarding → plan → buy → quest → game → save → night → adult reset', (t) async {
-    t.view.physicalSize = const Size(1080, 2340);
-    t.view.devicePixelRatio = 3;
-    addTearDown(t.view.reset);
+Future<void> onboard(WidgetTester t, String name) async {
+  await tapKey(t, 'role.child');
+  for (var i = 0; i < 3; i++) {
+    await tapKey(t, 'intro.next');
+  }
+  await t.enterText(find.byKey(const Key('hero.player')), name);
+  await tapKey(t, 'hero.hair.buns');
+  await tapKey(t, 'hero.go');
+  await settle(t, 20);
+}
 
+Future<void> phone(WidgetTester t) async {
+  t.view.physicalSize = const Size(1080, 2340);
+  t.view.devicePixelRatio = 3;
+  addTearDown(t.view.reset);
+}
+
+void main() {
+  testWidgets('Appendix A on a 360dp phone through the Figma navigation', (t) async {
+    await phone(t);
     final store = MemoryProfileStore();
     await t.pumpWidget(FinniApp(store: store, loadContent: () async => content));
     await settle(t, 20);
 
-    // А.1 знакомство
-    expect(find.text('🥣 Нужное'), findsOneWidget);
-    for (var i = 0; i < 3; i++) {
-      await tapKey(t, 'intro.next');
-    }
+    // А.1–3: роль, знакомство, герой.
+    expect(find.text('Кто заходит?'), findsOneWidget);
+    await onboard(t, 'Аня');
+    expect(find.text('🪙 60'), findsOneWidget);
 
-    // А.2–3 герой
-    await t.enterText(find.byKey(const Key('hero.player')), 'Аня');
-    await tapKey(t, 'hero.hair.buns');
-    await tapKey(t, 'hero.go');
-    await settle(t, 20);
-    expect(find.text('День 1'), findsOneWidget);
-
-    // А.5 план
+    // А.5 план.
     await tapKey(t, 'home.next');
-    await tapKey(t, 'plan.need.plus'); // +1 меньше нужного — «Готово» неактивна
-    expect(t.widget<FilledButton>(find.byKey(const Key('plan.done'))).onPressed, isNull);
+    await tapKey(t, 'plan.need.plus');
+    expect(t.widget<DuoButton>(find.byKey(const Key('plan.done'))).onPressed, isNull);
     await tapKey(t, 'plan.suggest');
     await tapKey(t, 'plan.done');
     await settle(t, 10);
-    expect(find.text('Купи нужное на сегодня'), findsOneWidget);
 
-    // А.7 покупки: нужное
-    await tapKey(t, 'home.next');
-    await tapKey(t, 'shop.item.breakfast');
+    // А.7 покупки во вкладке «Магазин».
+    await tapKey(t, 'nav.shop');
+    await tapKey(t, 'shopRow.breakfast');
     await tapKey(t, 'shop.buy');
-    await tapKey(t, 'shop.item.water');
+    await settle(t, 30);
+    await tapKey(t, 'shopRow.water');
     await tapKey(t, 'shop.buy');
-    expect(find.text('Куплено ✓'), findsNWidgets(2));
-    // хотелка
-    await tapKey(t, 'shop.tab.want');
-    await tapKey(t, 'shop.item.glasses');
+    expect(find.text('✓ куплено'), findsWidgets); // вода видна, завтрак уехал выше
+    await tapKey(t, 'shopRow.glasses');
     await tapKey(t, 'shop.buy');
-    // отказ при нехватке: наушники после очков не по карману? проверяем на копилке ниже
-    await t.pageBack();
-    await settle(t);
+    await settle(t, 30);
 
-    // А.6 задание
+    // А.6 квест с Дома.
+    await tapKey(t, 'nav.home');
     await tapKey(t, 'home.next');
     for (var i = 0; i < 5; i++) {
       await t.tap(find.byKey(const Key('quest.tap')), warnIfMissed: false);
@@ -97,8 +101,8 @@ void main() {
     expect(find.textContaining('+12 🪙'), findsOneWidget);
     await tapKey(t, 'quest.home');
 
-    // Игра дня: бюджет
-    await tapKey(t, 'home.next');
+    // Игра дня во вкладке «Игры».
+    await tapKey(t, 'nav.games');
     await tapKey(t, 'games.budget');
     for (var i = 0; i < 3; i++) {
       await tapKey(t, 'budget.item.$i');
@@ -106,10 +110,10 @@ void main() {
     await tapKey(t, 'budget.check');
     expect(find.text('+12 🪙 в кошелёк'), findsOneWidget);
     await tapKey(t, 'game.exit');
-    await t.pageBack();
-    await settle(t);
+    await settle(t, 30);
 
-    // А.8 цель и копилка
+    // А.8 копилка с Дома.
+    await tapKey(t, 'nav.home');
     await tapKey(t, 'home.savings');
     await tapKey(t, 'goal.room2');
     await tapKey(t, 'save.5');
@@ -120,26 +124,50 @@ void main() {
     await scrollTo(t, find.textContaining('осталось 45'));
     expect(find.textContaining('осталось 45'), findsOneWidget);
     await t.pageBack();
+    await settle(t, 30);
+
+    // Одежда: очки надеты после покупки, тап — снять.
+    await tapKey(t, 'home.clothes');
+    expect(find.text('надето'), findsOneWidget);
+    await tapKey(t, 'clothes.glasses');
+    expect(find.text('снято'), findsOneWidget);
+    await t.pageBack();
     await settle(t);
 
-    // А.9–10 ночь (ждём, пока уйдёт тост снизу)
-    await settle(t, 30);
-    await tapKey(t, 'home.sleep');
+    // Комната с лентой вещей.
+    await tapKey(t, 'home.room');
+    expect(find.byKey(const Key('roomItem.lamp')), findsOneWidget);
+    await t.pageBack();
+    await settle(t);
+
+    // А.9–10 ночь из «Заданий».
+    await tapKey(t, 'nav.tasks');
+    await tapKey(t, 'tasks.sleep');
     await settle(t, 25);
     expect(find.text('Итог дня 1'), findsOneWidget);
     expect(find.text('✅ Хороший день!'), findsOneWidget);
     await tapKey(t, 'night.morning');
-    await settle(t, 10);
-    await scrollTo(t, find.text('День 2'));
-    expect(find.text('День 2'), findsOneWidget);
+    await settle(t, 30);
+    await scrollTo(t, find.textContaining('День 2'));
+    expect(find.textContaining('День 2'), findsOneWidget);
 
-    // А.11 перезапуск
+    // Уроки: пройденную сцену можно пересмотреть без монет.
+    await tapKey(t, 'nav.lessons');
+    await tapKey(t, 'lessons.q_budget_breakfast');
+    await tapKey(t, 'quest.choice.1');
+    expect(find.textContaining('повтор урока'), findsOneWidget);
+    await tapKey(t, 'quest.home');
+
+    // А.11 перезапуск.
     await t.pumpWidget(const SizedBox());
     await t.pumpWidget(FinniApp(store: store, loadContent: () async => content));
     await settle(t, 20);
-    expect(find.text('День 2'), findsOneWidget);
+    await tapKey(t, 'nav.tasks');
+    expect(find.textContaining('День 2'), findsOneWidget);
 
-    // А.12 взрослый и сброс
+    // А.12 взрослый и сброс.
+    await tapKey(t, 'nav.home');
+    await tapKey(t, 'home.help');
     await tapKey(t, 'home.adult');
     final gesture = await t.startGesture(t.getCenter(find.byKey(const Key('adult.hold'))));
     await settle(t, 34);
@@ -148,25 +176,25 @@ void main() {
     await tapKey(t, 'adult.reset');
     await tapKey(t, 'adult.reset.confirm');
     await settle(t, 20);
-    expect(find.byKey(const Key('intro.next')), findsOneWidget);
+    expect(find.byKey(const Key('role.child')), findsOneWidget);
     expect(store.raw, isNull);
   });
 
-  testWidgets('sort game and catcher start without layout errors', (t) async {
-    t.view.physicalSize = const Size(1080, 2340);
-    t.view.devicePixelRatio = 3;
-    addTearDown(t.view.reset);
-    final store = MemoryProfileStore();
-    await t.pumpWidget(FinniApp(store: store, loadContent: () async => content));
+  testWidgets('adult without a profile sees a friendly note', (t) async {
+    await phone(t);
+    await t.pumpWidget(FinniApp(store: MemoryProfileStore(), loadContent: () async => content));
     await settle(t, 20);
-    for (var i = 0; i < 3; i++) {
-      await tapKey(t, 'intro.next');
-    }
-    await t.enterText(find.byKey(const Key('hero.player')), 'Тим');
-    await tapKey(t, 'hero.go');
-    await settle(t, 20);
+    await tapKey(t, 'role.adult');
+    expect(find.textContaining('Профиля ещё нет'), findsOneWidget);
+  });
 
-    await tapKey(t, 'home.games');
+  testWidgets('sort game and catcher run on a phone', (t) async {
+    await phone(t);
+    await t.pumpWidget(FinniApp(store: MemoryProfileStore(), loadContent: () async => content));
+    await settle(t, 20);
+    await onboard(t, 'Тим');
+
+    await tapKey(t, 'nav.games');
     await tapKey(t, 'games.sort');
     for (var i = 0; i < 10; i++) {
       await t.tap(find.byKey(const Key('sort.need')));
@@ -178,7 +206,6 @@ void main() {
 
     await tapKey(t, 'games.catcher');
     await tapKey(t, 'catcher.start');
-    await t.drag(find.text('🐷').last, const Offset(-80, 0));
     for (var i = 0; i < 320; i++) {
       await t.pump(const Duration(milliseconds: 100));
     }

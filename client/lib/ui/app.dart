@@ -8,7 +8,9 @@ import '../store/profile_store.dart';
 import 'mascot/mascot_look.dart';
 import 'mascot/mascot_view.dart';
 import 'screens/create_hero_screen.dart';
-import 'screens/home_screen.dart';
+import 'screens/adult_screen.dart';
+import 'screens/role_screen.dart';
+import 'shell/main_shell.dart';
 import 'screens/intro_screen.dart';
 import 'theme.dart';
 
@@ -22,10 +24,12 @@ class FinniApp extends StatefulWidget {
   State<FinniApp> createState() => _FinniAppState();
 }
 
+enum _Stage { role, intro, hero }
+
 class _FinniAppState extends State<FinniApp> {
   GameController? _game;
   Object? _error;
-  bool _introDone = false;
+  _Stage _stage = _Stage.role;
 
   @override
   void initState() {
@@ -67,9 +71,18 @@ class _FinniAppState extends State<FinniApp> {
     return ListenableBuilder(
       listenable: game,
       builder: (context, _) {
-        if (game.hasProfile) return HomeScreen(game: game);
-        if (!_introDone) return IntroScreen(onDone: () => setState(() => _introDone = true));
-        return CreateHeroScreen(game: game);
+        if (game.hasProfile) {
+          _stage = _Stage.role;
+          return MainShell(game: game);
+        }
+        return switch (_stage) {
+          _Stage.role => RoleScreen(
+            onChild: () => setState(() => _stage = _Stage.intro),
+            onAdult: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => AdultScreen(game: game))),
+          ),
+          _Stage.intro => IntroScreen(onDone: () => setState(() => _stage = _Stage.hero)),
+          _Stage.hero => CreateHeroScreen(game: game),
+        };
       },
     );
   }

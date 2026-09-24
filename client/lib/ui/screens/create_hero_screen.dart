@@ -5,8 +5,9 @@ import '../../game/game_controller.dart';
 import '../mascot/mascot_look.dart';
 import '../mascot/mascot_view.dart';
 import '../theme.dart';
+import '../widgets/duo.dart';
 
-/// Создание героя: имена и облик с живым 3D-превью (SA F-008).
+/// Создание героя (Figma 01): имя, облик, «В комнату!» (SA F-008, F-017 BR-02).
 class CreateHeroScreen extends StatefulWidget {
   const CreateHeroScreen({super.key, required this.game});
   final GameController game;
@@ -16,14 +17,14 @@ class CreateHeroScreen extends StatefulWidget {
 }
 
 class _CreateHeroScreenState extends State<CreateHeroScreen> {
+  final _pet = TextEditingController(text: 'Финя');
   final _player = TextEditingController();
-  final _pet = TextEditingController(text: 'Финни');
   final _mascot = MascotController();
   String _tone = 'sun';
   String _hair = 'tuft';
   bool _busy = false;
 
-  static const _tones = {'sun': 'Солнышко', 'lemon': 'Лимон', 'orange': 'Апельсин'};
+  static const _tones = ['sun', 'lemon', 'orange'];
   static const _hairs = {'tuft': 'Хохолок', 'bangs': 'Чёлка', 'buns': 'Пучки'};
 
   String get _lookId => '${_tone}_$_hair';
@@ -31,122 +32,112 @@ class _CreateHeroScreenState extends State<CreateHeroScreen> {
 
   @override
   void dispose() {
-    _player.dispose();
     _pet.dispose();
+    _player.dispose();
     _mascot.dispose();
     super.dispose();
   }
 
   Future<void> _go() async {
     setState(() => _busy = true);
-    await widget.game.createProfile(
-      playerName: _player.text.trim(),
-      petName: _pet.text.trim(),
-      lookId: _lookId,
-    );
+    await widget.game.createProfile(playerName: _player.text.trim(), petName: _pet.text.trim(), lookId: _lookId);
   }
 
   @override
   Widget build(BuildContext context) {
-    final look = widget.game.content.look(_lookId);
+    final content = widget.game.content;
     return Scaffold(
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
           children: [
-            const Text('Твой герой', textAlign: TextAlign.center, style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900)),
-            const Text('Покрути его пальцем!', textAlign: TextAlign.center, style: TextStyle(color: FinniColors.muted)),
+            const Text('Питомец Финни', textAlign: TextAlign.center, style: TextStyle(color: FinniColors.teal, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 6),
+            const Text('Как зовут героя?', textAlign: TextAlign.center, style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900)),
             Center(
               child: MascotView(
-                look: MascotLook.fromLook(look, mood: PetMood.glad, stage: 1),
+                look: MascotLook.fromLook(content.look(_lookId), mood: PetMood.glad, stage: 1),
                 controller: _mascot,
-                size: 220,
-                semanticsLabel: _pet.text,
+                size: 190,
               ),
             ),
-            _label('Оттенок'),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                for (final MapEntry(key: id, value: title) in _tones.entries)
-                  ChoiceChip(
-                    key: Key('hero.tone.$id'),
-                    avatar: CircleAvatar(backgroundColor: Color(widget.game.content.look('${id}_tuft').color)),
-                    label: Text(title),
-                    selected: _tone == id,
-                    onSelected: (_) {
-                      setState(() => _tone = id);
+                for (final t in _tones)
+                  GestureDetector(
+                    key: Key('hero.tone.$t'),
+                    onTap: () {
+                      setState(() => _tone = t);
                       _mascot.jump();
                     },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Color(content.look('${t}_tuft').color),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: _tone == t ? FinniColors.ink : Colors.white, width: 3),
+                      ),
+                    ),
                   ),
               ],
             ),
-            _label('Причёска'),
+            const SizedBox(height: 10),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              runSpacing: 6,
               children: [
                 for (final MapEntry(key: id, value: title) in _hairs.entries)
-                  ChoiceChip(
-                    key: Key('hero.hair.$id'),
-                    label: Text(title),
-                    selected: _hair == id,
-                    onSelected: (_) {
-                      setState(() => _hair = id);
-                      _mascot.jump();
-                    },
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: ChoiceChip(
+                      key: Key('hero.hair.$id'),
+                      label: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
+                      selected: _hair == id,
+                      onSelected: (_) {
+                        setState(() => _hair = id);
+                        _mascot.jump();
+                      },
+                    ),
                   ),
               ],
             ),
-            _label('Как тебя зовут в игре?'),
-            TextField(
-              key: const Key('hero.player'),
-              controller: _player,
-              maxLength: 16,
-              textCapitalization: TextCapitalization.words,
-              onChanged: (_) => setState(() {}),
-              decoration: _input('Например, Капитан'),
-            ),
+            const SizedBox(height: 16),
+            _field(const Key('hero.pet'), _pet, 'Имя героя'),
+            const SizedBox(height: 10),
+            _field(const Key('hero.player'), _player, 'А тебя? Игровое имя'),
+            const SizedBox(height: 8),
             const Text(
-              'Только игровое имя. Фамилию и телефон писать не нужно.',
-              style: TextStyle(fontSize: 13, color: FinniColors.muted),
+              'Жёлтый кружок — твой герой. Комнату обставим вместе.\nФамилию и телефон писать не нужно.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: FinniColors.muted),
             ),
-            _label('Как зовут героя?'),
-            TextField(
-              key: const Key('hero.pet'),
-              controller: _pet,
-              maxLength: 16,
-              textCapitalization: TextCapitalization.words,
-              onChanged: (_) => setState(() {}),
-              decoration: _input('Финни'),
-            ),
-            const SizedBox(height: 12),
-            FilledButton(
-              key: const Key('hero.go'),
-              onPressed: _valid && !_busy ? _go : null,
-              child: const Text('Поехали! 🚀'),
-            ),
-            if (!_valid)
-              const Padding(
-                padding: EdgeInsets.only(top: 8),
-                child: Text('Впиши оба имени', textAlign: TextAlign.center, style: TextStyle(color: FinniColors.muted)),
-              ),
+            const SizedBox(height: 18),
+            DuoButton(key: const Key('hero.go'), label: 'В комнату!', onPressed: _valid && !_busy ? _go : null),
           ],
         ),
       ),
     );
   }
 
-  Widget _label(String text) => Padding(
-    padding: const EdgeInsets.only(top: 16, bottom: 8),
-    child: Text(text, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
-  );
-
-  InputDecoration _input(String hint) => InputDecoration(
-    hintText: hint,
-    filled: true,
-    fillColor: FinniColors.surface,
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none),
+  Widget _field(Key key, TextEditingController c, String hint) => TextField(
+    key: key,
+    controller: c,
+    maxLength: 16,
+    textCapitalization: TextCapitalization.words,
+    onChanged: (_) => setState(() {}),
+    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+    decoration: InputDecoration(
+      hintText: hint,
+      counterText: '',
+      filled: true,
+      fillColor: FinniColors.surface,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: const BorderSide(color: FinniColors.line, width: 2)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: const BorderSide(color: FinniColors.teal, width: 2)),
+    ),
   );
 }

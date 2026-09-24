@@ -11,6 +11,7 @@ import '../mascot/mascot_view.dart';
 import '../mascot/sphere.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
+import '../widgets/duo.dart';
 import '../widgets/confetti.dart';
 import '../widgets/plan_fact_bars.dart';
 
@@ -211,10 +212,10 @@ class _NightScreenState extends State<NightScreen> with SingleTickerProviderStat
           ),
         ),
         const SizedBox(height: 8),
-        FilledButton(
+        DuoButton(
           key: const Key('night.morning'),
+          label: 'Доброе утро ☀️',
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Доброе утро ☀️'),
         ),
       ],
     );

@@ -7,6 +7,7 @@ import '../mascot/mascot_look.dart';
 import '../mascot/mascot_view.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
+import '../widgets/duo.dart';
 
 const _themeTitle = {
   QuestTheme.budget: '🫙 Бюджет',
@@ -18,8 +19,11 @@ const _speakerEmoji = {'narrator': '📖', 'friend': '👧', 'seller': '🧑‍�
 
 /// Задание-сцена (SA F-012).
 class QuestScreen extends StatefulWidget {
-  const QuestScreen({super.key, required this.game});
+  const QuestScreen({super.key, required this.game, this.review});
   final GameController game;
+
+  /// Пересмотр пройденной сцены: объяснения без монет (SA F-017 BR-09).
+  final Quest? review;
 
   @override
   State<QuestScreen> createState() => _QuestScreenState();
@@ -28,8 +32,8 @@ class QuestScreen extends StatefulWidget {
 class _QuestScreenState extends State<QuestScreen> {
   final _mascot = MascotController();
   final _scroll = ScrollController();
-  late final Quest _quest = widget.game.todaysQuest;
-  int _shown = 1;
+  late final Quest _quest = widget.review ?? widget.game.todaysQuest;
+  late int _shown = widget.review == null ? 1 : widget.review!.lines.length;
   int? _chosen;
   GameFeedback? _result;
 
@@ -60,7 +64,9 @@ class _QuestScreenState extends State<QuestScreen> {
   });
 
   Future<void> _choose(int i) async {
-    final f = await game.answerQuest(i);
+    final f = widget.review == null
+        ? await game.answerQuest(i)
+        : GameFeedback(ok: true, repeat: true, messages: [_quest.choices[i].explanation]);
     if (!mounted) return;
     setState(() {
       _chosen = i;
@@ -110,16 +116,12 @@ class _QuestScreenState extends State<QuestScreen> {
                 for (var i = 0; i < _quest.choices.length; i++)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10),
-                    child: FilledButton.tonal(
+                    child: DuoButton(
                       key: Key('quest.choice.$i'),
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(60),
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                      ),
+                      label: _fill(_quest.choices[i].text),
+                      color: FinniColors.surface,
+                      height: 64,
                       onPressed: () => _choose(i),
-                      child: Text(_fill(_quest.choices[i].text), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
                     ),
                   ),
               ],
@@ -197,22 +199,23 @@ class _QuestScreenState extends State<QuestScreen> {
                 ),
               )
             else
-              const Text(
-                'Монеты за задание сегодня уже получены. Это для тренировки!',
+              Text(
+                widget.review != null ? 'Это повтор урока — монеты не начисляются.' : 'Монеты за задание сегодня уже получены. Это для тренировки!',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: FinniColors.muted),
               ),
             const SizedBox(height: 12),
-            OutlinedButton(
+            DuoButton(
               key: const Key('quest.retry'),
+              label: 'Другой вариант',
+              color: FinniColors.surface,
               onPressed: () => setState(() {
                 _chosen = null;
                 _result = null;
               }),
-              child: const Text('Посмотреть другой вариант'),
             ),
-            const SizedBox(height: 8),
-            FilledButton(key: const Key('quest.home'), onPressed: () => Navigator.of(context).pop(), child: const Text('Домой')),
+            const SizedBox(height: 10),
+            DuoButton(key: const Key('quest.home'), label: 'Готово', color: FinniColors.teal, onPressed: () => Navigator.of(context).pop()),
           ],
         ),
       ),

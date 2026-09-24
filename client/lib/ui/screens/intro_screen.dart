@@ -4,6 +4,7 @@ import '../../economy/economy_state.dart';
 import '../mascot/mascot_look.dart';
 import '../mascot/mascot_view.dart';
 import '../theme.dart';
+import '../widgets/duo.dart';
 
 /// Знакомство с тремя типами решений (SA F-008).
 class IntroScreen extends StatefulWidget {
@@ -137,10 +138,10 @@ class _IntroScreenState extends State<IntroScreen> {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
               child: SizedBox(
                 width: double.infinity,
-                child: FilledButton(
+                child: DuoButton(
                   key: const Key('intro.next'),
+                  label: last ? (widget.replay ? 'Понятно!' : 'Создать героя') : 'Дальше',
                   onPressed: _next,
-                  child: Text(last ? (widget.replay ? 'Понятно!' : 'Создать героя') : 'Дальше'),
                 ),
               ),
             ),

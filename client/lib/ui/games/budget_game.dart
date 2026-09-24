@@ -6,6 +6,7 @@ import '../../game/game_controller.dart';
 import '../../game/minigames.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
+import '../widgets/duo.dart';
 import 'games_hub.dart';
 
 /// «Уложись в бюджет» (SA F-013).
@@ -143,13 +144,14 @@ class _BudgetGameState extends State<BudgetGame> {
                   Row(
                     children: [
                       if (_attempts > 0)
-                        Expanded(child: OutlinedButton(key: const Key('budget.hint'), onPressed: _hint, child: const Text('💡 Подсказка'))),
+                        Expanded(child: DuoButton(key: const Key('budget.hint'), label: '💡 Подсказка', color: FinniColors.surface, onPressed: _hint)),
                       if (_attempts > 0) const SizedBox(width: 10),
                       Expanded(
-                        child: FilledButton(
+                        child: DuoButton(
                           key: const Key('budget.check'),
+                          label: 'Проверить',
+                          color: FinniColors.teal,
                           onPressed: _picked.isEmpty ? null : _submit,
-                          child: const Text('Проверить'),
                         ),
                       ),
                     ],

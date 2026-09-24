@@ -2,20 +2,26 @@ import 'package:flutter/material.dart';
 
 import '../economy/catalog_item.dart';
 
-/// Палитра Финни: тёплая, контрастная, цвет всегда дублируется иконкой и словом.
+/// Палитра из макета Figma «Pet Finni — UI MVP».
 abstract final class FinniColors {
-  static const bg = Color(0xFFFFF7E8);
+  static const bg = Color(0xFFF7F0E3);
   static const surface = Color(0xFFFFFFFF);
-  static const ink = Color(0xFF3B2A20);
-  static const muted = Color(0xFF8A7563);
-  static const primary = Color(0xFFFF7A2F);
-  static const need = Color(0xFF22A06B);
-  static const want = Color(0xFFE8508F);
-  static const save = Color(0xFF3F7FF0);
-  static const coin = Color(0xFFFFC233);
+  static const ink = Color(0xFF2E2A26);
+  static const muted = Color(0xFF8C8378);
+  static const primary = Color(0xFFF0C43F);
+  static const teal = Color(0xFF5DB6A6);
+  static const orange = Color(0xFFE88A5A);
+  static const blue = Color(0xFF8FA8E8);
+  static const need = Color(0xFF3FA58F);
+  static const want = Color(0xFFE0668F);
+  static const save = Color(0xFF5C84E0);
+  static const coin = Color(0xFFE8B23A);
   static const night = Color(0xFF1E2350);
-  static const line = Color(0xFFF0E2CC);
+  static const line = Color(0xFFEDE3D1);
 }
+
+/// Тёмный «бортик» объёмной кнопки.
+Color ledgeOf(Color c) => Color.lerp(c, const Color(0xFF000000), 0.22)!;
 
 enum Basket { need, want, save }
 
@@ -47,6 +53,8 @@ ThemeData finniTheme() {
     colorScheme: ColorScheme.fromSeed(
       seedColor: FinniColors.primary,
       primary: FinniColors.primary,
+      onPrimary: FinniColors.ink,
+      secondary: FinniColors.teal,
       surface: FinniColors.surface,
     ),
     scaffoldBackgroundColor: FinniColors.bg,
@@ -69,6 +77,7 @@ ThemeData finniTheme() {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
+        foregroundColor: FinniColors.ink,
         minimumSize: const Size(64, 56),
         textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

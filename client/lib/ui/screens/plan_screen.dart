@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../game/game_controller.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
+import '../widgets/duo.dart';
 import '../widgets/jar_view.dart';
 
 /// План дня: три банки (SA F-010).
@@ -131,14 +132,15 @@ class _PlanScreenState extends State<PlanScreen> {
         Row(
           children: [
             Expanded(
-              child: OutlinedButton(key: const Key('plan.suggest'), onPressed: _suggest, child: const Text('💡 Подсказать')),
+              child: DuoButton(key: const Key('plan.suggest'), label: '💡 Подсказать', color: FinniColors.surface, onPressed: _suggest),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: FilledButton(
+              child: DuoButton(
                 key: const Key('plan.done'),
+                label: 'Готово',
+                color: FinniColors.teal,
                 onPressed: _needOk && _left >= 0 ? _done : null,
-                child: const Text('Готово'),
               ),
             ),
           ],
