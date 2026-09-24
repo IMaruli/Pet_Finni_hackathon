@@ -260,6 +260,7 @@ final class GameSnapshot {
     this.dailyQuests = const [],
     this.claimed = const [],
     this.introDone = true,
+    this.firstNeedsDay = 1,
   });
 
   static const version = 1;
@@ -296,6 +297,7 @@ final class GameSnapshot {
       dailyQuests: _strings(j['dailyQuests'] ?? const <String>[]),
       claimed: _strings(j['claimed'] ?? const <String>[]),
       introDone: j['introDone'] as bool? ?? true,
+      firstNeedsDay: j['firstNeedsDay'] as int? ?? 1,
     );
   }
 
@@ -339,6 +341,9 @@ final class GameSnapshot {
   /// Знакомство с героем уже было (F-038). Старые сохранения — `true`.
   final bool introDone;
 
+  /// С какого дня нужны нужды: 2 — первый день знакомства (F-042), 1 — старые сохранения.
+  final int firstNeedsDay;
+
   GameSnapshot copyWith({
     Profile? profile,
     EconomyState? economy,
@@ -363,6 +368,7 @@ final class GameSnapshot {
     List<String>? dailyQuests,
     List<String>? claimed,
     bool? introDone,
+    int? firstNeedsDay,
   }) => GameSnapshot(
     profile: profile ?? this.profile,
     economy: economy ?? this.economy,
@@ -384,6 +390,7 @@ final class GameSnapshot {
     dailyQuests: dailyQuests ?? this.dailyQuests,
     claimed: claimed ?? this.claimed,
     introDone: introDone ?? this.introDone,
+    firstNeedsDay: firstNeedsDay ?? this.firstNeedsDay,
   );
 
   Map<String, dynamic> toJson() => {
@@ -408,5 +415,6 @@ final class GameSnapshot {
     'dailyQuests': dailyQuests,
     'claimed': claimed,
     'introDone': introDone,
+    'firstNeedsDay': firstNeedsDay,
   };
 }

@@ -15,7 +15,7 @@ void main() {
     var ids = 0;
     final game = GameController(content: content, store: MemoryProfileStore(), newId: () => 'g${ids++}');
     await game.init();
-    await game.createProfile(playerName: 'Аня', petName: 'Финя', lookId: 'sun_tuft');
+    await game.createProfile(playerName: 'Аня', petName: 'Финя', lookId: 'sun_tuft', introDay: false);
     await game.finishGreeting();
     await game.chooseGoal('skin_giraffe');
     await game.confirmPlan(need: game.todaysNeedSum, want: 0, save: game.economy.available.value - game.todaysNeedSum);

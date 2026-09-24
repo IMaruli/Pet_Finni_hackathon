@@ -55,7 +55,7 @@ Future<void> onboard(WidgetTester t, String name) async {
   await tapKey(t, 'hero.go');
   await settle(t, 20);
   // F-038: герой знакомится — 4 реплики, потом обычный день.
-  for (var i = 0; i < 4; i++) {
+  for (var i = 0; i < 5; i++) {
     await tapKey(t, 'home.greet');
   }
   expect(find.byKey(const Key('home.greet')), findsNothing);
@@ -78,6 +78,17 @@ void main() {
     expect(find.text('Кто заходит?'), findsOneWidget);
     await onboard(t, 'Аня');
     expect(find.text('60'), findsOneWidget);
+
+    // F-042: первый день — знакомство без нужд; спим — и завтра заботы.
+    expect(find.byKey(const Key('home.need.breakfast')), findsNothing);
+    await tapKey(t, 'nav.tasks');
+    await tapKey(t, 'tasks.sleep');
+    await settle(t, 25);
+    expect(find.text('Итог дня 1'), findsOneWidget);
+    await tapKey(t, 'night.morning');
+    await settle(t, 30);
+    await tapKey(t, 'nav.home');
+    expect(find.byKey(const Key('home.need.breakfast')), findsOneWidget);
 
     // А.5 план.
     await tapKey(t, 'home.next');
@@ -187,12 +198,12 @@ void main() {
     await tapKey(t, 'nav.tasks');
     await tapKey(t, 'tasks.sleep');
     await settle(t, 25);
-    expect(find.text('Итог дня 1'), findsOneWidget);
+    expect(find.text('Итог дня 2'), findsOneWidget);
     expect(find.text('✅ Хороший день!'), findsOneWidget);
     await tapKey(t, 'night.morning');
     await settle(t, 30);
-    await scrollTo(t, find.textContaining('День 2'));
-    expect(find.textContaining('День 2'), findsOneWidget);
+    await scrollTo(t, find.textContaining('День 3'));
+    expect(find.textContaining('День 3'), findsOneWidget);
 
     // Уроки: путь — следующий урок открыт, за первый урок дня 2 снова награда.
     await tapKey(t, 'nav.lessons');
@@ -225,7 +236,7 @@ void main() {
     await t.pumpWidget(FinniApp(store: store, loadContent: () async => content));
     await settle(t, 20);
     await tapKey(t, 'nav.tasks');
-    expect(find.textContaining('День 2'), findsOneWidget);
+    expect(find.textContaining('День 3'), findsOneWidget);
 
     // А.12 взрослый и сброс.
     await tapKey(t, 'nav.home');
@@ -260,11 +271,7 @@ void main() {
     await tapKey(t, 'plan.done');
     await settle(t, 40); // тост плана уезжает с кнопок
     expect(find.byKey(const Key('home.needs')), findsNothing); // кнопки «Нужное» больше нет (F-041)
-    for (final id in ['breakfast', 'water', 'care']) {
-      await tapKey(t, 'home.need.$id');
-      await tapKey(t, 'shop.buy');
-      await settle(t, 30);
-    }
+    expect(find.byKey(const Key('home.need.breakfast')), findsNothing); // день знакомства — игры открыты (F-042)
 
     await tapKey(t, 'nav.games');
     await tapKey(t, 'games.sort');

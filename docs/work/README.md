@@ -58,6 +58,7 @@
 | F-039 | Пузыри нужного над героем | [ui/F-039](ui/F-039_NEED_BUBBLES_SA_SPEC.md) | `ui/widgets/need_bubble.dart`, `ui/room/room_scene.dart`, `ui/tabs/home_tab.dart` | `app_flow_test` |
 | F-040 | Копилка на виду на Доме | [ui/F-040](ui/F-040_PIGGY_ON_HOME_SA_SPEC.md) | `ui/tabs/home_tab.dart`, `ui/widgets/piggy.dart` | `app_flow_test` |
 | F-041 | Раздел «Образ», переход после цели | [ui/F-041](ui/F-041_LOOK_SECTION_SA_SPEC.md) | `ui/screens/look_screen.dart`, `ui/screens/savings_screen.dart`, `ui/tabs/home_tab.dart` | `app_flow_test`, `savings_goal_test` |
+| F-042 | Спокойный первый день, панель разделов | [game/F-042](game/F-042_INTRO_DAY_SA_SPEC.md) | `game/game_controller.dart`, `game/pet_wish.dart`, `ui/tabs/home_tab.dart` | `game_controller_test`, `app_flow_test` |
 
 **Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
 См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.

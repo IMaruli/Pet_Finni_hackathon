@@ -7,6 +7,7 @@ import 'package:finni/economy/economy.dart';
 import 'package:finni/game/game_controller.dart';
 import 'package:finni/game/game_feedback.dart';
 import 'package:finni/game/quests.dart';
+import 'package:finni/game/pet_wish.dart';
 import 'package:finni/content/lesson_models.dart';
 import 'package:finni/store/profile_store.dart';
 import 'package:finni/store/snapshot.dart';
@@ -35,7 +36,7 @@ void main() {
   setUp(() async {
     store = MemoryProfileStore();
     game = await fresh();
-    await game.createProfile(playerName: 'Аня', petName: 'Финни', lookId: 'sun_tuft');
+    await game.createProfile(playerName: 'Аня', petName: 'Финни', lookId: 'sun_tuft', introDay: false);
   });
 
   Future<void> buyNeeds() async {
@@ -425,6 +426,25 @@ void main() {
     expect(restarted.economy.savings, game.economy.savings);
   });
 
+  test('first day is an intro day: needs start tomorrow (F-042)', () async {
+    final g = await fresh();
+    await g.createProfile(playerName: 'Аня', petName: 'Финя', lookId: 'sun_tuft');
+    expect(g.isIntroDay, isTrue);
+    expect(g.todaysNeeds, isEmpty);
+    expect(g.isGrubby, isFalse);
+    expect(g.foodServed && g.waterServed, isTrue);
+    expect(wishFor(g).kind, WishKind.plan);
+    await g.confirmPlan(need: 0, want: 0, save: g.economy.available.value);
+    expect(wishFor(g).kind, WishKind.quest); // сразу урок
+    await g.finishLesson('needs_1');
+    expect(wishFor(g).kind, WishKind.play); // показываем игры
+    await g.finishMiniGame('sort', win: true, score: 9);
+    expect(wishFor(g).kind, WishKind.save);
+    await g.endDay();
+    expect(g.isIntroDay, isFalse);
+    expect(g.todaysNeeds.map((i) => i.id), ['breakfast', 'water', 'care']);
+  });
+
   test('a new pet greets the player once (F-038)', () async {
     expect(game.greeting, isTrue);
     await game.finishGreeting();
@@ -603,7 +623,7 @@ void main() {
         ..['pocketMoney'] = 5;
       final poor = GameController(content: GameContent.fromJson(raw), store: MemoryProfileStore(), newId: () => 'p${ids++}');
       await poor.init();
-      await poor.createProfile(playerName: 'Аня', petName: 'Финни', lookId: 'sun_tuft');
+      await poor.createProfile(playerName: 'Аня', petName: 'Финни', lookId: 'sun_tuft', introDay: false);
       expect(poor.canAffordNeeds, isFalse);
       expect(poor.gamesLocked, isFalse);
     });

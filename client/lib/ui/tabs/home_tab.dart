@@ -146,7 +146,15 @@ class _HomeTabState extends State<HomeTab> {
               left: 12,
               right: 12,
               bottom: 12,
-              child: Column(
+              // Светлая панель-«док»: кнопки одинаково читаются утром, вечером и ночью (F-042).
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(6, 10, 6, 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xF5FFFFFF),
+                  borderRadius: BorderRadius.circular(26),
+                  boxShadow: const [BoxShadow(color: Color(0x26000000), blurRadius: 18, offset: Offset(0, 6))],
+                ),
+                child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -159,6 +167,7 @@ class _HomeTabState extends State<HomeTab> {
                     ],
                   ),
                 ],
+              ),
               ),
             ),
           ],
@@ -294,7 +303,7 @@ class _HomeTabState extends State<HomeTab> {
 
   void _nextGreet() {
     _mascot.jump();
-    if (_greet < 4) {
+    if (_greet < 5) {
       setState(() => _greet++);
     } else {
       game.finishGreeting();

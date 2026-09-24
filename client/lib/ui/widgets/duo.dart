@@ -267,7 +267,12 @@ class DuoIconButton extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Glass(radius: 26, padding: const EdgeInsets.all(13), child: Icon(icon, size: 26, color: color)),
+                // Плотная цветная плитка: читается и днём, и ночью (F-042).
+                Container(
+                  padding: const EdgeInsets.all(11),
+                  decoration: BoxDecoration(color: color.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(16)),
+                  child: Icon(icon, size: 26, color: color),
+                ),
                 const SizedBox(height: 4),
                 FittedBox(
                   fit: BoxFit.scaleDown,
@@ -278,7 +283,6 @@ class DuoIconButton extends StatelessWidget {
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: FinniColors.ink,
-                      shadows: [Shadow(color: Color(0xCCFFFFFF), blurRadius: 6)],
                     ),
                   ),
                 ),

@@ -25,7 +25,7 @@ void main() {
   setUp(() async {
     game = GameController(content: loadContent(), store: MemoryProfileStore(), newId: () => 'w${ids++}');
     await game.init();
-    await game.createProfile(playerName: 'Аня', petName: 'Финя', lookId: 'sun_tuft');
+    await game.createProfile(playerName: 'Аня', petName: 'Финя', lookId: 'sun_tuft', introDay: false);
   });
 
   test('morning without a plan: curious, asks for a plan', () {

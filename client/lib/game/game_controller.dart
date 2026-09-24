@@ -44,14 +44,21 @@ final class GameController extends ChangeNotifier {
   Inventory get inventory => snapshot.inventory;
   int get day => snapshot.day;
 
-  List<ShopItem> get todaysNeeds => content.needsForDay(day);
+  /// День знакомства: нужды начинаются со следующего дня (F-042).
+  bool get isIntroDay => day < snapshot.firstNeedsDay;
+
+  /// В первый день с нуждами — «первый набор» (завтрак, вода, умывание), дальше — по расписанию.
+  List<ShopItem> get todaysNeeds => isIntroDay
+      ? const []
+      : content.needsForDay(day == snapshot.firstNeedsDay ? 1 : day);
   int get todaysNeedSum => todaysNeeds.fold(0, (s, i) => s + i.price);
   bool isBoughtToday(String itemId) => snapshot.boughtToday.contains(itemId);
   bool get needsDone => todaysNeeds.every((i) => isBoughtToday(i.id));
 
   // Потребности видны в комнате (SA F-027).
   bool _needToday(String id) => todaysNeeds.any((i) => i.id == id);
-  bool get foodServed => todaysNeeds.any((i) => i.need == 'food' && isBoughtToday(i.id));
+  bool get foodServed =>
+      !todaysNeeds.any((i) => i.need == 'food') || todaysNeeds.any((i) => i.need == 'food' && isBoughtToday(i.id));
   bool get waterServed => !_needToday('water') || isBoughtToday('water');
 
   /// Неухоженный, пока не куплен любой уход дня: умывание, купание, стирка, стрижка (F-032).
@@ -118,6 +125,7 @@ final class GameController extends ChangeNotifier {
     required String playerName,
     required String petName,
     required String lookId,
+    bool introDay = true,
     String skin = 'finik',
     int? color,
     String? hair,
@@ -142,6 +150,7 @@ final class GameController extends ChangeNotifier {
         soundOn: true,
         dailyQuests: [for (final q in pickDailyQuests(day: 1, hasNewTopic: true, hasStarted: false)) q.name],
         introDone: false,
+        firstNeedsDay: introDay ? 2 : 1,
       ),
     );
   }
