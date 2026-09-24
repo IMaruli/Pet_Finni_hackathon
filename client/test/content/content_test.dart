@@ -28,8 +28,8 @@ void main() {
     expect(content.wantItems, isNotEmpty);
     expect(content.goals.length, greaterThanOrEqualTo(6));
     expect(content.wantItems.where((i) => i.slot == ItemSlot.room).length, greaterThanOrEqualTo(8));
-    expect(content.lessons.length, greaterThanOrEqualTo(8));
-    expect(content.topics.length, greaterThanOrEqualTo(4));
+    expect(content.lessons.length, greaterThanOrEqualTo(14));
+    expect(content.topics.length, greaterThanOrEqualTo(7));
     expect(content.looks.length, greaterThanOrEqualTo(9));
     expect(content.glossary.length, greaterThanOrEqualTo(10));
     expect(content.config.demoPeriods, greaterThanOrEqualTo(5));
