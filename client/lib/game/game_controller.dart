@@ -162,6 +162,9 @@ final class GameController extends ChangeNotifier {
     final plan = BudgetPlan(need: GameCoins(need), want: GameCoins(want), save: GameCoins(save));
     final r = _engine.apply(economy, ConfirmPlan(plan));
     if (r.error != null) return _fail(FeedbackReason.planTooBig, _texts(r));
+    // Все монеты по банкам: запас не отменяет выбор (SA F-024).
+    final left = economy.available.value - plan.total.value;
+    if (left > 0) return _fail(FeedbackReason.planNotAll, [content.text('exp.plan_not_all', {'n': '$left'})]);
     await _commit(snapshot.copyWith(economy: r.state));
     return GameFeedback(ok: true, messages: _texts(r));
   }

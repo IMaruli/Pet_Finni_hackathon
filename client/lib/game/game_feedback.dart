@@ -13,6 +13,7 @@ enum FeedbackReason {
   needsFirst,
   locked,
   planLocked,
+  planNotAll,
 }
 
 /// Результат действия игрока: удалось ли и что сказать ребёнку.

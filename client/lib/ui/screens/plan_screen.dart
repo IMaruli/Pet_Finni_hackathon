@@ -144,7 +144,7 @@ class _PlanScreenState extends State<PlanScreen> {
             child: Text(_hint!, textAlign: TextAlign.center, style: const TextStyle(color: FinniColors.primary, fontSize: 15)),
           ),
         const SizedBox(height: 20),
-        DuoButton(key: const Key('plan.done'), label: 'Готово', onPressed: _needOk && _left >= 0 ? _done : null),
+        DuoButton(key: const Key('plan.done'), label: 'Готово', onPressed: _needOk && _left == 0 ? _done : null), // все монеты в банках (F-024)
         const SizedBox(height: 10),
         DuoButton(key: const Key('plan.suggest'), label: 'Подсказать', icon: Icons.auto_awesome_rounded, color: FinniColors.surface, onPressed: _suggest),
       ],

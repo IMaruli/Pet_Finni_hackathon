@@ -11,6 +11,7 @@
 | [`superpowers/plans/2026-09-20-finni-economy.md`](../superpowers/plans/2026-09-20-finni-economy.md) | Implementation plan №1: домен экономики (TDD) |
 | [`superpowers/specs/2026-09-24-finni-game-ui-design.md`](../superpowers/specs/2026-09-24-finni-game-ui-design.md) | Design игры поверх экономики (Егор): 3D-маскот, мини-игры, экраны |
 | [`work/product/FINNI_GAME_UI_SA_SPEC.md`](product/FINNI_GAME_UI_SA_SPEC.md) | SA-эпик F-002: игра, подсистемы 2–5 roadmap |
+| [`work/product/TZ_RULES_COMPLIANCE.md`](product/TZ_RULES_COMPLIANCE.md) | Аудит соответствия правилам игры из ТЗ |
 | `work/{area}/` | Прочие SA и бизнес-доки |
 
 ### SA по историям (Егор, `Egor_DevStand`)
@@ -38,6 +39,7 @@
 | F-021 | Сначала нужное | [game/F-021](game/F-021_NEEDS_FIRST_SA_SPEC.md) | `game/game_controller.dart`, `ui/tabs/games_tab.dart`, `ui/widgets/buy_sheet.dart` | `game_controller_test`, `app_flow_test` |
 | F-022 | Разделы без общего магазина | [ui/F-022](ui/F-022_SECTIONS_SA_SPEC.md) | `ui/screens/category_screen.dart`, `ui/tabs/home_tab.dart`, `ui/shell/main_shell.dart` | `app_flow_test` |
 | F-023 | Настройка Финика: скины и цвета | [ui/F-023](ui/F-023_FINIK_STYLE_SA_SPEC.md) | `ui/screens/create_hero_screen.dart`, `ui/mascot/`, `store/snapshot.dart` | `game_controller_test`, `store_test`, `content_test`, `mascot_test`, `app_flow_test` |
+| F-024 | План раскладывает все монеты | [game/F-024](game/F-024_PLAN_ALL_COINS_SA_SPEC.md) | `game/game_controller.dart`, `ui/screens/plan_screen.dart` | `game_controller_test` |
 
 **Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
 См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:finni/content/content_loader.dart';
 import 'package:finni/content/game_content.dart';
 import 'package:finni/game/game_controller.dart';
+import 'package:finni/game/game_feedback.dart';
 import 'package:finni/game/pet_wish.dart';
 import 'package:finni/store/profile_store.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +13,10 @@ GameContent loadContent() => GameContent.fromJson({
   for (final name in ContentLoader.files)
     name: jsonDecode(File('assets/content/$name.json').readAsStringSync()),
 });
+
+/// План на весь кошелёк: остаток — в «Отложить» (SA F-024).
+Future<GameFeedback> planAll(GameController g, {required int need, int want = 0}) =>
+    g.confirmPlan(need: need, want: want, save: g.economy.available.value - need - want);
 
 void main() {
   late GameController game;
@@ -33,7 +38,7 @@ void main() {
   });
 
   test('needs come in list order with matching emotions', () async {
-    await game.confirmPlan(need: game.todaysNeedSum, want: 0, save: 4);
+    await planAll(game, need: game.todaysNeedSum, want: 0);
     expect(wishFor(game).kind, WishKind.eat); // day 1: breakfast, water
     expect(wishFor(game).emotion, PetEmotion.hungry);
     await game.buy('breakfast', commandId: game.newCommandId());
@@ -42,19 +47,19 @@ void main() {
   });
 
   test('care need makes the pet want to wash', () async {
-    await game.confirmPlan(need: game.todaysNeedSum, want: 0, save: 0);
+    await planAll(game, need: game.todaysNeedSum, want: 0);
     for (final i in game.todaysNeeds) {
       await game.buy(i.id, commandId: game.newCommandId());
     }
     await game.endDay(); // day 2: breakfast, care
-    await game.confirmPlan(need: game.todaysNeedSum, want: 0, save: 0);
+    await planAll(game, need: game.todaysNeedSum, want: 0);
     await game.buy('breakfast', commandId: game.newCommandId());
     expect(wishFor(game).kind, WishKind.wash);
     expect(wishFor(game).emotion, PetEmotion.grubby);
   });
 
   test('after needs: quest, then play, then save, then sleep', () async {
-    await game.confirmPlan(need: game.todaysNeedSum, want: 0, save: 4);
+    await planAll(game, need: game.todaysNeedSum, want: 0);
     for (final i in game.todaysNeeds) {
       await game.buy(i.id, commandId: game.newCommandId());
     }
