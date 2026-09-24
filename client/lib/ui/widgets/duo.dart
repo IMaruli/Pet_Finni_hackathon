@@ -531,7 +531,7 @@ class DuoTabBar extends StatelessWidget {
                               children: [
                                 Badge(
                                   isLabelVisible: badges.containsKey(tab),
-                                  label: Text(badges[tab] ?? '', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700)),
+                                  smallSize: 8,
                                   backgroundColor: FinniColors.want,
                                   child: Icon(
                                     tab == current ? tab.activeIcon : tab.icon,

@@ -85,7 +85,6 @@ class GamesTab extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  Positioned(right: -18, bottom: -18, child: Icon(c.icon, size: 110, color: const Color(0x26FFFFFF))),
                   Center(child: Icon(c.icon, size: 44, color: Colors.white)),
                   if (c.rewarded && !game.gameRewardToday)
                     Positioned(
