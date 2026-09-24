@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import '../economy/catalog_item.dart';
 import 'lesson_models.dart';
 import 'models.dart';
@@ -80,8 +82,28 @@ final class GameContent {
   Look look(String id) => looks.firstWhere((l) => l.id == id, orElse: () => looks.first);
   SkinDef? skin(String id) => skins.where((s) => s.id == id).firstOrNull;
 
-  List<ShopItem> needsForDay(int day) =>
-      [for (final id in config.needRotation[(day - 1) % config.needRotation.length]) item(id)];
+  /// Нужное дня по расписанию (F-032): детерминировано днём, сумма ≤ карманных.
+  List<ShopItem> needsForDay(int day) {
+    if (day == 1 && config.firstDayNeeds.isNotEmpty) return [for (final id in config.firstDayNeeds) item(id)];
+    final picked = <ShopItem>[];
+    var sum = 0;
+    for (final (i, rule) in config.needSchedule.indexed) {
+      final r = Random(day * 7919 + i * 104729);
+      final String id;
+      if (rule.pick.isNotEmpty) {
+        id = rule.pick[r.nextInt(rule.pick.length)];
+      } else {
+        if (day % rule.every != rule.offset % rule.every) continue;
+        if (r.nextDouble() >= rule.chance) continue;
+        id = rule.item!;
+      }
+      final it = item(id);
+      if (!rule.mandatory && sum + it.price > config.pocketMoney) continue;
+      picked.add(it);
+      sum += it.price;
+    }
+    return picked;
+  }
   Lesson lesson(String id) => lessons.firstWhere((l) => l.id == id);
   Topic topic(String id) => topics.firstWhere((t) => t.id == id);
   List<Lesson> lessonsOf(String topicId) => [for (final l in lessons) if (l.topic == topicId) l];
@@ -134,19 +156,19 @@ final class GameContent {
     }
 
     final ids = {for (final i in items) i.id: i};
-    for (final day in config.needRotation) {
-      var sum = 0;
-      for (final id in day) {
-        final item = ids[id];
-        if (item == null || item.kind != ItemKind.need) {
-          problems.add('config: needRotation has non-need item $id');
-        } else {
-          sum += item.price;
-        }
+    for (final rule in config.needSchedule) {
+      for (final id in rule.ids) {
+        final it = ids[id];
+        if (it == null || it.kind != ItemKind.need) problems.add('config: needSchedule has non-need item $id');
       }
-      if (sum > config.pocketMoney) problems.add('config: needRotation $day exceeds pocketMoney');
     }
-    if (config.needRotation.isEmpty) problems.add('config: needRotation is empty');
+    if (config.needSchedule.isEmpty) problems.add('config: needSchedule is empty');
+    if (problems.every((p) => !p.contains('needSchedule'))) {
+      for (var day = 1; day <= 30; day++) {
+        final sum = needsForDay(day).fold(0, (s, i) => s + i.price);
+        if (sum > config.pocketMoney) problems.add('config: needSchedule day $day exceeds pocketMoney');
+      }
+    }
 
     for (final p in puzzles) {
       final needs = p.items.where((i) => i.kind == ItemKind.need).fold(0, (s, i) => s + i.price);

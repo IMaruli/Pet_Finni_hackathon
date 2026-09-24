@@ -29,7 +29,7 @@ final class PetWish {
   DayTime get dayTime => kind.dayTime;
 }
 
-const _needWish = {'breakfast': WishKind.eat, 'water': WishKind.drink, 'care': WishKind.wash};
+const _needWish = {'food': WishKind.eat, 'water': WishKind.drink, 'hygiene': WishKind.wash};
 
 const _emotion = {
   WishKind.plan: PetEmotion.curious,
@@ -47,7 +47,7 @@ PetWish wishFor(GameController g) {
   final kind = () {
     if (!g.planConfirmed) return WishKind.plan;
     for (final item in g.todaysNeeds) {
-      if (!g.isBoughtToday(item.id)) return _needWish[item.id] ?? WishKind.eat;
+      if (!g.isBoughtToday(item.id)) return _needWish[item.need] ?? WishKind.eat;
     }
     if (!g.lessonPaidToday) return WishKind.quest; // урок дня (F-025)
     if (!g.gameRewardToday) return WishKind.play;
@@ -62,7 +62,13 @@ PetWish wishFor(GameController g) {
     emotion: _emotion[kind]!,
     text: first
         ? g.content.text('wish.plan.first', {'start': '${config.startCoins}', 'pocket': '${config.pocketMoney}'})
-        : g.content.text('wish.${kind.name}', {'pet': g.profile.petName}),
+        : _needAsk(g, kind) ?? g.content.text('wish.${kind.name}', {'pet': g.profile.petName}),
     action: g.content.text('wish.${kind.name}.action'),
   );
+}
+
+/// Своя реплика для каждой вещи нужного (F-032): «Хочу супчика с хлебом!».
+String? _needAsk(GameController g, WishKind kind) {
+  if (kind != WishKind.eat && kind != WishKind.drink && kind != WishKind.wash) return null;
+  return g.todaysNeeds.where((i) => !g.isBoughtToday(i.id)).firstOrNull?.ask;
 }

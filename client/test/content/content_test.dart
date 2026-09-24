@@ -35,8 +35,22 @@ void main() {
     expect(content.config.demoPeriods, greaterThanOrEqualTo(5));
   });
 
+  test('needs vary: food and daily care every day, extras by schedule (F-032)', () {
+    expect(content.needsForDay(1).map((i) => i.id), ['breakfast', 'water', 'care']);
+    final seen = <String>{};
+    for (var day = 1; day <= 60; day++) {
+      final ids = content.needsForDay(day).map((i) => i.id).toList();
+      seen.addAll(ids);
+      expect(content.needsForDay(day).where((i) => i.need == 'food').length, 1, reason: 'day $day');
+      expect(ids, contains('care'), reason: 'day $day');
+      expect(content.needsForDay(day).map((i) => i.id), ids, reason: 'stable $day');
+    }
+    expect(seen, containsAll(['breakfast', 'soup', 'fruits', 'water', 'care', 'bath', 'laundry', 'haircut']));
+    expect({for (var d = 2; d <= 11; d++) content.needsForDay(d).map((i) => i.id).join(',')}.length, greaterThan(3));
+  });
+
   test('daily needs are always affordable from pocket money alone', () {
-    for (var day = 1; day <= 10; day++) {
+    for (var day = 1; day <= 60; day++) {
       final sum = content.needsForDay(day).fold(0, (s, i) => s + i.price);
       expect(sum, lessThanOrEqualTo(content.config.pocketMoney), reason: 'day $day');
       expect(content.needsForDay(day).every((i) => i.kind == ItemKind.need), isTrue);
@@ -106,12 +120,12 @@ void main() {
     items.add({...items[3] as Map<String, dynamic>, 'id': 'free', 'price': 0});
     final lesson = (files['lessons']['lessons'] as List).first as Map<String, dynamic>;
     ((lesson['steps'] as List)[2] as Map)['outcomes'] = [{'text': 'А', 'good': false, 'result': 'Хм'}];
-    files['config']['needRotation'] = [['chocolate']];
+    files['config']['needSchedule'] = [{'item': 'chocolate'}];
     final problems = GameContent.fromJson(files).validate();
     expect(problems.any((p) => p.contains('duplicate id breakfast')), isTrue);
     expect(problems.any((p) => p.contains('free')), isTrue);
     expect(problems.any((p) => p.contains('needs_1')), isTrue);
-    expect(problems.any((p) => p.contains('needRotation')), isTrue);
+    expect(problems.any((p) => p.contains('needSchedule')), isTrue);
   });
 
   test('unknown enum value is a format error', () {

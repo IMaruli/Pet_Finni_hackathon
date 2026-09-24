@@ -51,9 +51,11 @@ final class GameController extends ChangeNotifier {
 
   // Потребности видны в комнате (SA F-027).
   bool _needToday(String id) => todaysNeeds.any((i) => i.id == id);
-  bool get foodServed => isBoughtToday('breakfast');
+  bool get foodServed => todaysNeeds.any((i) => i.need == 'food' && isBoughtToday(i.id));
   bool get waterServed => !_needToday('water') || isBoughtToday('water');
-  bool get isGrubby => _needToday('care') && !isBoughtToday('care');
+
+  /// Неухоженный, пока не куплен любой уход дня: умывание, купание, стирка, стрижка (F-032).
+  bool get isGrubby => todaysNeeds.any((i) => i.need == 'hygiene' && !isBoughtToday(i.id));
   Bowls get bowls => Bowls(food: foodServed, water: waterServed);
 
   /// Радость последней хотелки, купленной сегодня (F-031).

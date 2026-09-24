@@ -4,8 +4,40 @@
   "rewardWise": 12,
   "rewardTry": 6,
   "demoPeriods": 5,
-  "needRotation": [
-    ["breakfast", "water", "care"],
-    ["breakfast", "care"]
+  "firstDayNeeds": [
+    "breakfast",
+    "water",
+    "care"
+  ],
+  "needSchedule": [
+    {
+      "pick": [
+        "breakfast",
+        "soup",
+        "fruits"
+      ]
+    },
+    {
+      "item": "care"
+    },
+    {
+      "item": "water",
+      "chance": 0.75
+    },
+    {
+      "item": "bath",
+      "every": 3,
+      "offset": 2
+    },
+    {
+      "item": "laundry",
+      "every": 4,
+      "offset": 3
+    },
+    {
+      "item": "haircut",
+      "every": 5,
+      "offset": 4
+    }
   ]
 }

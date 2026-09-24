@@ -79,7 +79,7 @@ void main() {
   test('food and care are needed every period (TZ: обязательные расходы)', () async {
     for (var d = 1; d <= 5; d++) {
       final ids = game.todaysNeeds.map((i) => i.id);
-      expect(ids, contains('breakfast'), reason: 'day $d');
+      expect(game.todaysNeeds.where((i) => i.need == 'food'), hasLength(1), reason: 'day $d');
       expect(ids, contains('care'), reason: 'day $d');
       expect(game.todaysNeedSum, lessThanOrEqualTo(game.content.config.pocketMoney));
       await goodDay();
@@ -332,7 +332,7 @@ void main() {
     expect(s.day, 1);
     expect(s.good, isTrue);
     expect(s.saved, 10);
-    expect(s.spentNeed, 20);
+    expect(s.spentNeed, 16);
     expect(game.day, 2);
     expect(game.economy.available.value, availableBefore + 20);
     expect(game.economy.lastCreditSourceId, 'pocket:2');
@@ -420,9 +420,9 @@ void main() {
     await game.buy('care', commandId: game.newCommandId());
     expect(game.isGrubby, isFalse);
     expect(game.bowls.food && game.bowls.water, isTrue);
-    await game.endDay(); // день 2: завтрак и уход, воды нет в нужном
+    await game.endDay(); // новый день: миски снова пустые, умывание снова нужно
     expect(game.foodServed, isFalse);
-    expect(game.waterServed, isTrue);
+    expect(game.waterServed, !game.todaysNeeds.any((i) => i.id == 'water'));
     expect(game.isGrubby, isTrue);
   });
 
@@ -477,9 +477,9 @@ void main() {
     test('needs themselves are never blocked, wants open after them', () async {
       await planAll(game, need: game.todaysNeedSum, want: 20);
       expect(game.needsLeft.map((i) => i.id), ['breakfast', 'water', 'care']);
-      expect(game.needsLeftCost, 20);
+      expect(game.needsLeftCost, 16);
       expect((await game.buy('breakfast', commandId: game.newCommandId())).ok, isTrue);
-      expect(game.needsLeftTitles, startsWith('Вода, Уход'));
+      expect(game.needsLeftTitles, 'Вода, Зубы и умывание');
       expect((await game.buy('water', commandId: game.newCommandId())).ok, isTrue);
       expect((await game.buy('care', commandId: game.newCommandId())).ok, isTrue);
       expect(game.needsLeft, isEmpty);

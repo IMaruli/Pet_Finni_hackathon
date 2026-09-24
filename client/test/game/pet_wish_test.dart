@@ -46,16 +46,20 @@ void main() {
     expect(wishFor(game).emotion, PetEmotion.thirsty);
   });
 
-  test('care need makes the pet want to wash', () async {
+  test('care need makes the pet want to wash, each need has its own words (F-032)', () async {
     await planAll(game, need: game.todaysNeedSum, want: 0);
-    for (final i in game.todaysNeeds) {
+    for (final i in game.todaysNeeds.where((i) => i.need != 'hygiene')) {
       await game.buy(i.id, commandId: game.newCommandId());
     }
-    await game.endDay(); // day 2: breakfast, care
+    final w = wishFor(game);
+    expect(w.kind, WishKind.wash);
+    expect(w.emotion, PetEmotion.grubby);
+    expect(w.text, game.content.item('care').ask);
+    for (var d = 0; d < 8 && !game.todaysNeeds.any((i) => i.id == 'soup'); d++) {
+      await game.endDay();
+    }
     await planAll(game, need: game.todaysNeedSum, want: 0);
-    await game.buy('breakfast', commandId: game.newCommandId());
-    expect(wishFor(game).kind, WishKind.wash);
-    expect(wishFor(game).emotion, PetEmotion.grubby);
+    expect(wishFor(game).text, contains('суп'));
   });
 
   test('day time follows the day: morning, day, evening, night (F-028)', () {

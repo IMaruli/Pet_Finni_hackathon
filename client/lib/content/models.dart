@@ -25,6 +25,8 @@ final class ShopItem {
     required this.slot,
     this.accessory,
     this.joy,
+    this.need,
+    this.ask,
   });
 
   factory ShopItem.fromJson(Map<String, dynamic> j) => ShopItem(
@@ -37,6 +39,8 @@ final class ShopItem {
     slot: _enum(ItemSlot.values, j['slot'], 'slot'),
     accessory: j['accessory'] as String?,
     joy: j['joy'] as String?,
+    need: j['need'] as String?,
+    ask: j['ask'] as String?,
   );
 
   final String id;
@@ -52,6 +56,12 @@ final class ShopItem {
 
   /// Как хотелка радует героя (F-031): hearts|sparkles|bubbles|balloon|notes|stars.
   final String? joy;
+
+  /// Группа нужного (F-032): food|water|hygiene.
+  final String? need;
+
+  /// Реплика героя, когда эта вещь нужна (F-032).
+  final String? ask;
 
   GameCoins get coins => GameCoins(price);
   CatalogItem get catalogItem => CatalogItem(id: id, kind: kind, price: coins);
@@ -228,7 +238,8 @@ final class GameConfig {
     required this.rewardWise,
     required this.rewardTry,
     required this.demoPeriods,
-    required this.needRotation,
+    required this.needSchedule,
+    required this.firstDayNeeds,
   });
   factory GameConfig.fromJson(Map<String, dynamic> j) => GameConfig(
     startCoins: j['startCoins'] as int,
@@ -236,14 +247,39 @@ final class GameConfig {
     rewardWise: j['rewardWise'] as int,
     rewardTry: j['rewardTry'] as int,
     demoPeriods: j['demoPeriods'] as int,
-    needRotation: [
-      for (final day in j['needRotation'] as List) [for (final id in day as List) id as String],
-    ],
+    needSchedule: [for (final r in j['needSchedule'] as List) NeedRule.fromJson(r as Map<String, dynamic>)],
+    firstDayNeeds: [for (final id in j['firstDayNeeds'] as List? ?? const []) id as String],
   );
   final int startCoins;
   final int pocketMoney;
   final int rewardWise;
   final int rewardTry;
   final int demoPeriods;
-  final List<List<String>> needRotation;
+  /// Расписание нужного по приоритету (F-032).
+  final List<NeedRule> needSchedule;
+
+  /// Нужное первого дня — всегда одинаковое, для знакомства.
+  final List<String> firstDayNeeds;
+}
+
+/// Правило расписания нужного: одно из [pick] каждый день, либо [item] каждый [every]-й день
+/// (со сдвигом [offset]) или с вероятностью [chance].
+final class NeedRule {
+  const NeedRule({this.item, this.pick = const [], this.every = 1, this.offset = 0, this.chance = 1});
+  factory NeedRule.fromJson(Map<String, dynamic> j) => NeedRule(
+    item: j['item'] as String?,
+    pick: [for (final id in j['pick'] as List? ?? const []) id as String],
+    every: j['every'] as int? ?? 1,
+    offset: j['offset'] as int? ?? 0,
+    chance: (j['chance'] as num? ?? 1).toDouble(),
+  );
+  final String? item;
+  final List<String> pick;
+  final int every;
+  final int offset;
+  final double chance;
+
+  /// Ежедневное и обязательное (еда, умывание) — не отбрасывается при переборе.
+  bool get mandatory => every == 1 && chance >= 1;
+  List<String> get ids => [?item, ...pick];
 }

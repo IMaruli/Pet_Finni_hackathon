@@ -1,8 +1,13 @@
 {
   "items": [
-    {"id": "breakfast", "kind": "need", "price": 8, "title": "Завтрак", "emoji": "🥣", "effect": "Сытый и бодрый до вечера", "slot": "consumable"},
-    {"id": "water", "kind": "need", "price": 6, "title": "Вода", "emoji": "💧", "effect": "Без воды грустно и вяло", "slot": "consumable"},
-    {"id": "care", "kind": "need", "price": 6, "title": "Уход: зубы и умывание", "emoji": "🪥", "effect": "Чистый и свежий", "slot": "consumable"},
+    {"id": "breakfast", "kind": "need", "price": 8, "title": "Завтрак", "emoji": "🥣", "effect": "Сытый и бодрый до вечера", "slot": "consumable", "need": "food", "ask": "Хочу кушать… Купишь мне завтрак?"},
+    {"id": "soup", "kind": "need", "price": 7, "title": "Суп с хлебом", "emoji": "🍲", "effect": "Горячий обед — сил на весь день", "slot": "consumable", "need": "food", "ask": "Хочу супчика с хлебом! Купишь?"},
+    {"id": "fruits", "kind": "need", "price": 6, "title": "Фрукты", "emoji": "🍎", "effect": "Яблоко и банан — вкусно и полезно", "slot": "consumable", "need": "food", "ask": "Хочу фруктов — яблочко или банан!"},
+    {"id": "water", "kind": "need", "price": 4, "title": "Вода", "emoji": "💧", "effect": "Без воды грустно и вяло", "slot": "consumable", "need": "water", "ask": "Хочу пить! Купишь водички?"},
+    {"id": "care", "kind": "need", "price": 4, "title": "Зубы и умывание", "emoji": "🪥", "effect": "Чистый и свежий", "slot": "consumable", "need": "hygiene", "ask": "Хочу умыться и почистить зубки!"},
+    {"id": "bath", "kind": "need", "price": 5, "title": "Купание", "emoji": "🛁", "effect": "Пена, уточка и снова чистый", "slot": "consumable", "need": "hygiene", "ask": "Хочу искупаться — я весь в пыли!"},
+    {"id": "laundry", "kind": "need", "price": 4, "title": "Стирка одежды", "emoji": "🧺", "effect": "Чистые вещи пахнут свежестью", "slot": "consumable", "need": "hygiene", "ask": "Мои вещи грязные — нужна стирка!"},
+    {"id": "haircut", "kind": "need", "price": 6, "title": "Стрижка хохолка", "emoji": "💇", "effect": "Хохолок не лезет в глаза", "slot": "consumable", "need": "hygiene", "ask": "Хохолок лезет в глаза — пора подстричься!"},
     {"id": "chocolate", "kind": "want", "price": 12, "title": "Шоколадка", "emoji": "🍫", "effect": "Вкусно! Сердечки до вечера", "slot": "consumable", "joy": "hearts"},
     {"id": "icecream", "kind": "want", "price": 10, "title": "Мороженое", "emoji": "🍦", "effect": "Холодное и сладкое! Искорки радости", "slot": "consumable", "joy": "sparkles"},
     {"id": "lemonade", "kind": "want", "price": 9, "title": "Лимонад", "emoji": "🧃", "effect": "Шипучий праздник! Пузырьки вокруг героя", "slot": "consumable", "joy": "bubbles"},
