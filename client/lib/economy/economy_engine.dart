@@ -133,9 +133,11 @@ final class EconomyEngine {
         );
       case ClosePeriod():
         final plan = state.plan;
+        // Хороший период (ТЗ 2.5.10, F-054): нужное закрыто, хотелки по плану, что-то отложено.
         final isGood =
             plan != null &&
             state.spentNeed >= plan.need &&
+            state.spentWant <= plan.want &&
             state.savedThisPeriod.value > 0;
         final goodPeriods = state.goodPeriods + (isGood ? 1 : 0);
         return EconomyResult(

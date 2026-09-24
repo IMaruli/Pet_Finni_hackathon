@@ -69,6 +69,13 @@
 | F-051 | Качество комнаты, повороты героя, места одежды | [ui/F-051](ui/F-051_ROOM_QUALITY_WEAR_SLOTS_SA_SPEC.md) | `ui/room3d/*`, `ui/mascot/mascot_view.dart`, `game/game_controller.dart`, `ui/tabs/home_tab.dart` | `room3d_test`, `game_controller_test`, `content_test` |
 | F-052 | Обои в полоску | [ui/F-052](ui/F-052_STRIPED_WALLPAPER_SA_SPEC.md) | `ui/room3d/room_builder.dart` | `room3d_test` |
 | F-053 | Релиз 1.0: название, иконка, заставка | [ops/F-053](ops/F-053_RELEASE_1_0_SA_SPEC.md) | `android/app/src/main/*`, `tool/icon/`, `README.md`, `docs/release/` | эмулятор, CI |
+| F-054 | Рост учитывает траты по плану | [game/F-054](game/F-054_GROWTH_BY_PLAN_SA_SPEC.md) | `economy/economy_engine.dart`, `ui/screens/night_screen.dart` | `period_pet_test`, `game_controller_test` |
+| F-055 | Срок до цели по средней сумме | [game/F-055](game/F-055_GOAL_ETA_AVERAGE_SA_SPEC.md) | `game/game_controller.dart`, `ui/screens/savings_screen.dart` | `game_controller_test` |
+| F-056 | Покупки сегодня и итог вчера | [ui/F-056](ui/F-056_HISTORY_TODAY_YESTERDAY_SA_SPEC.md) | `ui/screens/plan_screen.dart`, `ui/tabs/tasks_tab.dart` | `app_flow_test` |
+| F-057 | Плашка состояния и цель на Доме | [ui/F-057](ui/F-057_HOME_STATE_PANEL_SA_SPEC.md) | `ui/tabs/home_tab.dart` | `app_flow_test` |
+| F-058 | Доступность | [ui/F-058](ui/F-058_ACCESSIBILITY_SA_SPEC.md) | `ui/motion.dart`, `ui/mascot/*`, `ui/widgets/*` | `mascot_test`, `app_flow_test` |
+| F-059 | Карточка RuStore | [ops/F-059](ops/F-059_RUSTORE_CARD_SA_SPEC.md) | `docs/release/rustore/` | — |
+| F-060 | Документация PDF | [ops/F-060](ops/F-060_DOCUMENTATION_PDF_SA_SPEC.md) | `docs/documentation/` | — |
 
 **Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
 См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.

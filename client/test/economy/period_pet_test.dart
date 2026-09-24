@@ -132,4 +132,31 @@ void main() {
     expect(failed.state.petStage, 2);
     expect(failed.state.savings, savingsBefore);
   });
+
+  test('overspending the want plan is not a good period (TZ 2.5.10, F-054)', () {
+    EconomyState day(EconomyState s, {required int want, required int spendWant}) {
+      s = engine.apply(s, Credit(GameCoins(40), 'pocket')).state;
+      s = engine
+          .apply(s, ConfirmPlan(BudgetPlan(need: GameCoins(10), want: GameCoins(want), save: GameCoins(5))))
+          .state;
+      s = engine
+          .apply(s, BuyItem(commandId: 'n${s.goodPeriods}$spendWant', item: CatalogItem(id: 'food', kind: ItemKind.need, price: GameCoins(10))))
+          .state;
+      if (spendWant > 0) {
+        s = engine
+            .apply(s, BuyItem(commandId: 'w${s.goodPeriods}$spendWant', item: CatalogItem(id: 'toy', kind: ItemKind.want, price: GameCoins(spendWant))))
+            .state;
+      }
+      s = engine.apply(s, TransferToSavings(GameCoins(5))).state;
+      return engine.apply(s, const ClosePeriod()).state;
+    }
+
+    var s = day(EconomyState.empty(), want: 5, spendWant: 12); // хотелки 12 при плане 5
+    expect(s.goodPeriods, 0);
+    s = day(s, want: 12, spendWant: 12); // ровно по плану
+    expect(s.goodPeriods, 1);
+    s = day(s, want: 10, spendWant: 0); // хотелки можно не брать
+    expect(s.goodPeriods, 2);
+    expect(s.petStage, 2);
+  });
 }

@@ -171,6 +171,11 @@ final class DaySummary {
 
   bool get grew => stageAfter > stageBefore;
 
+  /// Три условия хорошего дня (F-054): нужное куплено, хотелки по плану, что-то отложено.
+  bool get needOk => spentNeed >= planNeed;
+  bool get wantOk => spentWant <= planWant;
+  bool get savedOk => saved > 0;
+
   Map<String, dynamic> toJson() => {
     'day': day,
     'planNeed': planNeed,

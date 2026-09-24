@@ -604,8 +604,8 @@ final class GameController extends ChangeNotifier {
   /// Совет на завтра по итогу дня.
   String adviceFor(DaySummary s) {
     if (s.spentNeed < s.planNeed || s.planNeed == 0) return content.text('advice.need');
+    if (s.spentWant > s.planWant) return content.text('advice.plan'); // перерасход хотелок мешает росту (F-054)
     if (s.saved == 0) return content.text('advice.save');
-    if (s.spentWant > s.planWant) return content.text('advice.plan');
     return content.text('advice.great');
   }
 

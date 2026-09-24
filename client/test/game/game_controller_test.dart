@@ -386,6 +386,15 @@ void main() {
     expect((await game.redeemGoal()).reason, FeedbackReason.noGoal);
   });
 
+  test('day summary shows the three good-day conditions (F-054)', () async {
+    await planAll(game, need: game.todaysNeedSum, want: 6);
+    await buyNeeds();
+    await game.buy('stickers', commandId: game.newCommandId()); // 6 — ровно по плану
+    await game.toSavings(2);
+    final s = await game.endDay();
+    expect((s.needOk, s.wantOk, s.savedOk, s.good), (true, true, true, true));
+  });
+
   test('withdraw needs confirm; cancel keeps savings', () async {
     await planAll(game, need: game.todaysNeedSum, want: 0);
     await game.toSavings(20);
