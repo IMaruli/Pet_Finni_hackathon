@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../content/models.dart';
 import '../../economy/catalog_item.dart';
 import '../../game/game_controller.dart';
 import '../../game/minigames.dart';
@@ -25,6 +26,9 @@ class _SortGameState extends State<SortGame> with SingleTickerProviderStateMixin
       if (s == AnimationStatus.completed) _finish();
     });
   bool? _lastRight;
+
+  /// Карточка последней ошибки — объясняем сразу (F-033).
+  SortCard? _lastWrong;
   double _drag = 0;
   bool _finished = false;
 
@@ -38,6 +42,7 @@ class _SortGameState extends State<SortGame> with SingleTickerProviderStateMixin
     _round = SortRound(widget.game.content.sortCards);
     _finished = false;
     _lastRight = null;
+    _lastWrong = null;
     _timer.forward(from: 0);
   }
 
@@ -49,10 +54,12 @@ class _SortGameState extends State<SortGame> with SingleTickerProviderStateMixin
 
   void _answer(ItemKind kind) {
     if (_finished || _round.finished) return;
+    final card = _round.current;
     final right = _round.answer(kind);
     buzz(right ? Buzz.light : Buzz.heavy);
     setState(() {
       _lastRight = right;
+      _lastWrong = right ? null : card;
       _drag = 0;
     });
     if (_round.finished) _finish();
@@ -155,12 +162,21 @@ class _SortGameState extends State<SortGame> with SingleTickerProviderStateMixin
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(r.current.emoji, style: const TextStyle(fontSize: 96)),
+                              Text(r.current.emoji, style: const TextStyle(fontSize: 84)),
                               const SizedBox(height: 8),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                child: Text(r.current.title, textAlign: TextAlign.center,
-                                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+                              // Длинные карточки («Новые наушники, когда старые работают») ужимаются, а не вылезают.
+                              Flexible(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: ConstrainedBox(
+                                      constraints: const BoxConstraints(maxWidth: 216),
+                                      child: Text(r.current.title, textAlign: TextAlign.center,
+                                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -171,16 +187,18 @@ class _SortGameState extends State<SortGame> with SingleTickerProviderStateMixin
                 ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 28,
+                height: 66,
                 child: _lastRight == null
                     ? const Text('Смахни влево — «Нужно», вправо — «Хочу»', style: TextStyle(color: FinniColors.muted))
+                    : _lastRight!
+                    ? const Text('✅ Верно!', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: FinniColors.need))
                     : Text(
-                        _lastRight! ? '✅ Верно!' : '❌ Не совсем — разберём в конце',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: _lastRight! ? FinniColors.need : FinniColors.want,
-                        ),
+                        // Объясняем сразу, а в конце — общий разбор.
+                        '❌ ${_lastWrong!.emoji} ${_lastWrong!.title} — это ${_lastWrong!.kind == ItemKind.need ? '«Нужно»' : '«Хочу»'}: ${_lastWrong!.why}',
+                        key: const Key('sort.explain'),
+                        textAlign: TextAlign.center,
+                        maxLines: 3,
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: FinniColors.want),
                       ),
               ),
               const Spacer(),

@@ -19,7 +19,8 @@ class BudgetGame extends StatefulWidget {
 }
 
 class _BudgetGameState extends State<BudgetGame> {
-  late final BudgetPuzzle _puzzle = widget.game.content.puzzleForDay(widget.game.day);
+  /// Первая игра — ситуация дня (их 10), «Ещё раз» — случайная другая из пула (F-033).
+  late BudgetPuzzle _puzzle = widget.game.content.puzzleForDay(widget.game.day);
   final _picked = <int>{};
   int _attempts = 0;
   String? _message;
@@ -74,6 +75,7 @@ class _BudgetGameState extends State<BudgetGame> {
     if (!mounted) return;
     if (again) {
       setState(() {
+        _puzzle = nextPuzzle(widget.game.content.puzzles, previous: _puzzle);
         _picked.clear();
         _attempts = 0;
         _message = null;
@@ -96,6 +98,11 @@ class _BudgetGameState extends State<BudgetGame> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   Text(_puzzle.title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
+                  if (_puzzle.story.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4, bottom: 2),
+                      child: Text(_puzzle.story, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16)),
+                    ),
                   Text(
                     'Бюджет ${_puzzle.budget} 🪙. Возьми всё нужное и не выйди за бюджет.',
                     textAlign: TextAlign.center,

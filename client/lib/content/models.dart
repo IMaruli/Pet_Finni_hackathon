@@ -199,17 +199,40 @@ final class PuzzleItem {
 }
 
 final class BudgetPuzzle {
-  const BudgetPuzzle({required this.id, required this.title, required this.budget, required this.items});
+  const BudgetPuzzle({required this.id, required this.title, required this.budget, required this.items, this.story = ''});
   factory BudgetPuzzle.fromJson(Map<String, dynamic> j) => BudgetPuzzle(
     id: j['id'] as String,
     title: j['title'] as String,
+    story: j['story'] as String? ?? '',
     budget: j['budget'] as int,
     items: [for (final i in j['items'] as List) PuzzleItem.fromJson(i as Map<String, dynamic>)],
   );
   final String id;
   final String title;
+
+  /// Короткая ситуация: зачем покупаем (F-033).
+  final String story;
   final int budget;
   final List<PuzzleItem> items;
+}
+
+/// Соблазн в «Копилке-ловце»: эмодзи и название для объяснения (F-033).
+final class Temptation {
+  const Temptation({required this.emoji, required this.title});
+  factory Temptation.fromJson(Object j) =>
+      j is String ? Temptation(emoji: j, title: 'Хотелка') : Temptation(emoji: (j as Map)['emoji'] as String, title: j['title'] as String);
+  final String emoji;
+  final String title;
+}
+
+/// Монеты разного достоинства; [weight] — как часто падают.
+final class CatchGood {
+  const CatchGood({required this.emoji, required this.value, this.weight = 1});
+  factory CatchGood.fromJson(Map<String, dynamic> j) =>
+      CatchGood(emoji: j['emoji'] as String, value: j['value'] as int, weight: j['weight'] as int? ?? 1);
+  final String emoji;
+  final int value;
+  final int weight;
 }
 
 final class CatcherConfig {
@@ -218,17 +241,22 @@ final class CatcherConfig {
     required this.target,
     required this.temptations,
     required this.temptationPenalty,
+    this.goods = const [CatchGood(emoji: '🪙', value: 1, weight: 4), CatchGood(emoji: '💰', value: 5)],
   });
   factory CatcherConfig.fromJson(Map<String, dynamic> j) => CatcherConfig(
     seconds: j['seconds'] as int,
     target: j['target'] as int,
-    temptations: [for (final t in j['temptations'] as List) t as String],
+    temptations: [for (final t in j['temptations'] as List) Temptation.fromJson(t as Object)],
     temptationPenalty: j['temptationPenalty'] as int,
+    goods: j['goods'] == null
+        ? const [CatchGood(emoji: '🪙', value: 1, weight: 4), CatchGood(emoji: '💰', value: 5)]
+        : [for (final g in j['goods'] as List) CatchGood.fromJson(g as Map<String, dynamic>)],
   );
   final int seconds;
   final int target;
-  final List<String> temptations;
+  final List<Temptation> temptations;
   final int temptationPenalty;
+  final List<CatchGood> goods;
 }
 
 final class GameConfig {

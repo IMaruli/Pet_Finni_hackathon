@@ -4,7 +4,16 @@ import 'dart:ui';
 import 'package:finni/content/models.dart';
 import 'package:finni/economy/catalog_item.dart';
 import 'package:finni/game/minigames.dart';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:finni/content/content_loader.dart';
+import 'package:finni/content/game_content.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+GameContent loadPack() => GameContent.fromJson({
+  for (final n in ContentLoader.files) n: jsonDecode(File('assets/content/$n.json').readAsStringSync()),
+});
 
 const deck = [
   SortCard(emoji: 'a', title: 'A', kind: ItemKind.need, why: 'a'),
@@ -86,7 +95,7 @@ void main() {
   });
 
   group('CatcherModel', () {
-    const config = CatcherConfig(seconds: 5, target: 10, temptations: ['🍭'], temptationPenalty: 3);
+    const config = CatcherConfig(seconds: 5, target: 10, temptations: [Temptation(emoji: '🍭', title: 'Леденец')], temptationPenalty: 3);
     const field = Size(300, 600);
 
     test('time runs out and finishes', () {
@@ -135,6 +144,45 @@ void main() {
         m.tick(0.1, field);
       }
       expect(m.spawned, greaterThan(0));
+    });
+  });
+
+  group('variety (F-033)', () {
+    test('catcher drops every kind of coin and many temptations, caught ones are explained', () {
+      final content = loadPack();
+      final m = CatcherModel(content.catcher, random: Random(1));
+      final seen = <String>{};
+      for (var i = 0; i < 400; i++) {
+        m.tick(0.1, const Size(320, 600));
+        seen.addAll(m.items.map((f) => f.emoji));
+        if (m.finished) break;
+      }
+      final m2 = CatcherModel(content.catcher, random: Random(2));
+      for (var i = 0; i < 3000 && seen.length < 12; i++) {
+        m2.timeLeft = 30;
+        m2.tick(0.2, const Size(320, 600));
+        seen.addAll(m2.items.map((f) => f.emoji));
+      }
+      expect(seen, containsAll(['🪙', '💵', '💰']));
+      expect(seen.intersection({for (final t in content.catcher.temptations) t.emoji}).length, greaterThanOrEqualTo(6));
+      final c = CatcherModel(content.catcher)..jarX = 150;
+      c.items.add(Falling(x: 150, y: 540, speed: 10, value: -3, emoji: '🍭', title: 'Леденец'));
+      c.tick(0.01, const Size(300, 600));
+      expect(c.caught.single.title, 'Леденец');
+      expect(c.takeEvents().single.title, 'Леденец');
+    });
+
+    test('next budget puzzle is never the same twice in a row', () {
+      final content = loadPack();
+      expect(content.puzzles.length, greaterThanOrEqualTo(10));
+      var p = content.puzzles.first;
+      for (var i = 0; i < 50; i++) {
+        final n = nextPuzzle(content.puzzles, previous: p, random: Random(i));
+        expect(n.id, isNot(p.id));
+        p = n;
+      }
+      expect(content.sortCards.length, greaterThanOrEqualTo(40));
+      expect(content.sortCards.every((c) => c.why.isNotEmpty), isTrue);
     });
   });
 }

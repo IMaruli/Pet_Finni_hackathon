@@ -59,7 +59,7 @@ class _CatcherGameState extends State<CatcherGame> with SingleTickerProviderStat
     setState(() {
       _model.tick(dt, _field);
       for (final e in _model.takeEvents()) {
-        _popups.add(_Popup(e.value > 0 ? '+${e.value}' : 'Хотелка съела ${-e.value}!', e.at, e.value > 0, _clock));
+        _popups.add(_Popup(e.value > 0 ? '+${e.value}' : '${e.emoji} ${e.title}: −${-e.value}', e.at, e.value > 0, _clock));
         buzz(e.value > 0 ? Buzz.light : Buzz.heavy);
       }
       _popups.removeWhere((p) => _clock - p.born > 0.9);
@@ -80,12 +80,28 @@ class _CatcherGameState extends State<CatcherGame> with SingleTickerProviderStat
       win: m.win,
       score: m.score,
       headline: 'В банке ${m.score} 🪙${m.win ? ' — цель!' : ''}',
-      details: Text(
-        m.win
-            ? 'Ты набрал ${m.config.target}+ и не дал хотелкам всё съесть. Вот так и копят!'
-            : 'Цель была ${m.config.target}. Хотелки отнимают накопленное — обходи их!',
-        textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 16),
+      details: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            m.win
+                ? 'Ты набрал ${m.config.target}+ и не дал хотелкам всё съесть. Вот так и копят!'
+                : 'Цель была ${m.config.target}. Хотелки отнимают накопленное — обходи их!',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 16),
+          ),
+          if (m.caught.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              // Разбор: какие соблазны поймал и сколько они стоили копилке (F-033).
+              'Поймал соблазны: ${_caughtSummary(m)}. Они съели ${m.caught.length * m.config.temptationPenalty} 🪙. '
+              'Копить — значит пропускать то, что хочется прямо сейчас.',
+              key: const Key('catcher.explain'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 14, color: FinniColors.muted),
+            ),
+          ],
+        ],
       ),
     );
     if (!mounted) return;
@@ -101,7 +117,7 @@ class _CatcherGameState extends State<CatcherGame> with SingleTickerProviderStat
     final m = _model;
     return Scaffold(
       backgroundColor: const Color(0xFFE6F4FF),
-      appBar: AppBar(title: const Text('🫙 Копилка-ловец')),
+      appBar: AppBar(title: const Text('🐷 Копилка-ловец')),
       body: SafeArea(
         child: Column(
           children: [
@@ -159,15 +175,7 @@ class _CatcherGameState extends State<CatcherGame> with SingleTickerProviderStat
                           top: jarTop,
                           width: CatcherModel.jarWidth,
                           height: CatcherModel.jarHeight,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: FinniColors.save.withValues(alpha: 0.18),
-                              border: Border.all(color: FinniColors.save, width: 4),
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(12), bottom: Radius.circular(28)),
-                            ),
-                            alignment: Alignment.center,
-                            child: const Text('🐷', style: TextStyle(fontSize: 34)),
-                          ),
+                          child: const CustomPaint(painter: PiggyBankPainter()),
                         ),
                         if (!_started)
                           Positioned.fill(
@@ -180,7 +188,7 @@ class _CatcherGameState extends State<CatcherGame> with SingleTickerProviderStat
                                   const Text('🪙 💰 — лови!', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
                                   const SizedBox(height: 8),
                                   Text(
-                                    '${m.config.temptations.join(' ')} — хотелки. Поймаешь — они съедят ${m.config.temptationPenalty} монеты из банки.',
+                                    '${m.config.temptations.map((t) => t.emoji).join(' ')} — хотелки. Поймаешь — они съедят ${m.config.temptationPenalty} монеты из копилки.',
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(fontSize: 18),
                                   ),
@@ -207,4 +215,81 @@ class _CatcherGameState extends State<CatcherGame> with SingleTickerProviderStat
       ),
     );
   }
+}
+
+String _caughtSummary(CatcherModel m) {
+  final counts = <String, int>{};
+  final names = <String, String>{};
+  for (final f in m.caught) {
+    counts[f.emoji] = (counts[f.emoji] ?? 0) + 1;
+    names[f.emoji] = f.title;
+  }
+  return [for (final e in counts.entries) '${e.key} ${names[e.key]}${e.value > 1 ? ' ×${e.value}' : ''}'].join(', ');
+}
+
+/// Копилка-свинка с прорезью для монет (F-033) — вместо эмодзи.
+class PiggyBankPainter extends CustomPainter {
+  const PiggyBankPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width, h = size.height;
+    const pink = Color(0xFFFF9EB5), dark = Color(0xFFE07A95);
+    final body = Rect.fromLTWH(w * 0.1, h * 0.22, w * 0.8, h * 0.62);
+    // ножки
+    for (final x in [0.26, 0.42, 0.58, 0.74]) {
+      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(w * x - w * 0.05, h * 0.72, w * 0.1, h * 0.22), Radius.circular(w * 0.04)), Paint()..color = dark);
+    }
+    // хвостик
+    canvas.drawPath(
+      Path()
+        ..moveTo(w * 0.1, h * 0.5)
+        ..cubicTo(w * -0.02, h * 0.42, w * 0.02, h * 0.3, w * 0.08, h * 0.36),
+      Paint()
+        ..color = dark
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = w * 0.035
+        ..strokeCap = StrokeCap.round,
+    );
+    // туловище
+    canvas.drawOval(
+      body,
+      Paint()..shader = const RadialGradient(center: Alignment(-0.3, -0.5), colors: [Color(0xFFFFD1DC), pink, dark]).createShader(body),
+    );
+    // ушко
+    canvas.drawPath(
+      Path()
+        ..moveTo(w * 0.62, h * 0.3)
+        ..lineTo(w * 0.7, h * 0.08)
+        ..lineTo(w * 0.78, h * 0.34)
+        ..close(),
+      Paint()..color = dark,
+    );
+    // пятачок
+    final snout = Rect.fromCenter(center: Offset(w * 0.9, h * 0.54), width: w * 0.18, height: h * 0.26);
+    canvas.drawOval(snout, Paint()..color = dark);
+    for (final dy in [-0.05, 0.05]) {
+      canvas.drawCircle(Offset(w * 0.91, h * (0.54 + dy)), w * 0.02, Paint()..color = const Color(0xFF9E4A62));
+    }
+    // глазик
+    canvas.drawCircle(Offset(w * 0.74, h * 0.42), w * 0.03, Paint()..color = const Color(0xFF3B2A30));
+    // прорезь для монет
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(w * 0.48, h * 0.27), width: w * 0.28, height: h * 0.06), Radius.circular(h * 0.03)),
+      Paint()..color = const Color(0xFF7A3A50),
+    );
+    // монетка-значок
+    canvas.drawCircle(Offset(w * 0.42, h * 0.56), w * 0.09, Paint()..color = const Color(0xFFFFC928));
+    canvas.drawCircle(
+      Offset(w * 0.42, h * 0.56),
+      w * 0.09,
+      Paint()
+        ..color = const Color(0xFFE0A800)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = w * 0.015,
+    );
+  }
+
+  @override
+  bool shouldRepaint(PiggyBankPainter old) => false;
 }

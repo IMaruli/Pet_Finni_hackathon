@@ -47,6 +47,13 @@ final class BudgetCheck {
   bool get ok => missingNeeds.isEmpty && over == 0;
 }
 
+/// Следующая ситуация для «Уложись в бюджет»: случайная, но не та же, что только что (F-033).
+BudgetPuzzle nextPuzzle(List<BudgetPuzzle> all, {BudgetPuzzle? previous, Random? random}) {
+  final pool = [for (final p in all) if (p.id != previous?.id) p];
+  final from = pool.isEmpty ? all : pool;
+  return from[(random ?? Random()).nextInt(from.length)];
+}
+
 BudgetCheck checkBasket(BudgetPuzzle puzzle, Set<int> picked) {
   var total = 0;
   final missing = <PuzzleItem>[];
@@ -63,7 +70,7 @@ BudgetCheck checkBasket(BudgetPuzzle puzzle, Set<int> picked) {
 
 /// Падающий предмет в «Копилке-ловце».
 final class Falling {
-  Falling({required this.x, required this.y, required this.speed, required this.value, required this.emoji});
+  Falling({required this.x, required this.y, required this.speed, required this.value, required this.emoji, this.title = ''});
   double x;
   double y;
   final double speed;
@@ -71,13 +78,18 @@ final class Falling {
   /// > 0 — монета, < 0 — соблазн.
   final int value;
   final String emoji;
+
+  /// Название соблазна для объяснения («Леденец»).
+  final String title;
   bool get isTemptation => value < 0;
 }
 
 final class CatchEvent {
-  const CatchEvent(this.value, this.at);
+  const CatchEvent(this.value, this.at, {this.title = '', this.emoji = ''});
   final int value;
   final Offset at;
+  final String title;
+  final String emoji;
 }
 
 /// «Копилка-ловец»: вся физика без UI.
@@ -100,6 +112,9 @@ final class CatcherModel {
   double timeLeft;
   int spawned = 0;
   double _untilSpawn = 0.3;
+
+  /// Пойманные соблазны — для разбора в конце (F-033).
+  final List<Falling> caught = [];
 
   bool get finished => timeLeft <= 0;
   bool get win => score >= config.target;
@@ -127,7 +142,8 @@ final class CatcherModel {
     items.removeWhere((item) {
       if (item.y >= catchTop && item.y <= field.height && (item.x - jarX).abs() <= _catchHalf) {
         score = max(0, score + item.value);
-        _events.add(CatchEvent(item.value, Offset(item.x, item.y)));
+        _events.add(CatchEvent(item.value, Offset(item.x, item.y), title: item.title, emoji: item.emoji));
+        if (item.isTemptation) caught.add(item);
         return true;
       }
       return item.y > field.height;
@@ -140,16 +156,13 @@ final class CatcherModel {
     final speed = 160 + _random.nextDouble() * 160;
     final roll = _random.nextDouble();
     if (roll < 0.25) {
-      items.add(Falling(
-        x: x,
-        y: -30,
-        speed: speed,
-        value: -config.temptationPenalty,
-        emoji: config.temptations[_random.nextInt(config.temptations.length)],
-      ));
+      final t = config.temptations[_random.nextInt(config.temptations.length)];
+      items.add(Falling(x: x, y: -30, speed: speed, value: -config.temptationPenalty, emoji: t.emoji, title: t.title));
     } else {
-      final big = roll > 0.8;
-      items.add(Falling(x: x, y: -30, speed: speed, value: big ? 5 : 1, emoji: big ? '💰' : '🪙'));
+      final total = config.goods.fold(0, (s, g) => s + g.weight);
+      var pick = _random.nextInt(total);
+      final good = config.goods.firstWhere((g) => (pick -= g.weight) < 0);
+      items.add(Falling(x: x, y: -30, speed: speed, value: good.value, emoji: good.emoji));
     }
   }
 }
