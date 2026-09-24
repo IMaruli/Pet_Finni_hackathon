@@ -68,8 +68,9 @@ class _SavingsScreenState extends State<SavingsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('⚠️', textAlign: TextAlign.center, style: TextStyle(fontSize: 44)),
-              Text('Снять $amount 🪙 из копилки?', textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+              const Center(child: IconTile(Icons.warning_amber_rounded, color: FinniColors.orange, size: 52)),
+              const SizedBox(height: 12),
+              Text('Снять $amount из копилки?', textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
               const SizedBox(height: 10),
               Panel(
                 padding: const EdgeInsets.all(12),
@@ -185,100 +186,111 @@ class _SavingsScreenState extends State<SavingsScreen> {
             child: SafeArea(
               child: ListView(
                 controller: _scroll,
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                padding: const EdgeInsets.only(bottom: 32),
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          children: [
-                            if (goal != null) Text(goal.emoji, style: const TextStyle(fontSize: 44)),
-                            JarView(
-                              title: 'Копилка',
-                              emoji: '🐷',
-                              color: FinniColors.save,
-                              coins: saved,
-                              capacity: goal?.cost ?? max(50, saved),
-                              height: 190,
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: DuoCard(
+                      child: Column(
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                child: JarView(
+                                  title: 'Копилка',
+                                  emoji: '🐷',
+                                  color: FinniColors.save,
+                                  coins: saved,
+                                  capacity: goal?.cost ?? max(50, saved),
+                                  height: 170,
+                                ),
+                              ),
+                              SizedBox(width: 130, height: 150, child: MascotView(look: MascotLook.fromGame(game), controller: _mascot, size: 130)),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          if (goal != null) ...[
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(goal.title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: -0.5)),
+                                ),
+                                Text('${min(saved, goal.cost)} / ${goal.cost}', style: const TextStyle(fontSize: 15, color: FinniColors.muted)),
+                              ],
                             ),
-                          ],
-                        ),
+                            const SizedBox(height: 10),
+                            ProgressBar(value: saved / goal.cost, color: FinniColors.save),
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                game.canRedeem
+                                    ? 'Накоплено — можно забирать'
+                                    : 'осталось ${game.goalRemaining} · примерно ${(game.goalRemaining / 5).ceil()} дн. по 5 монет',
+                                style: const TextStyle(fontSize: 13, color: FinniColors.muted),
+                              ),
+                            ),
+                            if (game.canRedeem) ...[
+                              const SizedBox(height: 12),
+                              DuoButton(key: const Key('goal.redeem'), label: 'Забрать: ${goal.title}', icon: Icons.celebration_rounded, color: FinniColors.need, onPressed: _redeem),
+                            ],
+                          ] else
+                            const Text('Выбери цель ниже — и копилка станет мечтой.', textAlign: TextAlign.center, style: TextStyle(fontSize: 15, color: FinniColors.muted)),
+                        ],
                       ),
-                      SizedBox(width: 130, height: 150, child: MascotView(look: MascotLook.fromGame(game), controller: _mascot, size: 130)),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  if (goal != null) ...[
-                    Text('Цель: ${goal.title}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 8),
-                    ProgressBar(value: saved / goal.cost, color: FinniColors.save, height: 18),
-                    const SizedBox(height: 6),
-                    Text(
-                      game.canRedeem
-                          ? 'Накоплено! Можно забирать 🎉'
-                          : '${min(saved, goal.cost)} из ${goal.cost} · осталось ${game.goalRemaining} · '
-                                '≈ ${(game.goalRemaining / 5).ceil()} дн., если откладывать по 5',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: FinniColors.muted, fontWeight: FontWeight.w600),
                     ),
-                    if (game.canRedeem) ...[
-                      const SizedBox(height: 10),
-                      DuoButton(
-                        key: const Key('goal.redeem'),
-                        label: 'Забрать: ${goal.title} 🎉',
-                        color: FinniColors.need,
-                        onPressed: _redeem,
-                      ),
-                    ],
-                  ] else
-                    const Text('Выбери цель ниже — и копилка станет мечтой.', textAlign: TextAlign.center, style: TextStyle(fontSize: 17)),
-                  const SizedBox(height: 16),
-                  const Text('Отложить из кошелька', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final a in [1, 5, 10])
-                        DuoButton(
-                          key: Key('save.$a'),
-                          label: '+$a 🪙',
-                          expand: false,
-                          height: 48,
-                          color: FinniColors.primary,
-                          onPressed: wallet >= a ? () => _save(a) : null,
-                        ),
-                      if (planLeft > 0)
-                        DuoButton(
-                          key: const Key('save.plan'),
-                          label: 'По плану: +$planLeft',
-                          expand: false,
-                          height: 48,
-                          color: FinniColors.save,
-                          onPressed: wallet >= planLeft ? () => _save(planLeft) : null,
-                        ),
-                    ],
                   ),
-                  if (saved > 0) ...[
-                    const SizedBox(height: 16),
-                    const Text('Снять из копилки', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 4),
-                    const Text('Можно, но цель отодвинется. Мы спросим дважды.', style: TextStyle(color: FinniColors.muted)),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
+                  const DuoSection('Отложить из кошелька'),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        for (final a in [1, 5, 10]) ...[
+                          Expanded(
+                            child: DuoButton(
+                              key: Key('save.$a'),
+                              label: '+$a',
+                              height: 44,
+                              color: FinniColors.surface,
+                              onPressed: wallet >= a ? () => _save(a) : null,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        if (planLeft > 0)
+                          Expanded(
+                            flex: 2,
+                            child: DuoButton(
+                              key: const Key('save.plan'),
+                              label: 'По плану +$planLeft',
+                              height: 44,
+                              onPressed: wallet >= planLeft ? () => _save(planLeft) : null,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  if (saved > 0)
+                    GroupedSection(
+                      header: 'Снять из копилки',
+                      footer: 'Цель отодвинется. Мы спросим ещё раз перед снятием.',
                       children: [
                         for (final a in [5, 10])
                           if (saved >= a)
-                            DuoButton(key: Key('withdraw.$a'), label: 'Снять $a', expand: false, height: 44, color: FinniColors.surface, onPressed: () => _withdraw(a)),
+                            GroupedRow(
+                              key: Key('withdraw.$a'),
+                              icon: Icons.remove_circle_outline_rounded,
+                              iconColor: FinniColors.orange,
+                              title: 'Снять $a',
+                              onTap: () => _withdraw(a),
+                            ),
                       ],
                     ),
-                  ],
-                  const SizedBox(height: 20),
-                  const Text('Цели', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 8),
-                  for (final g in game.content.goals) _goalCard(g),
+                  GroupedSection(
+                    header: 'Цели',
+                    children: [for (final g in game.content.goals) _goalCard(g)],
+                  ),
                 ],
               ),
             ),
@@ -294,33 +306,24 @@ class _SavingsScreenState extends State<SavingsScreen> {
     final option = selected && game.snapshot.goalOption != null
         ? g.options.firstWhere((o) => o.id == game.snapshot.goalOption)
         : null;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Panel(
-        key: Key('goal.${g.id}'),
-        color: selected ? const Color(0xFFE8F0FF) : null,
-        onTap: done || selected ? null : () => _choose(g),
-        child: Row(
-          children: [
-            Text(option?.emoji ?? g.emoji, style: const TextStyle(fontSize: 38)),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(option == null ? g.title : '${g.title}: ${option.title}', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-                  Text(g.description, style: const TextStyle(color: FinniColors.muted)),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              done ? 'Есть ✓' : (selected ? 'Копим' : '${g.cost} 🪙'),
-              style: TextStyle(fontWeight: FontWeight.w700, color: done ? FinniColors.need : FinniColors.ink),
-            ),
-          ],
-        ),
+    return GroupedRow(
+      key: Key('goal.${g.id}'),
+      leading: Container(
+        width: 40,
+        height: 40,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(color: FinniColors.fill, borderRadius: BorderRadius.circular(10)),
+        child: Text(option?.emoji ?? g.emoji, style: const TextStyle(fontSize: 22)),
       ),
+      title: option == null ? g.title : '${g.title}: ${option.title}',
+      subtitle: g.description,
+      trailing: done
+          ? const Icon(Icons.check_circle_rounded, color: FinniColors.need)
+          : selected
+          ? const DuoChip(text: 'Копим', color: FinniColors.save)
+          : Text('${g.cost}', style: const TextStyle(fontSize: 17, color: FinniColors.muted)),
+      chevron: !done && !selected,
+      onTap: done || selected ? null : () => _choose(g),
     );
   }
 }

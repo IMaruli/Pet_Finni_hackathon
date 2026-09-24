@@ -9,10 +9,11 @@ import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/duo.dart';
 
-const _themeTitle = {
-  QuestTheme.budget: '🫙 Бюджет',
-  QuestTheme.save: '🐷 Копилка',
-  QuestTheme.buy: '🛒 Покупки',
+const _themeTitle = {QuestTheme.budget: 'Бюджет', QuestTheme.save: 'Копилка', QuestTheme.buy: 'Покупки'};
+const _themeIcon = {
+  QuestTheme.budget: Icons.pie_chart_rounded,
+  QuestTheme.save: Icons.savings_rounded,
+  QuestTheme.buy: Icons.shopping_cart_rounded,
 };
 
 const _speakerEmoji = {'narrator': '📖', 'friend': '👧', 'seller': '🧑‍🍳'};
@@ -85,7 +86,7 @@ class _QuestScreenState extends State<QuestScreen> {
   Widget build(BuildContext context) {
     final look = MascotLook.fromGame(game);
     return Scaffold(
-      appBar: AppBar(title: Text('${_quest.emoji} ${_quest.title}')),
+      appBar: AppBar(title: Text(_quest.title)),
       body: SafeArea(
         child: GestureDetector(
           key: const Key('quest.tap'),
@@ -96,11 +97,7 @@ class _QuestScreenState extends State<QuestScreen> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
             children: [
               Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(color: FinniColors.surface, borderRadius: BorderRadius.circular(20)),
-                  child: Text('Тема: ${_themeTitle[_quest.theme]}', style: const TextStyle(fontWeight: FontWeight.w600)),
-                ),
+                child: DuoChip(text: _themeTitle[_quest.theme]!, icon: _themeIcon[_quest.theme]),
               ),
               Center(child: MascotView(look: look, controller: _mascot, size: 150, semanticsLabel: game.profile.petName)),
               for (var i = 0; i < _shown && i < _quest.lines.length; i++) _line(_quest.lines[i], look),

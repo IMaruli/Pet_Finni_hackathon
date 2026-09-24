@@ -59,7 +59,7 @@ class _IntroScreenState extends State<IntroScreen> {
             const SizedBox(height: 12),
             Text(
               widget.replay ? 'Подсказка' : 'Привет! Это игра про монеты',
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, letterSpacing: -0.6),
             ),
             const SizedBox(height: 4),
             const Padding(
@@ -81,19 +81,21 @@ class _IntroScreenState extends State<IntroScreen> {
                     padding: const EdgeInsets.all(20),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: c.basket.color.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(32),
-                        border: Border.all(color: c.basket.color.withValues(alpha: 0.4), width: 3),
+                        color: FinniColors.surface,
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: const [BoxShadow(color: Color(0x12000000), blurRadius: 20, offset: Offset(0, 8))],
                       ),
                       padding: const EdgeInsets.all(20),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('${i + 1} из 3', style: const TextStyle(color: FinniColors.muted, fontWeight: FontWeight.w700)),
+                          Text('${i + 1} из 3', style: const TextStyle(color: FinniColors.muted, fontSize: 13)),
                           const SizedBox(height: 8),
+                          IconTile(c.basket.icon, color: c.basket.color, size: 52),
+                          const SizedBox(height: 12),
                           Text(
-                            '${c.basket.emoji} ${c.basket.title}',
-                            style: TextStyle(fontSize: 34, fontWeight: FontWeight.w700, color: c.basket.color),
+                            c.basket.title,
+                            style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w700, letterSpacing: -0.7),
                           ),
                           const SizedBox(height: 8),
                           Flexible(

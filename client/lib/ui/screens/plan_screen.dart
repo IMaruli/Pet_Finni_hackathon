@@ -79,81 +79,74 @@ class _PlanScreenState extends State<PlanScreen> {
 
   Widget _editor() {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
       children: [
-        const Text(
-          'Разложи монеты по банкам. План — это решение заранее.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: FinniColors.muted),
-        ),
-        const SizedBox(height: 12),
         Center(
-          child: Container(
+          child: Column(
             key: const Key('plan.left'),
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-            decoration: BoxDecoration(
-              color: _left == 0 ? FinniColors.need.withValues(alpha: 0.15) : FinniColors.surface,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: FinniColors.coin, width: 2),
-            ),
-            child: Text(
-              _left == 0 ? 'Все $_available 🪙 разложены ✓' : 'Не разложено: $_left 🪙 из $_available',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [for (final b in Basket.values) Expanded(child: _jarColumn(b))],
-        ),
-        const SizedBox(height: 12),
-        Panel(
-          padding: const EdgeInsets.all(12),
-          child: Row(
             children: [
-              Text(_needOk ? '✅' : '☝️', style: const TextStyle(fontSize: 24)),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Нужное сегодня: ${game.todaysNeeds.map((i) => '${i.emoji} ${i.title} ${i.price}').join(', ')}. '
-                  'Итого ${game.todaysNeedSum} 🪙.',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+              Text(
+                '$_left',
+                style: TextStyle(
+                  fontSize: 56,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -2,
+                  height: 1,
+                  color: _left == 0 ? FinniColors.need : FinniColors.ink,
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _left == 0 ? 'Все $_available монет разложены' : 'из $_available монет осталось разложить',
+                style: const TextStyle(fontSize: 15, color: FinniColors.muted),
               ),
             ],
           ),
         ),
-        if (_hint != null) ...[
-          const SizedBox(height: 10),
-          Text(_hint!, textAlign: TextAlign.center, style: const TextStyle(color: FinniColors.primary, fontWeight: FontWeight.w700)),
-        ],
-        const SizedBox(height: 16),
-        Row(
+        const SizedBox(height: 20),
+        DuoCard(
+          padding: const EdgeInsets.fromLTRB(8, 16, 8, 14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [for (final b in Basket.values) Expanded(child: _jarColumn(b))],
+          ),
+        ),
+        GroupedSection(
+          header: 'Нужное сегодня',
+          footer: _needOk ? null : 'Положи в «Нужное» хотя бы ${game.todaysNeedSum} монет.',
           children: [
-            Expanded(
-              child: DuoButton(key: const Key('plan.suggest'), label: '💡 Подсказать', color: FinniColors.surface, onPressed: _suggest),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: DuoButton(
-                key: const Key('plan.done'),
-                label: 'Готово',
-                color: FinniColors.teal,
-                onPressed: _needOk && _left >= 0 ? _done : null,
+            for (final i in game.todaysNeeds)
+              GroupedRow(
+                leading: Container(
+                  width: 32,
+                  height: 32,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(color: FinniColors.fill, borderRadius: BorderRadius.circular(8)),
+                  child: Text(i.emoji, style: const TextStyle(fontSize: 18)),
+                ),
+                title: i.title,
+                value: '${i.price}',
+                chevron: false,
               ),
+            GroupedRow(
+              icon: _needOk ? Icons.check_rounded : Icons.shopping_basket_rounded,
+              iconColor: _needOk ? FinniColors.need : FinniColors.muted,
+              title: 'Итого',
+              value: '${game.todaysNeedSum}',
+              chevron: false,
             ),
           ],
         ),
-        if (!_needOk)
+        if (_hint != null)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Text(
-              'Положи в «Нужное» хотя бы ${game.todaysNeedSum} 🪙',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: FinniColors.muted),
-            ),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+            child: Text(_hint!, textAlign: TextAlign.center, style: const TextStyle(color: FinniColors.primary, fontSize: 15)),
           ),
+        const SizedBox(height: 20),
+        DuoButton(key: const Key('plan.done'), label: 'Готово', onPressed: _needOk && _left >= 0 ? _done : null),
+        const SizedBox(height: 10),
+        DuoButton(key: const Key('plan.suggest'), label: 'Подсказать', icon: Icons.auto_awesome_rounded, color: FinniColors.surface, onPressed: _suggest),
       ],
     );
   }
@@ -161,35 +154,39 @@ class _PlanScreenState extends State<PlanScreen> {
   Widget _jarColumn(Basket b) {
     return Column(
       children: [
-        JarView(title: b.title, emoji: b.emoji, color: b.color, coins: _values[b]!, capacity: _available, height: 140),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _round('−', Key('plan.${b.name}.minus'), () => _change(b, -1), () => _change(b, -5), b.color),
-            const SizedBox(width: 6),
-            _round('+', Key('plan.${b.name}.plus'), () => _change(b, 1), () => _change(b, 5), b.color),
-          ],
-        ),
+        JarView(title: b.title, emoji: b.emoji, color: b.color, coins: _values[b]!, capacity: _available, height: 124),
+        const SizedBox(height: 10),
+        _stepper(b),
       ],
     );
   }
 
-  Widget _round(String label, Key key, VoidCallback tap, VoidCallback longPress, Color color) {
-    return Semantics(
+  /// Степпер в стиле iOS: « − | + » в серой капсуле; долгое нажатие — ±5.
+  Widget _stepper(Basket b) {
+    Widget half(String label, Key key, int delta) => Semantics(
       button: true,
-      label: label == '+' ? 'Добавить монету' : 'Убрать монету',
+      label: delta > 0 ? 'Добавить монету в «${b.title}»' : 'Убрать монету из «${b.title}»',
       child: GestureDetector(
         key: key,
-        onTap: tap,
-        onLongPress: longPress,
-        child: Container(
-          width: 48,
-          height: 48,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w700)),
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _change(b, delta),
+        onLongPress: () => _change(b, delta * 5),
+        child: SizedBox(
+          width: 44,
+          height: 36,
+          child: Center(child: Icon(delta > 0 ? Icons.add_rounded : Icons.remove_rounded, size: 22, color: FinniColors.ink)),
         ),
+      ),
+    );
+    return Container(
+      decoration: BoxDecoration(color: FinniColors.fill, borderRadius: BorderRadius.circular(10)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          half('−', Key('plan.${b.name}.minus'), -1),
+          Container(width: 0.8, height: 18, color: const Color(0x33000000)),
+          half('+', Key('plan.${b.name}.plus'), 1),
+        ],
       ),
     );
   }

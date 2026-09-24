@@ -87,13 +87,13 @@ class _JarViewState extends State<JarView> with SingleTickerProviderStateMixin {
                         Positioned(
                           left: w / 2 - 12,
                           top: -20 + t * widget.height * 0.55,
-                          child: Opacity(opacity: 1 - t * 0.6, child: const Text('🪙', style: TextStyle(fontSize: 24))),
+                          child: Opacity(opacity: 1 - t * 0.6, child: const _Coin()),
                         ),
                       if (running && _bounce)
                         Positioned(
                           left: w / 2 - 12,
                           top: widget.height * 0.3 - t * widget.height * 0.5,
-                          child: Opacity(opacity: 1 - t, child: const Text('🪙', style: TextStyle(fontSize: 24))),
+                          child: Opacity(opacity: 1 - t, child: const _Coin()),
                         ),
                       Positioned.fill(
                         top: widget.height * 0.3,
@@ -101,8 +101,9 @@ class _JarViewState extends State<JarView> with SingleTickerProviderStateMixin {
                           child: Text(
                             '${widget.coins}',
                             style: TextStyle(
-                              fontSize: widget.height * 0.2,
+                              fontSize: widget.height * 0.19,
                               fontWeight: FontWeight.w700,
+                              letterSpacing: -0.5,
                               color: FinniColors.ink,
                               shadows: const [Shadow(color: Colors.white, blurRadius: 6)],
                             ),
@@ -116,9 +117,16 @@ class _JarViewState extends State<JarView> with SingleTickerProviderStateMixin {
             ),
             if (widget.showLabel) ...[
               const SizedBox(height: 6),
-              Text(
-                '${widget.emoji} ${widget.title}',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: widget.color),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(width: 8, height: 8, decoration: BoxDecoration(color: widget.color, shape: BoxShape.circle)),
+                    const SizedBox(width: 6),
+                    Text(widget.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: FinniColors.ink)),
+                  ],
+                ),
               ),
             ],
           ],
@@ -147,7 +155,7 @@ class _JarPainter extends CustomPainter {
     );
 
     // Стекло.
-    canvas.drawRRect(body, Paint()..color = color.withValues(alpha: 0.08));
+    canvas.drawRRect(body, Paint()..color = const Color(0xFFF7F7FA));
 
     // Монеты: стопка эллипсов снизу.
     canvas.save();
@@ -187,9 +195,9 @@ class _JarPainter extends CustomPainter {
     canvas.drawRRect(
       body,
       Paint()
-        ..color = color.withValues(alpha: 0.9)
+        ..color = const Color(0xFFD1D1D6)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 3,
+        ..strokeWidth = 2,
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.14, h * 0.2, w * 0.08, h * 0.55), Radius.circular(w * 0.04)),
@@ -199,10 +207,25 @@ class _JarPainter extends CustomPainter {
     // Крышка.
     canvas.drawRRect(
       RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.12, 0, w * 0.76, lidH), Radius.circular(lidH * 0.4)),
-      Paint()..color = color,
+      Paint()..color = color.withValues(alpha: 0.85),
     );
   }
 
   @override
   bool shouldRepaint(_JarPainter old) => old.fill != fill || old.color != color || old.coins != coins;
+}
+
+class _Coin extends StatelessWidget {
+  const _Coin();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 22,
+    height: 22,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: const LinearGradient(colors: [Color(0xFFFFD84D), Color(0xFFF5A500)]),
+      border: Border.all(color: const Color(0xFFE29400), width: 2),
+    ),
+  );
 }
