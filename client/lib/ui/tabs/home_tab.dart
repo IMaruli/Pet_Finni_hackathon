@@ -7,7 +7,7 @@ import '../mascot/mascot_view.dart';
 import '../room/room_scene.dart';
 import '../screens/adult_screen.dart';
 import '../screens/category_screen.dart';
-import '../screens/clothes_screen.dart';
+import '../screens/look_screen.dart';
 import '../screens/glossary_screen.dart';
 import '../screens/intro_screen.dart';
 import '../screens/night_screen.dart';
@@ -151,10 +151,9 @@ class _HomeTabState extends State<HomeTab> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Пять разделов: одно действие — одно место (SA F-022 BR-02).
-                      Expanded(child: DuoIconButton(key: const Key('home.needs'), icon: Icons.shopping_basket_rounded, label: 'Нужное', color: FinniColors.need, onTap: () => _open(CategoryScreen(game: game, category: ShopCategory.needs)))),
+                      // Четыре раздела; нужное — пузырями над героем (SA F-022, F-039, F-041).
                       Expanded(child: DuoIconButton(key: const Key('home.treats'), icon: Icons.icecream_rounded, label: 'Хотелки', color: FinniColors.want, onTap: () => _open(CategoryScreen(game: game, category: ShopCategory.treats)))),
-                      Expanded(child: DuoIconButton(key: const Key('home.clothes'), icon: Icons.checkroom_rounded, label: 'Одежда', onTap: () => _open(ClothesScreen(game: game)))),
+                      Expanded(child: DuoIconButton(key: const Key('home.clothes'), icon: Icons.checkroom_rounded, label: 'Образ', color: FinniColors.primary, onTap: () => _open(LookScreen(game: game)))),
                       Expanded(child: DuoIconButton(key: const Key('home.room'), icon: Icons.weekend_rounded, label: 'Дом', color: FinniColors.orange, onTap: () => _open(RoomScreen(game: game)))),
                       Expanded(child: DuoIconButton(key: const Key('home.savings'), icon: Icons.savings_rounded, label: 'Копилка', color: FinniColors.save, onTap: () => _open(SavingsScreen(game: game)))),
                     ],

@@ -11,6 +11,8 @@ import '../widgets/common.dart';
 import '../widgets/duo.dart';
 import '../widgets/confetti.dart';
 import '../widgets/jar_view.dart';
+import 'look_screen.dart';
+import 'room_screen.dart';
 
 /// Копилка и цели (SA F-014).
 class SavingsScreen extends StatefulWidget {
@@ -118,9 +120,50 @@ class _SavingsScreenState extends State<SavingsScreen> {
       _confetti.fire();
       _mascot.dance();
       buzz(Buzz.heavy);
-      showToast(context, [...f.messages, '${goal.emoji} ${goal.title} — теперь в доме!'], emoji: '🎉', color: FinniColors.need);
+      await _celebrate(goal);
     } else {
       showToast(context, f.messages, emoji: '⏳');
+    }
+  }
+
+  /// Цель достигнута — праздник и переход туда, где награду видно (F-041).
+  Future<void> _celebrate(GoalDef goal) async {
+    final (label, Widget? target) = switch (goal.reward) {
+      GoalReward.skin => ('Примерить облик', LookScreen(game: game) as Widget?),
+      GoalReward.room => ('Посмотреть в комнате', RoomScreen(game: game, initialRoom: 2) as Widget?),
+      GoalReward.furniture || GoalReward.item => ('Посмотреть в комнате', RoomScreen(game: game) as Widget?),
+      GoalReward.gift => ('Ура!', null),
+    };
+    final go = await showModalBottomSheet<bool>(
+      context: context,
+      builder: (sheet) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(goal.emoji, textAlign: TextAlign.center, style: const TextStyle(fontSize: 64)),
+              Text('Цель достигнута!', textAlign: TextAlign.center, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 6),
+              Text(
+                goal.reward == GoalReward.gift ? 'Подарок готов — друг будет рад!' : '${goal.title} — теперь твоё. Ты копил и дождался.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 16, color: FinniColors.muted),
+              ),
+              const SizedBox(height: 16),
+              DuoButton(key: const Key('goal.go'), label: label, color: FinniColors.need, onPressed: () => Navigator.of(sheet).pop(target != null)),
+              if (target != null) ...[
+                const SizedBox(height: 10),
+                DuoButton(label: 'Позже', color: FinniColors.surface, onPressed: () => Navigator.of(sheet).pop(false)),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+    if (go == true && target != null && mounted) {
+      await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => target));
     }
   }
 

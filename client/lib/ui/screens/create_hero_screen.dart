@@ -12,9 +12,12 @@ import '../widgets/duo.dart';
 /// Настрой Финика: скин, цвет, причёска и имена (SA F-023, F-008).
 /// [create] — первый вход ребёнка; иначе правка облика из Одежды.
 class FinikStyleScreen extends StatefulWidget {
-  const FinikStyleScreen({super.key, required this.game, this.create = true});
+  const FinikStyleScreen({super.key, required this.game, this.create = true, this.embedded = false});
   final GameController game;
   final bool create;
+
+  /// Вкладка «Облик» раздела «Образ»: без шапки, выбор применяется сразу (F-041).
+  final bool embedded;
 
   @override
   State<FinikStyleScreen> createState() => _FinikStyleScreenState();
@@ -82,6 +85,12 @@ class _FinikStyleScreenState extends State<FinikStyleScreen> {
       _lockHint = null;
     });
     _mascot.jump();
+    _applyLive();
+  }
+
+  /// Во вкладке «Облик» выбор сохраняется сразу — без кнопки «Готово».
+  void _applyLive() {
+    if (widget.embedded) game.restyle(skin: _skin, color: _color, hair: _hair);
   }
 
   Future<void> _done() async {
@@ -108,9 +117,17 @@ class _FinikStyleScreenState extends State<FinikStyleScreen> {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       children: [
         if (widget.create) ...[
-          const Text('Настрой Финика', textAlign: TextAlign.center, style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700, letterSpacing: -0.6)),
+          const Text(
+            'Настрой Финика',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700, letterSpacing: -0.6),
+          ),
           const SizedBox(height: 4),
-          const Text('Выбери, каким будет твой друг', textAlign: TextAlign.center, style: TextStyle(color: FinniColors.muted, fontSize: 16)),
+          const Text(
+            'Выбери, каким будет твой друг',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: FinniColors.muted, fontSize: 16),
+          ),
         ],
         Center(
           child: Container(
@@ -146,10 +163,7 @@ class _FinikStyleScreenState extends State<FinikStyleScreen> {
                         const Icon(Icons.lock_rounded, color: FinniColors.muted, size: 20),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: Text(
-                            _lockHint!,
-                            style: const TextStyle(fontSize: 14, color: FinniColors.ink),
-                          ),
+                          child: Text(_lockHint!, style: const TextStyle(fontSize: 14, color: FinniColors.ink)),
                         ),
                       ],
                     ),
@@ -158,12 +172,7 @@ class _FinikStyleScreenState extends State<FinikStyleScreen> {
               : const SizedBox(width: double.infinity),
         ),
         _label(_skin == 'monkey' ? 'Цвет · у Мартышки свой' : 'Цвет'),
-        Wrap(
-          spacing: 7,
-          runSpacing: 10,
-          alignment: WrapAlignment.center,
-          children: [for (final c in content.palette) _swatch(c)],
-        ),
+        Wrap(spacing: 7, runSpacing: 10, alignment: WrapAlignment.center, children: [for (final c in content.palette) _swatch(c)]),
         if (_skin == 'finik') ...[
           _label('Причёска'),
           Wrap(
@@ -177,6 +186,7 @@ class _FinikStyleScreenState extends State<FinikStyleScreen> {
                   selected: _hair == id,
                   onSelected: (_) {
                     setState(() => _hair = id);
+                    _applyLive();
                     _mascot.jump();
                   },
                 ),
@@ -189,25 +199,29 @@ class _FinikStyleScreenState extends State<FinikStyleScreen> {
           const SizedBox(height: 10),
           _field(const Key('hero.player'), _player, 'А тебя? Игровое имя'),
           const SizedBox(height: 8),
-          const Text('Фамилию и телефон писать не нужно.', textAlign: TextAlign.center, style: TextStyle(color: FinniColors.muted)),
+          const Text(
+            'Фамилию и телефон писать не нужно.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: FinniColors.muted),
+          ),
         ],
         const SizedBox(height: 18),
-        DuoButton(
-          key: const Key('hero.go'),
-          label: widget.create ? 'В комнату!' : 'Готово',
-          onPressed: _valid && !_busy ? _done : null,
-        ),
+        if (!widget.embedded)
+          DuoButton(key: const Key('hero.go'), label: widget.create ? 'В комнату!' : 'Готово', onPressed: _valid && !_busy ? _done : null),
       ],
     );
     return Scaffold(
-      appBar: widget.create ? null : AppBar(title: const Text('Облик')),
+      appBar: widget.create || widget.embedded ? null : AppBar(title: const Text('Облик')),
       body: SafeArea(top: widget.create, child: body),
     );
   }
 
   Widget _label(String text) => Padding(
     padding: const EdgeInsets.fromLTRB(4, 18, 4, 10),
-    child: Text(text.toUpperCase(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.6, color: FinniColors.muted)),
+    child: Text(
+      text.toUpperCase(),
+      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.6, color: FinniColors.muted),
+    ),
   );
 
   Widget _skinTile(SkinDef s) {
@@ -252,7 +266,10 @@ class _FinikStyleScreenState extends State<FinikStyleScreen> {
               ),
               FittedBox(
                 fit: BoxFit.scaleDown,
-                child: Text(s.title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: open ? FinniColors.ink : FinniColors.muted)),
+                child: Text(
+                  s.title,
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: open ? FinniColors.ink : FinniColors.muted),
+                ),
               ),
               if (!open)
                 FittedBox(
@@ -279,6 +296,7 @@ class _FinikStyleScreenState extends State<FinikStyleScreen> {
             ? null
             : () {
                 setState(() => _color = c.color);
+                _applyLive();
                 _mascot.jump();
               },
         child: AnimatedContainer(
@@ -310,8 +328,14 @@ class _FinikStyleScreenState extends State<FinikStyleScreen> {
       filled: true,
       fillColor: FinniColors.surface,
       contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: const BorderSide(color: FinniColors.line, width: 2)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: const BorderSide(color: FinniColors.primary, width: 2)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: const BorderSide(color: FinniColors.line, width: 2),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: const BorderSide(color: FinniColors.primary, width: 2),
+      ),
     ),
   );
 }

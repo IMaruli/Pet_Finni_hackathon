@@ -57,6 +57,7 @@
 | F-038 | Знакомство с питомцем | [ui/F-038](ui/F-038_PET_GREETING_SA_SPEC.md) | `ui/tabs/home_tab.dart`, `store/snapshot.dart` | `game_controller_test`, `app_flow_test` |
 | F-039 | Пузыри нужного над героем | [ui/F-039](ui/F-039_NEED_BUBBLES_SA_SPEC.md) | `ui/widgets/need_bubble.dart`, `ui/room/room_scene.dart`, `ui/tabs/home_tab.dart` | `app_flow_test` |
 | F-040 | Копилка на виду на Доме | [ui/F-040](ui/F-040_PIGGY_ON_HOME_SA_SPEC.md) | `ui/tabs/home_tab.dart`, `ui/widgets/piggy.dart` | `app_flow_test` |
+| F-041 | Раздел «Образ», переход после цели | [ui/F-041](ui/F-041_LOOK_SECTION_SA_SPEC.md) | `ui/screens/look_screen.dart`, `ui/screens/savings_screen.dart`, `ui/tabs/home_tab.dart` | `app_flow_test`, `savings_goal_test` |
 
 **Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
 См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.

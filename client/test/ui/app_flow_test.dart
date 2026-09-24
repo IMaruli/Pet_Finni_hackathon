@@ -112,7 +112,8 @@ void main() {
       await settle(t, 30);
       expect(find.byKey(Key('home.need.$id')), findsNothing);
     }
-    await tapKey(t, 'home.clothes');
+    await tapKey(t, 'home.clothes'); // «Образ» (F-041)
+    await tapKey(t, 'look.tab.clothes');
     await tapKey(t, 'clothes.glasses'); // примерка
     await tapKey(t, 'clothes.glasses'); // покупка
     await tapKey(t, 'shop.buy');
@@ -159,20 +160,20 @@ void main() {
     await t.pageBack();
     await settle(t, 30);
 
-    // Одежда: очки надеты после покупки, тап — снять.
+    // «Образ» → Одежда: очки надеты после покупки, тап — снять.
     await tapKey(t, 'home.clothes');
+    await tapKey(t, 'look.tab.clothes');
     expect(find.text('надето'), findsOneWidget);
     await tapKey(t, 'clothes.glasses');
     expect(find.text('снято'), findsOneWidget);
 
-    // F-023: облик из Одежды — Мартышка закрыта, Зайка выбирается бесплатно.
-    await tapKey(t, 'clothes.style');
+    // «Образ» → Облик: Мартышка закрыта, Зайка применяется сразу и бесплатно (F-041).
+    await tapKey(t, 'look.tab.look');
     await tapKey(t, 'hero.skin.monkey');
     expect(find.byKey(const Key('hero.skin.lockHint')), findsOneWidget);
     await tapKey(t, 'hero.skin.bunny');
     expect(find.byKey(const Key('hero.hair.tuft')), findsNothing); // у Зайки ушки
-    await tapKey(t, 'hero.go');
-    await settle(t, 20);
+    expect(find.byKey(const Key('hero.go')), findsNothing); // без «Готово»
     await t.pageBack();
     await settle(t);
 
@@ -258,14 +259,12 @@ void main() {
     await tapKey(t, 'plan.suggest');
     await tapKey(t, 'plan.done');
     await settle(t, 40); // тост плана уезжает с кнопок
-    await tapKey(t, 'home.needs');
+    expect(find.byKey(const Key('home.needs')), findsNothing); // кнопки «Нужное» больше нет (F-041)
     for (final id in ['breakfast', 'water', 'care']) {
-      await tapKey(t, 'shopRow.$id');
+      await tapKey(t, 'home.need.$id');
       await tapKey(t, 'shop.buy');
       await settle(t, 30);
     }
-    await t.pageBack();
-    await settle(t, 20);
 
     await tapKey(t, 'nav.games');
     await tapKey(t, 'games.sort');

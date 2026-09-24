@@ -9,15 +9,18 @@ import '../widgets/buy_sheet.dart';
 
 /// Дом (Figma 08): комната во весь экран + лента вещей в комнату; цели — только в Копилке (SA F-017 BR-12, F-022 BR-06).
 class RoomScreen extends StatefulWidget {
-  const RoomScreen({super.key, required this.game});
+  const RoomScreen({super.key, required this.game, this.initialRoom = 1});
   final GameController game;
+
+  /// После цели «Вторая комната» открываем сразу игровую (F-041).
+  final int initialRoom;
 
   @override
   State<RoomScreen> createState() => _RoomScreenState();
 }
 
 class _RoomScreenState extends State<RoomScreen> {
-  int _room = 1;
+  late int _room = widget.initialRoom;
 
   GameController get game => widget.game;
 
