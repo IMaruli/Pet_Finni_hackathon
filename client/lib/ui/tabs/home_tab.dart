@@ -273,11 +273,15 @@ class _HomeTabState extends State<HomeTab> {
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Flexible(
-          child: Text(name, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: -0.3)),
+        // Имя видно всегда, ужимается стадия (F-051 BR-10).
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 110),
+          child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: -0.3)),
         ),
-        const SizedBox(width: 8),
-        FittedBox(fit: BoxFit.scaleDown, child: DuoChip(text: game.stageTitle, color: FinniColors.primary)),
+        const SizedBox(width: 6),
+        Flexible(
+          child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: DuoChip(text: game.stageTitle, color: FinniColors.primary)),
+        ),
       ],
     ),
   );
@@ -293,13 +297,13 @@ class _HomeTabState extends State<HomeTab> {
             onTap: () => setState(() => _room = id),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: _room == id ? FinniColors.surface : Colors.transparent,
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: _room == id ? const [BoxShadow(color: Color(0x1A000000), blurRadius: 4, offset: Offset(0, 1))] : null,
               ),
-              child: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              child: Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
             ),
           ),
       ],

@@ -140,6 +140,26 @@ void main() {
     expect(game.economy.available, before);
   });
 
+  test('one item per wear place: a new hat replaces the old one (F-051)', () async {
+    await planAll(game, need: game.todaysNeedSum, want: 20);
+    await buyNeeds();
+    expect((await game.buy('cap', commandId: game.newCommandId())).ok, isTrue);
+    expect((await game.buy('flower', commandId: game.newCommandId())).ok, isTrue);
+    expect(game.inventory.worn, containsAll(['cap', 'flower'])); // голова и волосы — разные места
+    await game.endDay();
+    await planAll(game, need: game.todaysNeedSum, want: 12);
+    await buyNeeds();
+    expect((await game.buy('partyhat', commandId: game.newCommandId())).ok, isTrue);
+    expect(game.inventory.worn, containsAll(['partyhat', 'flower']));
+    expect(game.inventory.worn, isNot(contains('cap'))); // купленный колпак снял кепку
+    final replaced = await game.toggleWear('cap');
+    expect(replaced?.id, 'partyhat');
+    expect(game.inventory.worn, containsAll(['cap', 'flower']));
+    expect(game.inventory.worn, isNot(contains('partyhat')));
+    expect(await game.toggleWear('cap'), isNull); // снять — просто снять
+    expect(game.inventory.worn, isNot(contains('cap')));
+  });
+
   test('hero sticker is owned, worn, and not sold twice', () async {
     await planAll(game, need: game.todaysNeedSum, want: 20);
     await buyNeeds();

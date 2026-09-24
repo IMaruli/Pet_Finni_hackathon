@@ -139,6 +139,9 @@ final class GameContent {
       if (i.slot != ItemSlot.consumable && i.accessory == null) {
         problems.add('items: ${i.id} needs accessory for slot ${i.slot.name}');
       }
+      if (i.slot == ItemSlot.hero && !const {'head', 'hair', 'eyes', 'neck'}.contains(i.wear)) {
+        problems.add('items: ${i.id} needs wear head|hair|eyes|neck (F-051)');
+      }
     }
     for (final g in goals) {
       if (g.cost <= 0) problems.add('goals: ${g.id} cost must be > 0');

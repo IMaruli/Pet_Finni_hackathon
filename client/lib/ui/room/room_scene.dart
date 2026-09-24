@@ -253,6 +253,7 @@ class _RoomPainter extends CustomPainter {
     final paint = Paint();
     if (frame.background != null) canvas.drawVertices(frame.background!, BlendMode.dst, paint);
     if (window != null) _sky(canvas, window!);
+    if (frame.walls != null) canvas.drawVertices(frame.walls!, BlendMode.dst, paint);
     if (frame.decals != null) canvas.drawVertices(frame.decals!, BlendMode.dst, paint);
     final shadow = Paint()
       ..color = const Color(0x40000000)

@@ -6,6 +6,7 @@ import '../mascot/mascot_look.dart';
 import '../mascot/mascot_view.dart';
 import '../theme.dart';
 import '../widgets/buy_sheet.dart';
+import '../widgets/common.dart';
 import '../widgets/duo.dart';
 
 /// Одежда (Figma 07): рамка с героем и шкаф налепок, тап = примерка (SA F-017 BR-11).
@@ -36,9 +37,11 @@ class _ClothesScreenState extends State<ClothesScreen> {
 
   Future<void> _tap(ShopItem item) async {
     if (game.inventory.owned.contains(item.id)) {
-      await game.toggleWear(item.id);
+      final replaced = await game.toggleWear(item.id);
+      if (!mounted) return;
       setState(() => _trying = null);
       _mascot.jump();
+      if (replaced != null) showToast(context, ['${item.title} вместо «${replaced.title}»'], emoji: item.emoji);
     } else if (_trying == item.id) {
       await buyFlow(context, game, item, mascot: _mascot);
       if (mounted) setState(() => _trying = null);
@@ -65,7 +68,14 @@ class _ClothesScreenState extends State<ClothesScreen> {
           skin: base.skin,
           mood: base.mood,
           stage: base.stage,
-          accessories: {...base.accessories, ?trying?.accessory},
+          // Примерка тоже встаёт на своё место: колпак вместо кепки (F-051).
+          accessories: trying == null
+              ? base.accessories
+              : {
+                  for (final id in game.inventory.worn)
+                    if (game.content.item(id).wear == null || game.content.item(id).wear != trying.wear) ?game.content.item(id).accessory,
+                  ?trying.accessory,
+                },
         );
         return Scaffold(
           appBar: widget.embedded ? null : AppBar(title: const Text('Одежда')),

@@ -252,7 +252,9 @@ final class GameController extends ChangeNotifier {
     if (item.slot != ItemSlot.consumable) {
       inv = inv.copyWith(
         owned: {...inv.owned, itemId},
-        worn: item.slot == ItemSlot.hero ? {...inv.worn, itemId} : inv.worn,
+        worn: item.slot == ItemSlot.hero
+            ? {...inv.worn.difference({for (final r in _sameWear(inv.worn, itemId)) r.id}), itemId} // купленное надевается вместо вещи того же места (F-051)
+            : inv.worn,
       );
     }
     final bought = [...snapshot.boughtToday, itemId];
@@ -268,11 +270,27 @@ final class GameController extends ChangeNotifier {
     return GameFeedback(ok: true, messages: [..._texts(r), item.effect]);
   }
 
-  Future<void> toggleWear(String itemId) async {
-    if (!inventory.owned.contains(itemId)) return;
+  /// Надеть или снять. Надетая вещь снимает другую с того же места (F-051); вернёт снятую, если была.
+  Future<ShopItem?> toggleWear(String itemId) async {
+    if (!inventory.owned.contains(itemId)) return null;
     final worn = {...inventory.worn};
-    if (!worn.remove(itemId)) worn.add(itemId);
+    if (worn.remove(itemId)) {
+      await _commit(snapshot.copyWith(inventory: inventory.copyWith(worn: worn)));
+      return null;
+    }
+    final replaced = _sameWear(worn, itemId);
+    worn
+      ..removeAll([for (final r in replaced) r.id])
+      ..add(itemId);
     await _commit(snapshot.copyWith(inventory: inventory.copyWith(worn: worn)));
+    return replaced.firstOrNull;
+  }
+
+  /// Надетые вещи с того же места, что и [itemId].
+  List<ShopItem> _sameWear(Set<String> worn, String itemId) {
+    final place = content.item(itemId).wear;
+    if (place == null) return const [];
+    return [for (final id in worn) if (id != itemId && content.item(id).wear == place) content.item(id)];
   }
 
   // ---------- Копилка и цель ----------

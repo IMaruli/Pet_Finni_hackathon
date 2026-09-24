@@ -217,8 +217,9 @@ class _MascotViewState extends State<MascotView> with SingleTickerProviderStateM
         },
         onPanStart: (_) => _dragging = true,
         onPanUpdate: (d) {
-          _dragYaw = (_dragYaw + d.delta.dx * 0.012).clamp(-1.4, 1.4);
-          _dragPitch = (_dragPitch + d.delta.dy * 0.006).clamp(-0.4, 0.4);
+          // Не дальше ±40°: лицо, уши и вещи остаются видны (F-051 BR-07).
+          _dragYaw = (_dragYaw + d.delta.dx * 0.01).clamp(-0.7, 0.7);
+          _dragPitch = (_dragPitch + d.delta.dy * 0.005).clamp(-0.3, 0.3);
         },
         onPanEnd: (_) => _dragging = false,
         onPanCancel: () => _dragging = false,
