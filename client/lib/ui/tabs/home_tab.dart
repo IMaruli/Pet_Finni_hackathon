@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../game/game_controller.dart';
 import '../mascot/mascot_look.dart';
 import '../mascot/mascot_view.dart';
-import '../room/room_painter.dart';
 import '../room/room_scene.dart';
 import '../screens/adult_screen.dart';
 import '../screens/clothes_screen.dart';
@@ -63,7 +62,7 @@ class _HomeTabState extends State<HomeTab> {
       builder: (context, box) {
         final size = Size(box.maxWidth, box.maxHeight);
         const feetY = 0.66;
-        final feet = heroAnchor(size, feetY: feetY);
+        final feet = Offset(size.width / 2, size.height * feetY);
         final heroSize = size.width * 0.5;
         return Stack(
           children: [
