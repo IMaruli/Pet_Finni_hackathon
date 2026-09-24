@@ -395,6 +395,26 @@ void main() {
     expect((s.needOk, s.wantOk, s.savedOk, s.good), (true, true, true, true));
   });
 
+  test('goal ETA uses the average saving, and a withdraw pushes it back (TZ 2.5.7, F-055)', () async {
+    expect(game.averageSaving, 0);
+    expect(game.daysToGoal(20), isNull); // нечего считать
+    await planAll(game, need: game.todaysNeedSum, want: 0);
+    await buyNeeds();
+    await game.toSavings(8);
+    expect(game.averageSaving, 8); // истории нет — отложенное сегодня
+    await game.endDay();
+    await planAll(game, need: game.todaysNeedSum, want: 0);
+    await buyNeeds();
+    await game.toSavings(4);
+    await game.endDay();
+    expect(game.snapshot.savedHistory, [8, 4]);
+    expect(game.averageSaving, 6);
+    expect(game.daysToGoal(20), 4); // ⌈20 / 6⌉
+    expect(game.daysToGoal(6), 1);
+    expect(game.daysToGoal(16), 3); // после снятия 10 срок 1 → 3
+    expect(game.daysToGoal(0), 0);
+  });
+
   test('withdraw needs confirm; cancel keeps savings', () async {
     await planAll(game, need: game.todaysNeedSum, want: 0);
     await game.toSavings(20);

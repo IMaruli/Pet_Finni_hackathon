@@ -310,6 +310,26 @@ final class GameController extends ChangeNotifier {
     return GameFeedback(ok: true, messages: _texts(r));
   }
 
+  /// Средняя сумма регулярного пополнения копилки (ТЗ 2.5.7, F-055): по прошлым периодам;
+  /// нет истории — отложенное сегодня, затем план «Отложить». 0 — посчитать нельзя.
+  int get averageSaving {
+    final h = snapshot.savedHistory;
+    if (h.isNotEmpty) {
+      final avg = h.reduce((a, b) => a + b) ~/ h.length;
+      return avg == 0 && h.any((v) => v > 0) ? 1 : avg;
+    }
+    final today = economy.savedThisPeriod.value;
+    if (today > 0) return today;
+    return economy.plan?.save.value ?? 0;
+  }
+
+  /// Сколько дней до цели при средней сумме пополнения; null — посчитать нельзя.
+  int? daysToGoal(int remaining) {
+    if (remaining <= 0) return 0;
+    final avg = averageSaving;
+    return avg <= 0 ? null : (remaining / avg).ceil();
+  }
+
   /// Прибавка копилки-вклада за сумму: 1 монета за каждые 10 (F-044).
   int interestFor(int savings) => savings * content.config.interestPercent ~/ 100;
 
@@ -592,6 +612,7 @@ final class GameController extends ChangeNotifier {
         questDoneToday: false,
         gameRewardToday: false,
         withdrewToday: false,
+        savedHistory: [...snapshot.savedHistory, before.savedThisPeriod.value].reversed.take(10).toList().reversed.toList(),
         lastSummary: summary,
         dailyQuests: [
           for (final q in pickDailyQuests(day: nextDay, hasNewTopic: _newTopicOn(nextDay), hasStarted: lessonProgress != null)) q.name,
