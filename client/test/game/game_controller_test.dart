@@ -386,11 +386,25 @@ void main() {
   });
 
   test('any treat makes the day glad once needs are covered (F-022)', () async {
-    expect(game.content.treatItems.map((i) => i.id), ['chocolate', 'icecream', 'lemonade']);
+    expect(game.content.treatItems.length, greaterThanOrEqualTo(9));
+    expect(game.content.treatItems.every((i) => i.joy != null), isTrue);
     await planAll(game, need: game.todaysNeedSum, want: 10);
     await buyNeeds();
     await game.buy('icecream', commandId: game.newCommandId());
     expect(game.mood, PetMood.glad);
+  });
+
+  test('a treat shows its joy on the hero until the day ends (F-031)', () async {
+    expect(game.todaysJoy, isNull);
+    await planAll(game, need: game.todaysNeedSum, want: 20);
+    await buyNeeds();
+    await game.buy('balloon', commandId: game.newCommandId());
+    expect(game.todaysJoy, 'balloon');
+    await game.buy('cupcake', commandId: game.newCommandId());
+    expect(game.todaysJoy, 'hearts'); // видна последняя
+    expect(game.mood, PetMood.glad);
+    await game.endDay();
+    expect(game.todaysJoy, isNull);
   });
 
   test('needs show in the room: bowls and grooming (F-027)', () async {

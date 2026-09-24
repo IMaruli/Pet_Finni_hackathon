@@ -56,6 +56,15 @@ final class GameController extends ChangeNotifier {
   bool get isGrubby => _needToday('care') && !isBoughtToday('care');
   Bowls get bowls => Bowls(food: foodServed, water: waterServed);
 
+  /// Радость последней хотелки, купленной сегодня (F-031).
+  String? get todaysJoy {
+    for (final id in snapshot.boughtToday.reversed) {
+      final joy = content.item(id).joy;
+      if (joy != null) return joy;
+    }
+    return null;
+  }
+
   // Сначала нужное (SA F-021).
   List<ShopItem> get needsLeft => [for (final i in todaysNeeds) if (!isBoughtToday(i.id)) i];
   int get needsLeftCost => needsLeft.fold(0, (s, i) => s + i.price);

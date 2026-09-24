@@ -47,6 +47,7 @@
 | F-028 | Время суток в комнате | [ui/F-028](ui/F-028_DAY_TIME_SA_SPEC.md) | `game/pet_wish.dart`, `ui/room3d/room_builder.dart`, `ui/room/room_scene.dart` | `pet_wish_test`, `room3d_test` |
 | F-029 | Вещи в комнату, цели-вещи, исправление отрисовки | [ui/F-029](ui/F-029_ROOM_ITEMS_SA_SPEC.md) | `ui/room3d/`, `assets/content/items.json`, `goals.json` | `room3d_test`, `game_controller_test`, `content_test` |
 | F-030 | Больше одежды | [ui/F-030](ui/F-030_WARDROBE_SA_SPEC.md) | `ui/mascot/mascot_painter.dart`, `ui/screens/clothes_screen.dart` | `mascot_test` |
+| F-031 | Хотелки радуют героя видимо | [ui/F-031](ui/F-031_TREATS_JOY_SA_SPEC.md) | `ui/mascot/mascot_view.dart`, `assets/content/items.json` | `game_controller_test`, `mascot_test` |
 
 **Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
 См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.

@@ -24,6 +24,7 @@ final class ShopItem {
     required this.effect,
     required this.slot,
     this.accessory,
+    this.joy,
   });
 
   factory ShopItem.fromJson(Map<String, dynamic> j) => ShopItem(
@@ -35,6 +36,7 @@ final class ShopItem {
     effect: j['effect'] as String,
     slot: _enum(ItemSlot.values, j['slot'], 'slot'),
     accessory: j['accessory'] as String?,
+    joy: j['joy'] as String?,
   );
 
   final String id;
@@ -47,6 +49,9 @@ final class ShopItem {
 
   /// hero: bandana|glasses|bow|headphones; room: lamp|rug|poster.
   final String? accessory;
+
+  /// Как хотелка радует героя (F-031): hearts|sparkles|bubbles|balloon|notes|stars.
+  final String? joy;
 
   GameCoins get coins => GameCoins(price);
   CatalogItem get catalogItem => CatalogItem(id: id, kind: kind, price: coins);

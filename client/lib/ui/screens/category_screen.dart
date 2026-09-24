@@ -23,7 +23,7 @@ class CategoryScreen extends StatelessWidget {
       listenable: game,
       builder: (context, _) {
         final needs = category == ShopCategory.needs;
-        final items = needs ? game.todaysNeeds : game.content.treatItems;
+        final items = needs ? game.todaysNeeds : ([...game.content.treatItems]..sort((a, b) => a.price.compareTo(b.price)));
         final locked = !needs && game.needsLeft.isNotEmpty;
         return Scaffold(
           appBar: AppBar(
@@ -51,7 +51,7 @@ class CategoryScreen extends StatelessWidget {
                 header: needs ? 'На сегодня' : (locked ? 'После нужного' : 'Порадовать себя'),
                 footer: needs
                     ? 'Нужное каждый день новое: завтра понадобится снова.'
-                    : 'Вкусность радует героя до вечера. Платишь из банки «Хочу».',
+                    : 'Радость видна на герое до вечера. Платишь из банки «Хочу».',
                 children: [for (final item in items) _row(context, item, locked: locked)],
               ),
             ],

@@ -16,6 +16,7 @@ final class MascotLook {
     this.accessories = const {},
     this.emotion,
     this.grubby = false,
+    this.joy,
   });
 
   factory MascotLook.fromLook(
@@ -47,6 +48,7 @@ final class MascotLook {
         for (final id in game.inventory.worn) ?content.item(id).accessory,
       },
       grubby: game.isGrubby,
+      joy: game.todaysJoy,
     );
   }
 
@@ -69,8 +71,11 @@ final class MascotLook {
   /// Уход сегодня нужен и не куплен: пятна и «запах» (F-027).
   final bool grubby;
 
+  /// Радость хотелки дня: частицы вокруг героя или шарик (F-031).
+  final String? joy;
+
   MascotLook withEmotion(PetEmotion? e) =>
-      MascotLook(color: color, hair: hair, mood: mood, stage: stage, skin: skin, accessories: accessories, emotion: e, grubby: grubby);
+      MascotLook(color: color, hair: hair, mood: mood, stage: stage, skin: skin, accessories: accessories, emotion: e, grubby: grubby, joy: joy);
 
   bool get isMonkey => skin == 'monkey';
   bool get isCat => skin == 'cat';

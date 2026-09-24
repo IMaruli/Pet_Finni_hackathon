@@ -121,4 +121,18 @@ void main() {
       }
     }
   });
+
+  testWidgets('every treat joy renders around the hero (F-031)', (tester) async {
+    for (final joy in ['hearts', 'sparkles', 'bubbles', 'balloon', 'notes', 'stars']) {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Center(
+            child: MascotView(look: MascotLook(color: const Color(0xFFFFCC33), hair: 'tuft', mood: PetMood.glad, stage: 2, joy: joy)),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      expect(tester.takeException(), isNull, reason: joy);
+    }
+  });
 }

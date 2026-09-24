@@ -226,36 +226,18 @@ class _MascotViewState extends State<MascotView> with SingleTickerProviderStateM
       );
     }
 
-    if (emotion == PetEmotion.sleepy && widget.animated) {
-      final sz = widget.size;
-      child = Stack(
-        clipBehavior: Clip.none,
-        children: [
-          child,
-          for (var i = 0; i < 3; i++)
-            () {
-              final ph = (_t * 0.45 + i / 3) % 1.0;
-              return Positioned(
-                left: sz * (0.66 + ph * 0.22),
-                top: sz * (0.2 - ph * 0.3),
-                child: IgnorePointer(
-                  child: Opacity(
-                    opacity: sin(ph * pi).clamp(0.0, 1.0),
-                    child: Text(
-                      'z',
-                      style: TextStyle(
-                        fontSize: sz * (0.13 + ph * 0.1),
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF5E5CE6),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }(),
-        ],
-      );
-    }
+    final sz = widget.size;
+    final overlays = <Widget>[
+      if (emotion == PetEmotion.sleepy && widget.animated)
+        for (var i = 0; i < 3; i++) _floating(
+          phase: (_t * 0.45 + i / 3) % 1.0,
+          left: (ph) => sz * (0.66 + ph * 0.22),
+          top: (ph) => sz * (0.2 - ph * 0.3),
+          child: (ph) => Text('z', style: TextStyle(fontSize: sz * (0.13 + ph * 0.1), fontWeight: FontWeight.w700, color: const Color(0xFF5E5CE6))),
+        ),
+      if (widget.look.joy != null && widget.animated) ..._joy(widget.look.joy!, sz),
+    ];
+    if (overlays.isNotEmpty) child = Stack(clipBehavior: Clip.none, children: [child, ...overlays]);
 
     final name = widget.semanticsLabel ?? 'Герой';
     return Semantics(
@@ -264,4 +246,107 @@ class _MascotViewState extends State<MascotView> with SingleTickerProviderStateM
       child: ExcludeSemantics(child: child),
     );
   }
+
+  /// Частица, всплывающая по фазе 0→1 с появлением и исчезанием.
+  Widget _floating({
+    required double phase,
+    required double Function(double) left,
+    required double Function(double) top,
+    required Widget Function(double) child,
+  }) => Positioned(
+    left: left(phase),
+    top: top(phase),
+    child: IgnorePointer(child: Opacity(opacity: sin(phase * pi).clamp(0.0, 1.0), child: child(phase))),
+  );
+
+  /// Радость хотелки дня вокруг героя (F-031).
+  List<Widget> _joy(String joy, double sz) {
+    final glyph = switch (joy) {
+      'hearts' => '💖',
+      'sparkles' => '✨',
+      'notes' => '🎵',
+      'stars' => '⭐',
+      _ => null,
+    };
+    if (joy == 'balloon') {
+      final bob = sin(_t * 1.6) * sz * 0.03;
+      return [
+        Positioned(
+          left: sz * 0.78,
+          top: sz * 0.02 + bob,
+          child: IgnorePointer(
+            child: CustomPaint(size: Size(sz * 0.28, sz * 0.62), painter: _BalloonPainter(sway: sin(_t * 1.1) * 0.08)),
+          ),
+        ),
+      ];
+    }
+    if (joy == 'bubbles') {
+      return [
+        for (var i = 0; i < 6; i++)
+          _floating(
+            phase: (_t * 0.3 + i / 6) % 1.0,
+            left: (ph) => sz * (0.12 + (i * 0.19) % 0.8 + sin(ph * 6 + i) * 0.03),
+            top: (ph) => sz * (0.62 - ph * 0.62),
+            child: (ph) => Container(
+              width: sz * (0.1 + (i % 3) * 0.04),
+              height: sz * (0.1 + (i % 3) * 0.04),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const RadialGradient(center: Alignment(-0.4, -0.4), colors: [Color(0xEEFFFFFF), Color(0x7780D8FF), Color(0x66A78BFA)]),
+                border: Border.all(color: const Color(0xDD4FC3F7), width: 1.5),
+              ),
+            ),
+          ),
+      ];
+    }
+    return [
+      for (var i = 0; i < 4; i++)
+        _floating(
+          phase: (_t * 0.35 + i / 4) % 1.0,
+          left: (ph) => sz * (i.isEven ? 0.08 + ph * 0.06 : 0.74 - ph * 0.06),
+          top: (ph) => sz * (0.45 - ph * 0.42),
+          child: (ph) => Text(glyph ?? '💖', style: TextStyle(fontSize: sz * (0.09 + ph * 0.05))),
+        ),
+    ];
+  }
+}
+
+/// Воздушный шарик на ниточке (F-031).
+class _BalloonPainter extends CustomPainter {
+  _BalloonPainter({required this.sway});
+  final double sway;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final ball = Rect.fromCenter(center: Offset(w / 2, w * 0.55), width: w * 0.9, height: w * 1.05);
+    final knot = Offset(w / 2, ball.bottom);
+    final end = Offset(w / 2 - w * 0.9 + sway * w, size.height);
+    canvas.drawPath(
+      Path()
+        ..moveTo(knot.dx, knot.dy)
+        ..quadraticBezierTo(w * 0.2, size.height * 0.7, end.dx, end.dy),
+      Paint()
+        ..color = const Color(0xFF9A8F85)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2,
+    );
+    canvas.drawOval(
+      ball,
+      Paint()
+        ..shader = const RadialGradient(center: Alignment(-0.35, -0.4), colors: [Color(0xFFFF9AA2), Color(0xFFFF4D6D), Color(0xFFD62846)]).createShader(ball),
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(knot.dx - 4, knot.dy + 4)
+        ..lineTo(knot.dx + 4, knot.dy + 4)
+        ..lineTo(knot.dx, knot.dy - 2)
+        ..close(),
+      Paint()..color = const Color(0xFFD62846),
+    );
+    canvas.drawOval(Rect.fromCenter(center: ball.center + Offset(-w * 0.18, -w * 0.22), width: w * 0.16, height: w * 0.26), Paint()..color = const Color(0x88FFFFFF));
+  }
+
+  @override
+  bool shouldRepaint(_BalloonPainter old) => old.sway != sway;
 }
