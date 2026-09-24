@@ -244,30 +244,33 @@ class _SavingsScreenState extends State<SavingsScreen> {
                   const DuoSection('Отложить из кошелька'),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
+                    child: Column(
                       children: [
-                        for (final a in [1, 5, 10]) ...[
-                          Expanded(
-                            child: DuoButton(
-                              key: Key('save.$a'),
-                              label: '+$a',
-                              height: 44,
-                              color: FinniColors.surface,
-                              onPressed: wallet >= a ? () => _save(a) : null,
-                            ),
+                        Row(
+                          children: [
+                            for (final (i, a) in [1, 5, 10].indexed) ...[
+                              if (i > 0) const SizedBox(width: 8),
+                              Expanded(
+                                child: DuoButton(
+                                  key: Key('save.$a'),
+                                  label: '+$a',
+                                  height: 44,
+                                  color: FinniColors.surface,
+                                  onPressed: wallet >= a ? () => _save(a) : null,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        if (planLeft > 0) ...[
+                          const SizedBox(height: 8),
+                          DuoButton(
+                            key: const Key('save.plan'),
+                            label: 'Отложить по плану: $planLeft',
+                            height: 48,
+                            onPressed: wallet >= planLeft ? () => _save(planLeft) : null,
                           ),
-                          const SizedBox(width: 8),
                         ],
-                        if (planLeft > 0)
-                          Expanded(
-                            flex: 2,
-                            child: DuoButton(
-                              key: const Key('save.plan'),
-                              label: 'По плану +$planLeft',
-                              height: 44,
-                              onPressed: wallet >= planLeft ? () => _save(planLeft) : null,
-                            ),
-                          ),
                       ],
                     ),
                   ),

@@ -56,9 +56,10 @@ class _IntroScreenState extends State<IntroScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Text(
-              widget.replay ? 'Подсказка' : 'Привет! Это игра про монеты',
+              widget.replay ? 'Как играть' : 'Привет! Это игра про монеты',
+              textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, letterSpacing: -0.6),
             ),
             const SizedBox(height: 4),
