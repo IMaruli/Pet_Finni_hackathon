@@ -103,7 +103,7 @@ class _RoomSceneState extends State<RoomScene> with SingleTickerProviderStateMix
         final heroBase = cam.project(cam.toView(RoomBuilder.heroSpot), size, shift: shift, zoom: zoom)!;
         final heroTop = cam.project(cam.toView(RoomBuilder.heroSpot + const Vec3(0, 1, 0)), size, shift: shift, zoom: zoom)!;
         final unit = (heroBase.dy - heroTop.dy).abs();
-        final heroSize = unit * 1.75;
+        final heroSize = unit * widget.heroScale * 3.125;
         final glows = [
           if (widget.night)
             for (final g in RoomBuilder.glowSpots(inventory: widget.inventory, room: widget.room))

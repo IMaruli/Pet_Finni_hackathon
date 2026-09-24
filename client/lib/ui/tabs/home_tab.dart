@@ -76,7 +76,7 @@ class _HomeTabState extends State<HomeTab> {
                 inventory: game.inventory,
                 room: room,
                 feetY: feetY,
-                heroScale: 0.5,
+                heroScale: 0.78,
                 hero: MascotView(
                   look: MascotLook.fromGame(game).withEmotion(_moodLine == null ? wish.emotion : null),
                   controller: _mascot,

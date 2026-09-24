@@ -236,15 +236,15 @@ class _MascotViewState extends State<MascotView> with SingleTickerProviderStateM
             () {
               final ph = (_t * 0.45 + i / 3) % 1.0;
               return Positioned(
-                left: sz * (0.62 + ph * 0.2),
-                top: sz * (0.22 - ph * 0.28),
+                left: sz * (0.66 + ph * 0.22),
+                top: sz * (0.2 - ph * 0.3),
                 child: IgnorePointer(
                   child: Opacity(
                     opacity: sin(ph * pi).clamp(0.0, 1.0),
                     child: Text(
                       'z',
                       style: TextStyle(
-                        fontSize: sz * (0.09 + ph * 0.07),
+                        fontSize: sz * (0.13 + ph * 0.1),
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF5E5CE6),
                       ),

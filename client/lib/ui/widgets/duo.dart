@@ -275,8 +275,8 @@ class DuoIconButton extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    shadows: [Shadow(color: Color(0x88000000), blurRadius: 6)],
+                    color: FinniColors.ink,
+                    shadows: [Shadow(color: Color(0xCCFFFFFF), blurRadius: 6)],
                   ),
                 ),
               ],
