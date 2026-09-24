@@ -167,6 +167,15 @@ class _LessonScreenState extends State<LessonScreen> {
                     textAlign: TextAlign.center,
                     style: const TextStyle(color: FinniColors.muted, fontSize: 15),
                   ),
+                  if (game.nextBlockWaitsForSleep) ...[
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Блок пройден! Следующий блок появится после сна 🌙',
+                      key: Key('lesson.nextBlockAfterSleep'),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: FinniColors.primary),
+                    ),
+                  ],
                   if (minutes > 0) ...[
                     const SizedBox(height: 8),
                     Text('Сегодня учились $minutes мин', style: const TextStyle(fontSize: 14, color: FinniColors.muted)),

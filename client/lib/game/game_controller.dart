@@ -323,24 +323,66 @@ final class GameController extends ChangeNotifier {
   // ---------- Уроки (SA F-025) ----------
 
   bool isLessonDone(String id) => snapshot.lessonLog.any((r) => r.lessonId == id);
+  bool isLessonDoneLesson(Lesson l) => isLessonDone(l.id);
   bool isTopicStarted(String topicId) =>
       snapshot.lessonLog.any((r) => content.lesson(r.lessonId).topic == topicId);
   LessonProgress? get lessonProgress => snapshot.lessonProgress;
 
-  /// Путь: первый урок открыт, следующий — после предыдущего; пройденные можно повторять.
+  /// День, когда блок (тема) закончен впервые; `null` — ещё нет (F-035).
+  int? blockDoneDay(String topicId) {
+    var last = 0;
+    for (final l in content.lessonsOf(topicId)) {
+      final run = snapshot.lessonLog.where((r) => r.lessonId == l.id).firstOrNull;
+      if (run == null) return null;
+      last = max(last, run.day);
+    }
+    return last;
+  }
+
+  /// Путь: первый урок открыт, следующий — после предыдущего; новый блок — только после сна
+  /// после окончания предыдущего блока (F-035). Пройденные можно повторять.
   bool isLessonOpen(String id) {
     final i = content.lessons.indexWhere((l) => l.id == id);
-    return i == 0 || isLessonDone(id) || (i > 0 && isLessonDone(content.lessons[i - 1].id));
+    if (i == 0 || isLessonDone(id)) return true;
+    if (i < 0 || !isLessonDone(content.lessons[i - 1].id)) return false;
+    final prev = content.lessons[i - 1];
+    if (prev.topic == content.lessons[i].topic) return true;
+    final done = blockDoneDay(prev.topic);
+    return done != null && done < day;
+  }
+
+  /// Следующий урок пути — первый в новом блоке, а предыдущий блок закончен сегодня.
+  bool get nextBlockWaitsForSleep {
+    final next = content.lessons.where((l) => !isLessonDone(l.id)).firstOrNull;
+    return next != null && !isLessonOpen(next.id) && isLessonDone(content.lessons[content.lessons.indexOf(next) - 1].id);
+  }
+
+  /// Новый блок можно открыть сегодня (для задания «Открой новую тему»).
+  bool get hasNewTopicToday {
+    final next = content.lessons.where((l) => !isTopicStarted(l.topic)).firstOrNull;
+    return next != null && isLessonOpen(next.id);
   }
 
   /// Что пройти сейчас: начатый, иначе следующий по пути, иначе повтор первого.
   Lesson get recommendedLesson {
     final p = lessonProgress;
     if (p != null) return content.lesson(p.lessonId);
-    return content.lessons.firstWhere((l) => !isLessonDone(l.id), orElse: () => content.lessons.first);
+    // Новый блок ждёт сна — предлагаем повторить пройденное (F-035).
+    return content.lessons.where((l) => !isLessonDone(l.id) && isLessonOpen(l.id)).firstOrNull ??
+        content.lessons.where(isLessonDoneLesson).lastOrNull ??
+        content.lessons.first;
   }
 
   bool get hasNewTopic => content.topics.any((t) => !isTopicStarted(t.id));
+
+  /// Откроется ли новый блок в день [d] (утро после сна).
+  bool _newTopicOn(int d) {
+    final i = content.lessons.indexWhere((l) => !isTopicStarted(l.topic));
+    if (i < 0) return false;
+    if (i == 0) return true;
+    final done = blockDoneDay(content.lessons[i - 1].topic);
+    return done != null && done < d;
+  }
 
   /// Открывает урок; возвращает шаг, с которого продолжить.
   Future<int> startLesson(String id) async {
@@ -399,7 +441,7 @@ final class GameController extends ChangeNotifier {
 
   List<(QuestId, QuestProgress)> get dailyQuests {
     final ids = snapshot.dailyQuests.isEmpty
-        ? pickDailyQuests(day: day, hasNewTopic: hasNewTopic, hasStarted: lessonProgress != null)
+        ? pickDailyQuests(day: day, hasNewTopic: hasNewTopicToday, hasStarted: lessonProgress != null)
         : [for (final n in snapshot.dailyQuests) QuestId.values.byName(n)];
     return [for (final q in ids) (q, dailyProgress(q, _facts))];
   }
@@ -471,7 +513,7 @@ final class GameController extends ChangeNotifier {
         gameRewardToday: false,
         lastSummary: summary,
         dailyQuests: [
-          for (final q in pickDailyQuests(day: nextDay, hasNewTopic: hasNewTopic, hasStarted: lessonProgress != null)) q.name,
+          for (final q in pickDailyQuests(day: nextDay, hasNewTopic: _newTopicOn(nextDay), hasStarted: lessonProgress != null)) q.name,
         ],
       ),
     );

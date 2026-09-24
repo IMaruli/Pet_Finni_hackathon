@@ -32,7 +32,9 @@ class LessonsTab extends StatelessWidget {
         children: [
           DuoHeader(
             title: 'Уроки',
-            subtitle: game.lessonPaidToday
+            subtitle: game.nextBlockWaitsForSleep
+                ? 'Блок на сегодня пройден — новый появится после сна 🌙'
+                : game.lessonPaidToday
                 ? 'Пройдено $done из ${content.lessons.length} · награда за сегодня получена'
                 : 'Пройдено $done из ${content.lessons.length} · первый урок дня +${content.config.rewardWise} 🪙',
           ),
@@ -90,6 +92,8 @@ class LessonsTab extends StatelessWidget {
     final open = game.isLessonOpen(l.id);
     final done = game.isLessonDone(l.id);
     final resume = game.lessonProgress?.lessonId == l.id;
+    // Первый урок следующего блока ждёт сна (F-035).
+    final waitsSleep = !open && game.nextBlockWaitsForSleep && game.content.lessons.where((x) => !game.isLessonDone(x.id)).firstOrNull?.id == l.id;
     final fill = !open ? const Color(0xFFD1D1D6) : color;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -97,7 +101,15 @@ class LessonsTab extends StatelessWidget {
         offset: Offset(offset, 0),
         child: Column(
           children: [
-            if (current)
+            if (waitsSleep)
+              Container(
+                key: const Key('lessons.afterSleep'),
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(color: FinniColors.night, borderRadius: BorderRadius.circular(12)),
+                child: const Text('После сна 🌙', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+              )
+            else if (current)
               Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -120,7 +132,11 @@ class LessonsTab extends StatelessWidget {
                       }
                     : () {
                         buzz(Buzz.heavy);
-                        showToast(context, ['Сначала пройди урок перед этим.'], emoji: '🔒');
+                        showToast(
+                          context,
+                          [waitsSleep ? 'Один блок в день: следующий откроется после сна. Заверши день в «Заданиях».' : 'Сначала пройди урок перед этим.'],
+                          emoji: waitsSleep ? '🌙' : '🔒',
+                        );
                       },
                 child: Container(
                   width: current ? 82 : 72,

@@ -211,6 +211,20 @@ void main() {
       expect(game.snapshot.lessonLog.last.kinds, containsAll(['card', 'pairs', 'next']));
     });
 
+    test('one block per day: the next block opens after sleep (F-035)', () async {
+      await game.finishLesson('needs_1');
+      await game.finishLesson('needs_2');
+      expect(game.blockDoneDay('needs'), 1);
+      expect(game.isLessonOpen('plan_1'), isFalse);
+      expect(game.nextBlockWaitsForSleep, isTrue);
+      expect(game.isLessonOpen(game.recommendedLesson.id), isTrue); // задания ведут в повтор, а не в замок
+      expect(game.isLessonOpen('needs_1'), isTrue); // повтор — в любой день
+      await game.endDay();
+      expect(game.isLessonOpen('plan_1'), isTrue);
+      expect(game.nextBlockWaitsForSleep, isFalse);
+      expect(game.recommendedLesson.id, 'plan_1');
+    });
+
     test('closing mid-lesson keeps the step; finishing later counts as resumed', () async {
       expect(await game.startLesson('needs_1'), 0);
       await game.saveLessonStep('needs_1', 2);
@@ -250,7 +264,10 @@ void main() {
       expect(game.lessonFor(QuestId.newTopic).id, 'needs_1');
       await game.finishLesson('needs_1');
       await game.finishLesson('needs_2');
-      expect(game.lessonFor(QuestId.newTopic).topic, isNot('needs'));
+      expect(game.hasNewTopicToday, isFalse); // новый блок — после сна
+      await game.endDay();
+      expect(game.hasNewTopicToday, isTrue);
+      expect(game.lessonFor(QuestId.newTopic).topic, 'plan');
       expect(game.lessonFor(QuestId.review).topic, 'needs');
       expect(game.lessonFor(QuestId.sortStep).kinds, contains(StepKind.sort));
     });

@@ -51,6 +51,9 @@
 | F-032 | Разнообразное нужное по расписанию | [game/F-032](game/F-032_NEEDS_VARIETY_SA_SPEC.md) | `content/game_content.dart` (`needsForDay`), `assets/content/config.json` | `content_test`, `game_controller_test`, `pet_wish_test` |
 | F-033 | Мини-игры: пулы, объяснения, копилка | [ui/F-033](ui/F-033_MINIGAMES_VARIETY_SA_SPEC.md) | `game/minigames.dart`, `ui/games/`, `assets/content/minigames.json` | `minigames_test`, `app_flow_test` |
 | F-034 | Больше уроков и практики | [ui/F-034](ui/F-034_LESSONS_CONTENT_SA_SPEC.md) | `assets/content/lessons.json` | `content_test`, `lesson_test` |
+| F-035 | Один блок уроков в день | [ui/F-035](ui/F-035_LESSON_BLOCK_PER_DAY_SA_SPEC.md) | `game/game_controller.dart`, `ui/tabs/lessons_tab.dart` | `game_controller_test`, `lesson_test` |
+| F-036 | Игра по желанию, монеты за задания | [game/F-036](game/F-036_PLAY_OPTIONAL_QUEST_REWARDS_SA_SPEC.md) | `game/pet_wish.dart`, `game/game_controller.dart`, `ui/tabs/tasks_tab.dart` | `game_controller_test`, `pet_wish_test` |
+| F-037 | Больше персонажей | [ui/F-037](ui/F-037_MORE_CHARACTERS_SA_SPEC.md) | `ui/mascot/`, `ui/screens/create_hero_screen.dart` | `game_controller_test`, `mascot_test` |
 
 **Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
 См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.
