@@ -58,7 +58,7 @@ class _IntroScreenState extends State<IntroScreen> {
           children: [
             const SizedBox(height: 16),
             Text(
-              widget.replay ? 'Как играть' : 'Привет! Это игра про монеты',
+              widget.replay ? 'Как играть' : 'Привет! Это игра про финансовую грамотность',
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, letterSpacing: -0.6),
             ),

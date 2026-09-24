@@ -54,6 +54,11 @@ Future<void> onboard(WidgetTester t, String name) async {
   await t.enterText(find.byKey(const Key('hero.player')), name);
   await tapKey(t, 'hero.go');
   await settle(t, 20);
+  // F-038: герой знакомится — 4 реплики, потом обычный день.
+  for (var i = 0; i < 4; i++) {
+    await tapKey(t, 'home.greet');
+  }
+  expect(find.byKey(const Key('home.greet')), findsNothing);
 }
 
 Future<void> phone(WidgetTester t) async {

@@ -36,6 +36,9 @@ class _HomeTabState extends State<HomeTab> {
 
   /// Реплика о самочувствии после тапа по герою (F-020 BR-07).
   String? _moodLine;
+
+  /// Шаг знакомства героя с игроком (F-038).
+  int _greet = 1;
   int _moodGen = 0;
 
   void _sayMood() {
@@ -76,18 +79,27 @@ class _HomeTabState extends State<HomeTab> {
               child: RoomScene(
                 inventory: game.inventory,
                 bowls: game.bowls,
-                time: wish.dayTime, // утро → день → вечер → ночь по шагам дня (F-028)
+                time: game.greeting ? DayTime.morning : wish.dayTime, // утро → день → вечер → ночь по шагам дня (F-028)
                 room: room,
                 feetY: feetY,
                 heroScale: 0.78,
                 hero: MascotView(
-                  look: MascotLook.fromGame(game).withEmotion(_moodLine == null ? wish.emotion : null),
+                  look: MascotLook.fromGame(game).withEmotion(
+                    game.greeting ? PetEmotion.excited : (_moodLine == null ? wish.emotion : null),
+                  ),
                   controller: _mascot,
                   size: heroSize,
                   semanticsLabel: name,
                   onTap: _sayMood,
                 ),
-                heroBadge: _moodLine != null
+                heroBadge: game.greeting
+                    ? PetSpeech(
+                        text: game.content.text('greet.$_greet', {'pet': name, 'player': game.profile.playerName}),
+                        action: game.content.text('greet.$_greet.action'),
+                        actionKey: const Key('home.greet'),
+                        onAction: _nextGreet,
+                      )
+                    : _moodLine != null
                     ? PetSpeech(text: _moodLine!)
                     : PetSpeech(
                         text: wish.text,
@@ -201,6 +213,15 @@ class _HomeTabState extends State<HomeTab> {
       ],
     ),
   );
+
+  void _nextGreet() {
+    _mascot.jump();
+    if (_greet < 4) {
+      setState(() => _greet++);
+    } else {
+      game.finishGreeting();
+    }
+  }
 
   Color _accent(WishKind kind) => switch (kind) {
     WishKind.eat || WishKind.drink || WishKind.wash => FinniColors.need,

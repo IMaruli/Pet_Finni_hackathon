@@ -9,6 +9,7 @@ import 'package:finni/game/game_feedback.dart';
 import 'package:finni/game/quests.dart';
 import 'package:finni/content/lesson_models.dart';
 import 'package:finni/store/profile_store.dart';
+import 'package:finni/store/snapshot.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 GameContent loadContent() => GameContent.fromJson({
@@ -422,6 +423,15 @@ void main() {
     expect(restarted.day, 6);
     expect(restarted.stage, 3);
     expect(restarted.economy.savings, game.economy.savings);
+  });
+
+  test('a new pet greets the player once (F-038)', () async {
+    expect(game.greeting, isTrue);
+    await game.finishGreeting();
+    expect(game.greeting, isFalse);
+    expect((await fresh()).greeting, isFalse);
+    final json = game.snapshot.toJson()..remove('introDone');
+    expect(GameSnapshot.fromJson(json).introDone, isTrue); // старые сохранения — без знакомства
   });
 
   test('every change is persisted', () async {

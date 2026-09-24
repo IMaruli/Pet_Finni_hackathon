@@ -47,7 +47,7 @@ final class MascotLook {
       accessories: {
         for (final id in game.inventory.worn) ?content.item(id).accessory,
       },
-      grubby: game.isGrubby,
+      grubby: game.isGrubby && !game.greeting, // на знакомстве герой чистый (F-038)
       joy: game.todaysJoy,
     );
   }

@@ -141,6 +141,7 @@ final class GameController extends ChangeNotifier {
         lastSummary: null,
         soundOn: true,
         dailyQuests: [for (final q in pickDailyQuests(day: 1, hasNewTopic: true, hasStarted: false)) q.name],
+        introDone: false,
       ),
     );
   }
@@ -152,6 +153,10 @@ final class GameController extends ChangeNotifier {
   }
 
   Future<void> setSound(bool on) => _commit(snapshot.copyWith(soundOn: on));
+
+  /// Герой ещё не познакомился с игроком (F-038).
+  bool get greeting => !snapshot.introDone;
+  Future<void> finishGreeting() => _commit(snapshot.copyWith(introDone: true));
 
   // ---------- Облик (SA F-023) ----------
 
