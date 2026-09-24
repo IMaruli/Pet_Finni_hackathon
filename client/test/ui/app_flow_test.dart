@@ -211,6 +211,10 @@ void main() {
     await settle(t, 30);
     await scrollTo(t, find.textContaining('День 3'));
     expect(find.textContaining('День 3'), findsOneWidget);
+    // F-056: итог прошлого дня виден ребёнку днём.
+    await scrollTo(t, find.byKey(const Key('tasks.yesterday')));
+    expect(find.byKey(const Key('tasks.yesterday')), findsOneWidget);
+    expect(find.text('✅ Хороший день'), findsOneWidget);
 
     // Уроки: путь — следующий урок открыт, за первый урок дня 2 снова награда.
     await tapKey(t, 'nav.lessons');

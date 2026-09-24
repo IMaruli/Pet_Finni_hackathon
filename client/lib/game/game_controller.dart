@@ -310,6 +310,9 @@ final class GameController extends ChangeNotifier {
     return GameFeedback(ok: true, messages: _texts(r));
   }
 
+  /// Покупки текущего периода по порядку (ТЗ 2.5.6, F-056).
+  List<ShopItem> get purchasesToday => [for (final id in snapshot.boughtToday) content.item(id)];
+
   /// Средняя сумма регулярного пополнения копилки (ТЗ 2.5.7, F-055): по прошлым периодам;
   /// нет истории — отложенное сегодня, затем план «Отложить». 0 — посчитать нельзя.
   int get averageSaving {

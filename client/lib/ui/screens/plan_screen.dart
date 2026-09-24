@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../economy/catalog_item.dart';
 import '../../game/game_controller.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
@@ -238,6 +239,24 @@ class _PlanScreenState extends State<PlanScreen> {
               ),
             ),
           ),
+        // История покупок текущего периода (ТЗ 2.5.6, F-056).
+        GroupedSection(
+          key: const Key('plan.history'),
+          header: 'Покупки сегодня',
+          footer: game.purchasesToday.isEmpty ? 'Пока ничего не куплено.' : null,
+          children: [
+            for (final (i, item) in game.purchasesToday.indexed)
+              GroupedRow(
+                key: Key('plan.history.$i'),
+                leading: Text(item.emoji, style: const TextStyle(fontSize: 24)),
+                title: item.title,
+                subtitle: item.kind == ItemKind.need ? 'Нужное' : 'Хочу',
+                trailing: Text('−${item.price}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                chevron: false,
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
         const Text(
           'Новый план — завтра утром. Так проще держать слово.',
           textAlign: TextAlign.center,

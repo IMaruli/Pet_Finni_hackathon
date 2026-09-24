@@ -415,6 +415,16 @@ void main() {
     expect(game.daysToGoal(0), 0);
   });
 
+  test('purchases of the current period are listed in order (TZ 2.5.6, F-056)', () async {
+    await planAll(game, need: game.todaysNeedSum, want: 6);
+    expect(game.purchasesToday, isEmpty);
+    await buyNeeds();
+    await game.buy('stickers', commandId: game.newCommandId());
+    expect(game.purchasesToday.map((i) => i.id), [...game.todaysNeeds.map((i) => i.id), 'stickers']);
+    await game.endDay();
+    expect(game.purchasesToday, isEmpty);
+  });
+
   test('withdraw needs confirm; cancel keeps savings', () async {
     await planAll(game, need: game.todaysNeedSum, want: 0);
     await game.toSavings(20);
