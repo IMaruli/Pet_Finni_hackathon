@@ -66,6 +66,7 @@
 | F-047 | Фото из зоопарка на виду | [ui/F-047](ui/F-047_ZOO_PHOTO_PLACE_SA_SPEC.md) | `ui/room3d/room_builder.dart` | `room3d_test` |
 | F-048 | Комната во весь экран | [ui/F-048](ui/F-048_FULL_SCREEN_ROOM_SA_SPEC.md) | `ui/room3d/room_builder.dart`, `ui/room/room_scene.dart`, `ui/tabs/home_tab.dart` | `room3d_test` |
 | F-049 | CI: релизный APK в GitHub Actions | [ops/F-049](ops/F-049_CI_RELEASE_APK_SA_SPEC.md) | `.github/workflows/android-apk.yml`, `android/app/build.gradle.kts` | запуск Actions |
+| F-050 | Демо-монеты | [game/F-050](game/F-050_DEMO_COINS_SA_SPEC.md) | `game/game_controller.dart`, `ui/screens/adult_screen.dart` | `game_controller_test` |
 
 **Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
 См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.

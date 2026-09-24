@@ -161,6 +161,13 @@ final class GameController extends ChangeNotifier {
     );
   }
 
+  /// Демо для проверки и показа жюри: игровые монеты в кошелёк (F-050). Только выдуманные монеты, без сети.
+  Future<GameFeedback> demoCoins([int amount = 500]) async {
+    final r = _engine.apply(economy, Credit(GameCoins(amount), 'demo:$day'));
+    await _commit(snapshot.copyWith(economy: r.state));
+    return GameFeedback(ok: true, reward: amount, messages: ['+$amount монет для демо']);
+  }
+
   Future<void> reset() async {
     await _store.clear();
     _snapshot = null;
