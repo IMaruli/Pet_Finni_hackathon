@@ -1,0 +1,194 @@
+import 'dart:math';
+
+import '../economy/catalog_item.dart';
+import 'lesson_models.dart';
+import 'models.dart';
+
+final class ContentException implements Exception {
+  const ContentException(this.problems);
+  final List<String> problems;
+  @override
+  String toString() => 'ContentException:\n${problems.join('\n')}';
+}
+
+/// Весь контент игры. Собирается из JSON-файлов, ключ = имя файла без `.json`.
+final class GameContent {
+  GameContent._({
+    required this.config,
+    required this.items,
+    required this.goals,
+    required this.topics,
+    required this.lessons,
+    required this.looks,
+    required this.skins,
+    required this.palette,
+    required this.texts,
+    required this.glossary,
+    required this.sortCards,
+    required this.puzzles,
+    required this.catcher,
+  });
+
+  factory GameContent.fromJson(Map<String, dynamic> files) {
+    List<T> list<T>(String file, String key, T Function(Map<String, dynamic>) parse) => [
+      for (final e in (files[file] as Map<String, dynamic>)[key] as List)
+        parse(e as Map<String, dynamic>),
+    ];
+    final copy = files['copy'] as Map<String, dynamic>;
+    final games = files['minigames'] as Map<String, dynamic>;
+    return GameContent._(
+      config: GameConfig.fromJson(files['config'] as Map<String, dynamic>),
+      items: list('items', 'items', ShopItem.fromJson),
+      goals: list('goals', 'goals', GoalDef.fromJson),
+      topics: list('lessons', 'topics', Topic.fromJson),
+      lessons: list('lessons', 'lessons', Lesson.fromJson),
+      looks: list('looks', 'looks', Look.fromJson),
+      skins: list('looks', 'skins', SkinDef.fromJson),
+      palette: list('looks', 'palette', PaletteColor.fromJson),
+      texts: (copy['texts'] as Map<String, dynamic>).cast<String, String>(),
+      glossary: [
+        for (final g in copy['glossary'] as List) GlossaryEntry.fromJson(g as Map<String, dynamic>),
+      ],
+      sortCards: list('minigames', 'sortCards', SortCard.fromJson),
+      puzzles: list('minigames', 'puzzles', BudgetPuzzle.fromJson),
+      catcher: CatcherConfig.fromJson(games['catcher'] as Map<String, dynamic>),
+    );
+  }
+
+  final GameConfig config;
+  final List<ShopItem> items;
+  final List<GoalDef> goals;
+  final List<Topic> topics;
+
+  /// Путь уроков по порядку (SA F-025).
+  final List<Lesson> lessons;
+  final List<Look> looks;
+  final List<SkinDef> skins;
+  final List<PaletteColor> palette;
+  final Map<String, String> texts;
+  final List<GlossaryEntry> glossary;
+  final List<SortCard> sortCards;
+  final List<BudgetPuzzle> puzzles;
+  final CatcherConfig catcher;
+
+  List<ShopItem> get needItems => items.where((i) => i.kind == ItemKind.need).toList();
+  List<ShopItem> get wantItems => items.where((i) => i.kind == ItemKind.want).toList();
+
+  /// Хотелки-вкусности: расходуемые «хочу» (SA F-022 BR-04).
+  List<ShopItem> get treatItems => [for (final i in wantItems) if (i.slot == ItemSlot.consumable) i];
+
+  ShopItem item(String id) => items.firstWhere((i) => i.id == id);
+  GoalDef goal(String id) => goals.firstWhere((g) => g.id == id);
+  Look look(String id) => looks.firstWhere((l) => l.id == id, orElse: () => looks.first);
+  SkinDef? skin(String id) => skins.where((s) => s.id == id).firstOrNull;
+
+  /// Нужное дня по расписанию (F-032): детерминировано днём, сумма ≤ карманных.
+  List<ShopItem> needsForDay(int day) {
+    if (day == 1 && config.firstDayNeeds.isNotEmpty) return [for (final id in config.firstDayNeeds) item(id)];
+    final picked = <ShopItem>[];
+    var sum = 0;
+    for (final (i, rule) in config.needSchedule.indexed) {
+      final r = Random(day * 7919 + i * 104729);
+      final String id;
+      if (rule.pick.isNotEmpty) {
+        id = rule.pick[r.nextInt(rule.pick.length)];
+      } else {
+        if (day % rule.every != rule.offset % rule.every) continue;
+        if (r.nextDouble() >= rule.chance) continue;
+        id = rule.item!;
+      }
+      final it = item(id);
+      if (!rule.mandatory && sum + it.price > config.pocketMoney) continue;
+      picked.add(it);
+      sum += it.price;
+    }
+    return picked;
+  }
+  Lesson lesson(String id) => lessons.firstWhere((l) => l.id == id);
+  Topic topic(String id) => topics.firstWhere((t) => t.id == id);
+  List<Lesson> lessonsOf(String topicId) => [for (final l in lessons) if (l.topic == topicId) l];
+  BudgetPuzzle puzzleForDay(int day) => puzzles[(day - 1) % puzzles.length];
+
+  String text(String id, [Map<String, String> vars = const {}]) {
+    var s = texts[id] ?? id;
+    vars.forEach((k, v) => s = s.replaceAll('{$k}', v));
+    return s;
+  }
+
+  List<String> validate() {
+    final problems = <String>[];
+
+    void unique(String what, Iterable<String> ids) {
+      final seen = <String>{};
+      for (final id in ids) {
+        if (!seen.add(id)) problems.add('$what: duplicate id $id');
+      }
+    }
+
+    unique('items', items.map((i) => i.id));
+    unique('goals', goals.map((g) => g.id));
+    unique('topics', topics.map((t) => t.id));
+    unique('lessons', lessons.map((l) => l.id));
+    unique('looks', looks.map((l) => l.id));
+    unique('skins', skins.map((s) => s.id));
+    unique('palette', palette.map((p) => p.id));
+    unique('puzzles', puzzles.map((p) => p.id));
+
+    for (final i in items) {
+      if (i.price <= 0) problems.add('items: ${i.id} price must be > 0');
+      if (i.slot != ItemSlot.consumable && i.accessory == null) {
+        problems.add('items: ${i.id} needs accessory for slot ${i.slot.name}');
+      }
+    }
+    for (final g in goals) {
+      if (g.cost <= 0) problems.add('goals: ${g.id} cost must be > 0');
+      if (g.reward == GoalReward.furniture && g.options.isEmpty) {
+        problems.add('goals: ${g.id} furniture needs options');
+      }
+      if (g.reward == GoalReward.item && (g.item == null || g.item!.isEmpty)) {
+        problems.add('goals: ${g.id} item reward needs item');
+      }
+    }
+    final topicIds = {for (final t in topics) t.id};
+    for (final l in lessons) {
+      if (!topicIds.contains(l.topic)) problems.add('lessons: ${l.id} has unknown topic ${l.topic}');
+      problems.addAll(l.problems());
+    }
+
+    final ids = {for (final i in items) i.id: i};
+    for (final rule in config.needSchedule) {
+      for (final id in rule.ids) {
+        final it = ids[id];
+        if (it == null || it.kind != ItemKind.need) problems.add('config: needSchedule has non-need item $id');
+      }
+    }
+    if (config.needSchedule.isEmpty) problems.add('config: needSchedule is empty');
+    if (problems.every((p) => !p.contains('needSchedule'))) {
+      for (var day = 1; day <= 30; day++) {
+        final sum = needsForDay(day).fold(0, (s, i) => s + i.price);
+        if (sum > config.pocketMoney) problems.add('config: needSchedule day $day exceeds pocketMoney');
+      }
+    }
+
+    for (final p in puzzles) {
+      final needs = p.items.where((i) => i.kind == ItemKind.need).fold(0, (s, i) => s + i.price);
+      if (needs > p.budget) problems.add('puzzles: ${p.id} needs exceed budget');
+    }
+
+    if (items.length < 8) problems.add('volume: at least 8 shop items');
+    if (needItems.isEmpty || wantItems.isEmpty) problems.add('volume: both need and want items');
+    if (goals.length < 3) problems.add('volume: at least 3 goals');
+    if (topics.length < 4) problems.add('volume: at least 4 lesson topics');
+    if (lessons.length < 8) problems.add('volume: at least 8 lessons');
+    if ({for (final l in lessons) ...l.kinds}.length < StepKind.values.length) {
+      problems.add('volume: every lesson game appears in content');
+    }
+    if (looks.length < 9) problems.add('volume: at least 9 looks');
+    if (skins.where((s) => s.openAtStart).length < 4) problems.add('volume: at least 4 open skins');
+    if (palette.length < 8) problems.add('volume: at least 8 colors');
+    if (config.demoPeriods < 5) problems.add('volume: at least 5 demo periods');
+    if (sortCards.length < 6) problems.add('volume: at least 6 sort cards');
+    if (puzzles.isEmpty) problems.add('volume: at least 1 budget puzzle');
+    return problems;
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "startCoins": 40,
+  "pocketMoney": 20,
+  "rewardWise": 12,
+  "rewardTry": 6,
+  "demoPeriods": 5,
+  "firstDayNeeds": [
+    "breakfast",
+    "water",
+    "care"
+  ],
+  "needSchedule": [
+    {
+      "pick": [
+        "breakfast",
+        "soup",
+        "fruits"
+      ]
+    },
+    {
+      "item": "care"
+    },
+    {
+      "item": "water",
+      "chance": 0.75
+    },
+    {
+      "item": "bath",
+      "every": 3,
+      "offset": 2
+    },
+    {
+      "item": "laundry",
+      "every": 4,
+      "offset": 3
+    },
+    {
+      "item": "haircut",
+      "every": 5,
+      "offset": 4
+    }
+  ],
+  "gameWin": 6,
+  "gameTry": 3,
+  "questReward": 3,
+  "weeklyReward": 10,
+  "introDayNeeds": [
+    "breakfast",
+    "water"
+  ],
+  "interestPercent": 10
+}

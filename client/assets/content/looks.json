@@ -1,0 +1,133 @@
+{
+  "looks": [
+    {
+      "id": "sun_tuft",
+      "title": "Солнышко с хохолком",
+      "color": "#FFCC33",
+      "hair": "tuft"
+    },
+    {
+      "id": "sun_bangs",
+      "title": "Солнышко с чёлкой",
+      "color": "#FFCC33",
+      "hair": "bangs"
+    },
+    {
+      "id": "sun_buns",
+      "title": "Солнышко с пучками",
+      "color": "#FFCC33",
+      "hair": "buns"
+    },
+    {
+      "id": "lemon_tuft",
+      "title": "Лимон с хохолком",
+      "color": "#FFE45C",
+      "hair": "tuft"
+    },
+    {
+      "id": "lemon_bangs",
+      "title": "Лимон с чёлкой",
+      "color": "#FFE45C",
+      "hair": "bangs"
+    },
+    {
+      "id": "lemon_buns",
+      "title": "Лимон с пучками",
+      "color": "#FFE45C",
+      "hair": "buns"
+    },
+    {
+      "id": "orange_tuft",
+      "title": "Апельсин с хохолком",
+      "color": "#FFAA40",
+      "hair": "tuft"
+    },
+    {
+      "id": "orange_bangs",
+      "title": "Апельсин с чёлкой",
+      "color": "#FFAA40",
+      "hair": "bangs"
+    },
+    {
+      "id": "orange_buns",
+      "title": "Апельсин с пучками",
+      "color": "#FFAA40",
+      "hair": "buns"
+    }
+  ],
+  "skins": [
+    {
+      "id": "finik",
+      "title": "Финик"
+    },
+    {
+      "id": "cat",
+      "title": "Котик"
+    },
+    {
+      "id": "bunny",
+      "title": "Зайка"
+    },
+    {
+      "id": "bear",
+      "title": "Мишка"
+    },
+    {
+      "id": "giraffe",
+      "title": "Жираф",
+      "unlockGoal": "skin_giraffe"
+    },
+    {
+      "id": "elephant",
+      "title": "Слон",
+      "unlockTopics": 2
+    },
+    {
+      "id": "monkey",
+      "title": "Мартышка",
+      "unlockStage": 3
+    }
+  ],
+  "palette": [
+    {
+      "id": "sun",
+      "title": "Солнечный",
+      "color": "#FFCC33"
+    },
+    {
+      "id": "lemon",
+      "title": "Лимонный",
+      "color": "#FFE45C"
+    },
+    {
+      "id": "orange",
+      "title": "Апельсиновый",
+      "color": "#FFAA40"
+    },
+    {
+      "id": "peach",
+      "title": "Персиковый",
+      "color": "#FF9E80"
+    },
+    {
+      "id": "pink",
+      "title": "Розовый",
+      "color": "#FF8FB8"
+    },
+    {
+      "id": "lavender",
+      "title": "Лавандовый",
+      "color": "#B79CFF"
+    },
+    {
+      "id": "sky",
+      "title": "Небесный",
+      "color": "#7CC8FF"
+    },
+    {
+      "id": "mint",
+      "title": "Мятный",
+      "color": "#6EDDB0"
+    }
+  ]
+}

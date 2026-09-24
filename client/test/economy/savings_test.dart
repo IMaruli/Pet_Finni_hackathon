@@ -65,4 +65,13 @@ void main() {
     expect(result.state.pendingWithdraw, isNull);
     expect(result.state.savings, GameCoins(20));
   });
+
+  test('accrue interest goes to savings, not the wallet (F-044)', () {
+    final start = EconomyState.empty().copyWith(savings: GameCoins(30), available: GameCoins(4));
+    final r = const EconomyEngine().apply(start, AccrueInterest(GameCoins(3), 'interest:1'));
+    expect(r.state.savings, GameCoins(33));
+    expect(r.state.available, GameCoins(4));
+    expect(r.state.lastCreditSourceId, 'interest:1');
+    expect(r.explanationIds, ['exp.interest']);
+  });
 }
