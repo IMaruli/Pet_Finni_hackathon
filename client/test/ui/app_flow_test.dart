@@ -55,7 +55,7 @@ Future<void> onboard(WidgetTester t, String name) async {
   await tapKey(t, 'hero.go');
   await settle(t, 20);
   // F-038: герой знакомится — 4 реплики, потом обычный день.
-  for (var i = 0; i < 5; i++) {
+  for (var i = 0; i < 6; i++) {
     await tapKey(t, 'home.greet');
   }
   expect(find.byKey(const Key('home.greet')), findsNothing);
@@ -83,6 +83,7 @@ void main() {
     expect(find.byKey(const Key('home.need.breakfast')), findsNothing);
     await tapKey(t, 'nav.tasks');
     await tapKey(t, 'tasks.sleep');
+    if (find.byKey(const Key('night.confirm')).evaluate().isNotEmpty) await tapKey(t, 'night.confirm');
     await settle(t, 25);
     expect(find.text('Итог дня 1'), findsOneWidget);
     await tapKey(t, 'night.morning');
@@ -157,7 +158,13 @@ void main() {
     await tapKey(t, 'save.5');
     await scrollTo(t, find.textContaining('осталось 45'));
     expect(find.textContaining('осталось 45'), findsOneWidget);
-    await tapKey(t, 'withdraw.5');
+    // F-044: копилка как вклад, снятие — выбор суммы и второе подтверждение.
+    await scrollTo(t, find.byKey(const Key('savings.deposit')));
+    expect(find.text('Этой ночью: +0 🌙'), findsOneWidget);
+    await scrollTo(t, find.byKey(const Key('withdraw.open')));
+    await tapKey(t, 'withdraw.open');
+    expect(find.byKey(const Key('withdraw.amount')), findsOneWidget);
+    await tapKey(t, 'withdraw.next');
     await tapKey(t, 'withdraw.keep');
     await scrollTo(t, find.textContaining('осталось 45'));
     expect(find.textContaining('осталось 45'), findsOneWidget);

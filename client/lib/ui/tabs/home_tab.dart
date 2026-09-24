@@ -82,7 +82,11 @@ class _HomeTabState extends State<HomeTab> {
               child: RoomScene(
                 inventory: game.inventory,
                 bowls: game.bowls,
-                time: game.greeting ? DayTime.morning : wish.dayTime, // утро → день → вечер → ночь по шагам дня (F-028)
+                time: game.greeting
+                    ? DayTime.morning
+                    : game.isIntroDay && (wish.kind == WishKind.eat || wish.kind == WishKind.drink)
+                    ? DayTime.day // в день знакомства еда — днём, после урока (F-043)
+                    : wish.dayTime, // утро → день → вечер → ночь по шагам дня (F-028)
                 room: room,
                 feetY: feetY,
                 heroScale: 0.78,
@@ -98,7 +102,7 @@ class _HomeTabState extends State<HomeTab> {
                 orbit: game.greeting
                     ? const []
                     : [
-                        for (final (i, item) in game.needsLeft.indexed)
+                        for (final (i, item) in game.needsShown.indexed)
                           NeedBubble(
                             key: Key('home.need.${item.id}'),
                             item: item,
@@ -303,7 +307,7 @@ class _HomeTabState extends State<HomeTab> {
 
   void _nextGreet() {
     _mascot.jump();
-    if (_greet < 5) {
+    if (_greet < 6) {
       setState(() => _greet++);
     } else {
       game.finishGreeting();

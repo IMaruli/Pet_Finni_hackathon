@@ -175,6 +175,23 @@ class _NightScreenState extends State<NightScreen> with SingleTickerProviderStat
             ],
           ),
         ),
+        if (s.interest > 0)
+          _card(
+            key: const Key('night.interest'),
+            color: const Color(0xFFE3F7EC),
+            child: Row(
+              children: [
+                const Text('🏦', style: TextStyle(fontSize: 34)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Копилка подросла: +${s.interest}\nКак вклад в банке — за то, что монеты полежали.',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+          ),
         _card(
           child: Row(
             children: [
@@ -263,7 +280,8 @@ class _NightScreenState extends State<NightScreen> with SingleTickerProviderStat
     );
   }
 
-  Widget _card({required Widget child, Color? color}) => Padding(
+  Widget _card({required Widget child, Color? color, Key? key}) => Padding(
+    key: key,
     padding: const EdgeInsets.only(bottom: 12),
     child: Container(
       padding: const EdgeInsets.all(16),

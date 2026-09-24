@@ -285,6 +285,8 @@ final class GameConfig {
     required this.demoPeriods,
     required this.needSchedule,
     required this.firstDayNeeds,
+    this.introDayNeeds = const [],
+    this.interestPercent = 10,
   });
   factory GameConfig.fromJson(Map<String, dynamic> j) => GameConfig(
     startCoins: j['startCoins'] as int,
@@ -298,6 +300,8 @@ final class GameConfig {
     demoPeriods: j['demoPeriods'] as int,
     needSchedule: [for (final r in j['needSchedule'] as List) NeedRule.fromJson(r as Map<String, dynamic>)],
     firstDayNeeds: [for (final id in j['firstDayNeeds'] as List? ?? const []) id as String],
+    interestPercent: j['interestPercent'] as int? ?? 10,
+    introDayNeeds: [for (final id in j['introDayNeeds'] as List? ?? const []) id as String],
   );
   final int startCoins;
   final int pocketMoney;
@@ -317,6 +321,12 @@ final class GameConfig {
 
   /// Нужное первого дня — всегда одинаковое, для знакомства.
   final List<String> firstDayNeeds;
+
+  /// Нужное дня знакомства: только еда и вода (F-043).
+  final List<String> introDayNeeds;
+
+  /// Ночная прибавка копилки-вклада, % (F-044).
+  final int interestPercent;
 }
 
 /// Правило расписания нужного: одно из [pick] каждый день, либо [item] каждый [every]-й день

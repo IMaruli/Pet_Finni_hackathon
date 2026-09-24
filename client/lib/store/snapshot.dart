@@ -134,6 +134,7 @@ final class DaySummary {
     required this.stageAfter,
     required this.good,
     required this.goodPeriods,
+    this.interest = 0,
   });
 
   factory DaySummary.fromJson(Map<String, dynamic> j) => DaySummary(
@@ -149,6 +150,7 @@ final class DaySummary {
     stageAfter: j['stageAfter'] as int,
     good: j['good'] as bool,
     goodPeriods: j['goodPeriods'] as int,
+    interest: j['interest'] as int? ?? 0,
   );
 
   final int day;
@@ -163,6 +165,9 @@ final class DaySummary {
   final int stageAfter;
   final bool good;
   final int goodPeriods;
+
+  /// Ночная прибавка копилки-вклада (F-044).
+  final int interest;
 
   bool get grew => stageAfter > stageBefore;
 
@@ -179,6 +184,7 @@ final class DaySummary {
     'stageAfter': stageAfter,
     'good': good,
     'goodPeriods': goodPeriods,
+    'interest': interest,
   };
 }
 
@@ -261,6 +267,7 @@ final class GameSnapshot {
     this.claimed = const [],
     this.introDone = true,
     this.firstNeedsDay = 1,
+    this.withdrewToday = false,
   });
 
   static const version = 1;
@@ -298,6 +305,7 @@ final class GameSnapshot {
       claimed: _strings(j['claimed'] ?? const <String>[]),
       introDone: j['introDone'] as bool? ?? true,
       firstNeedsDay: j['firstNeedsDay'] as int? ?? 1,
+      withdrewToday: j['withdrewToday'] as bool? ?? false,
     );
   }
 
@@ -344,6 +352,9 @@ final class GameSnapshot {
   /// С какого дня нужны нужды: 2 — первый день знакомства (F-042), 1 — старые сохранения.
   final int firstNeedsDay;
 
+  /// Сегодня снимали из копилки — ночью без процентов (F-044).
+  final bool withdrewToday;
+
   GameSnapshot copyWith({
     Profile? profile,
     EconomyState? economy,
@@ -369,6 +380,7 @@ final class GameSnapshot {
     List<String>? claimed,
     bool? introDone,
     int? firstNeedsDay,
+    bool? withdrewToday,
   }) => GameSnapshot(
     profile: profile ?? this.profile,
     economy: economy ?? this.economy,
@@ -391,6 +403,7 @@ final class GameSnapshot {
     claimed: claimed ?? this.claimed,
     introDone: introDone ?? this.introDone,
     firstNeedsDay: firstNeedsDay ?? this.firstNeedsDay,
+    withdrewToday: withdrewToday ?? this.withdrewToday,
   );
 
   Map<String, dynamic> toJson() => {
@@ -416,5 +429,6 @@ final class GameSnapshot {
     'claimed': claimed,
     'introDone': introDone,
     'firstNeedsDay': firstNeedsDay,
+    'withdrewToday': withdrewToday,
   };
 }

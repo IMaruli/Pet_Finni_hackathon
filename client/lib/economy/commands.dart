@@ -37,6 +37,13 @@ final class ConfirmWithdraw extends EconomyCommand {
   const ConfirmWithdraw();
 }
 
+/// Проценты копилки-вклада: зачисляются прямо в копилку (F-044).
+final class AccrueInterest extends EconomyCommand {
+  const AccrueInterest(this.amount, this.sourceId);
+  final GameCoins amount;
+  final String sourceId;
+}
+
 final class ClosePeriod extends EconomyCommand {
   const ClosePeriod();
 }

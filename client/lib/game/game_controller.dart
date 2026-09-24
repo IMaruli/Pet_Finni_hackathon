@@ -49,8 +49,14 @@ final class GameController extends ChangeNotifier {
 
   /// В первый день с нуждами — «первый набор» (завтрак, вода, умывание), дальше — по расписанию.
   List<ShopItem> get todaysNeeds => isIntroDay
-      ? const []
+      ? [for (final id in content.config.introDayNeeds) content.item(id)]
       : content.needsForDay(day == snapshot.firstNeedsDay ? 1 : day);
+
+  /// Нужды «проснулись»: в день знакомства — после урока и игры (F-043), в остальные дни — сразу.
+  bool get needsAwake => !isIntroDay || (lessonPaidToday && gameRewardToday);
+
+  /// Пузыри над героем и замок игр — только для проснувшихся нужд (F-043).
+  List<ShopItem> get needsShown => needsAwake ? needsLeft : const [];
   int get todaysNeedSum => todaysNeeds.fold(0, (s, i) => s + i.price);
   bool isBoughtToday(String itemId) => snapshot.boughtToday.contains(itemId);
   bool get needsDone => todaysNeeds.every((i) => isBoughtToday(i.id));
@@ -81,7 +87,7 @@ final class GameController extends ChangeNotifier {
   bool get canAffordNeeds => economy.available.value >= needsLeftCost;
 
   /// Игры с наградой ждут нужное; открыты, если на нужное не хватает — чтобы заработать.
-  bool get gamesLocked => needsLeft.isNotEmpty && canAffordNeeds;
+  bool get gamesLocked => needsShown.isNotEmpty && canAffordNeeds;
   String get gamesLockedText => planConfirmed
       ? content.text('rule.games_locked', {'pet': profile.petName, 'needs': needsLeftTitles})
       : content.text('rule.games_no_plan');
@@ -286,6 +292,12 @@ final class GameController extends ChangeNotifier {
     return GameFeedback(ok: true, messages: _texts(r));
   }
 
+  /// Прибавка копилки-вклада за сумму: 1 монета за каждые 10 (F-044).
+  int interestFor(int savings) => savings * content.config.interestPercent ~/ 100;
+
+  /// Сколько копилка прибавит этой ночью; после снятия — ничего.
+  int get interestTonight => snapshot.withdrewToday ? 0 : interestFor(economy.savings.value);
+
   Future<GameFeedback> requestWithdraw(int amount) async {
     final r = _engine.apply(economy, RequestWithdraw(GameCoins(amount)));
     if (r.error != null) {
@@ -299,7 +311,7 @@ final class GameController extends ChangeNotifier {
   Future<GameFeedback> confirmWithdraw() async {
     final r = _engine.apply(economy, const ConfirmWithdraw());
     if (r.error != null) return _fail(FeedbackReason.withdrawNotPending, _texts(r));
-    await _commit(snapshot.copyWith(economy: r.state));
+    await _commit(snapshot.copyWith(economy: r.state, withdrewToday: true));
     return GameFeedback(ok: true, messages: _texts(r));
   }
 
@@ -531,7 +543,9 @@ final class GameController extends ChangeNotifier {
   Future<DaySummary> endDay() async {
     final before = economy;
     final plan = before.plan;
-    final closed = _engine.apply(before, const ClosePeriod()).state;
+    final interest = interestTonight;
+    var closed = _engine.apply(before, const ClosePeriod()).state;
+    if (interest > 0) closed = _engine.apply(closed, AccrueInterest(GameCoins(interest), 'interest:$day')).state;
     final dayMood = _withTreat(closed.petMood);
     final nextDay = day + 1;
     final morning = _engine
@@ -550,6 +564,7 @@ final class GameController extends ChangeNotifier {
       stageAfter: closed.petStage,
       good: closed.goodPeriods > before.goodPeriods,
       goodPeriods: closed.goodPeriods,
+      interest: interest,
     );
     await _commit(
       snapshot.copyWith(
@@ -558,6 +573,7 @@ final class GameController extends ChangeNotifier {
         boughtToday: const [],
         questDoneToday: false,
         gameRewardToday: false,
+        withdrewToday: false,
         lastSummary: summary,
         dailyQuests: [
           for (final q in pickDailyQuests(day: nextDay, hasNewTopic: _newTopicOn(nextDay), hasStarted: lessonProgress != null)) q.name,

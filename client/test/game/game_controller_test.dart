@@ -379,6 +379,25 @@ void main() {
     expect(game.economy.savings, GameCoins(15));
   });
 
+  test('savings grow 10% each night like a deposit; no interest after a withdraw (F-044)', () async {
+    await planAll(game, need: game.todaysNeedSum, want: 0);
+    await buyNeeds();
+    await game.toSavings(25);
+    expect(game.interestTonight, 2);
+    final s = await game.endDay();
+    expect(s.interest, 2);
+    expect(game.economy.savings, GameCoins(27));
+    await planAll(game, need: game.todaysNeedSum, want: 0);
+    await game.requestWithdraw(5);
+    await game.confirmWithdraw();
+    expect(game.snapshot.withdrewToday, isTrue);
+    expect(game.interestTonight, 0);
+    final s2 = await game.endDay();
+    expect(s2.interest, 0);
+    expect(game.economy.savings, GameCoins(22));
+    expect(game.snapshot.withdrewToday, isFalse);
+  });
+
   test('end day: summary, new day, pocket money, flags reset', () async {
     await goodDay(save: 10);
     await game.finishLesson('needs_1');
@@ -426,20 +445,24 @@ void main() {
     expect(restarted.economy.savings, game.economy.savings);
   });
 
-  test('first day is an intro day: needs start tomorrow (F-042)', () async {
+  test('intro day: only food and water, awake after the lesson and a game (F-042, F-043)', () async {
     final g = await fresh();
     await g.createProfile(playerName: 'Аня', petName: 'Финя', lookId: 'sun_tuft');
     expect(g.isIntroDay, isTrue);
-    expect(g.todaysNeeds, isEmpty);
+    expect(g.todaysNeeds.map((i) => i.id), ['breakfast', 'water']);
     expect(g.isGrubby, isFalse);
-    expect(g.foodServed && g.waterServed, isTrue);
+    expect(g.needsShown, isEmpty); // нужды спят
     expect(wishFor(g).kind, WishKind.plan);
-    await g.confirmPlan(need: 0, want: 0, save: g.economy.available.value);
-    expect(wishFor(g).kind, WishKind.quest); // сразу урок
+    await g.confirmPlan(need: g.todaysNeedSum, want: 0, save: g.economy.available.value - g.todaysNeedSum);
+    expect(wishFor(g).kind, WishKind.quest);
+    expect(g.gamesLocked, isFalse);
     await g.finishLesson('needs_1');
-    expect(wishFor(g).kind, WishKind.play); // показываем игры
+    expect(wishFor(g).kind, WishKind.play);
     await g.finishMiniGame('sort', win: true, score: 9);
-    expect(wishFor(g).kind, WishKind.save);
+    final w = wishFor(g);
+    expect(w.kind, WishKind.eat);
+    expect(w.text, contains('проголодался'));
+    expect(g.needsShown.map((i) => i.id), ['breakfast', 'water']);
     await g.endDay();
     expect(g.isIntroDay, isFalse);
     expect(g.todaysNeeds.map((i) => i.id), ['breakfast', 'water', 'care']);

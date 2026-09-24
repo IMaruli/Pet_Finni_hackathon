@@ -50,7 +50,10 @@ class _ClothesScreenState extends State<ClothesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final items = [for (final i in game.content.wantItems) if (i.slot == ItemSlot.hero) i];
+    final items = [
+      for (final i in game.content.wantItems)
+        if (i.slot == ItemSlot.hero) i,
+    ];
     return ListenableBuilder(
       listenable: game,
       builder: (context, _) {
@@ -68,36 +71,39 @@ class _ClothesScreenState extends State<ClothesScreen> {
           appBar: widget.embedded ? null : AppBar(title: const Text('Одежда')),
           body: SafeArea(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
-                Center(
-                  child: Container(
-                    width: 260,
-                    height: 280,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(28),
-                      gradient: const LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Color(0xFFFFFFFF), Color(0xFFE9E9F2)],
-                      ),
-                      boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 20, offset: Offset(0, 8))],
-                    ),
-                    child: MascotView(look: look, controller: _mascot, size: 230, semanticsLabel: game.profile.petName),
+                // Рамка героя — по ширине экрана (F-045 BR-02).
+                Container(
+                  key: const Key('clothes.frame'),
+                  height: 250,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(28),
+                    gradient: const LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0xFFFFFFFF), Color(0xFFE9E9F2)]),
+                    boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 20, offset: Offset(0, 8))],
                   ),
+                  child: MascotView(look: look, controller: _mascot, size: 220, semanticsLabel: game.profile.petName),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 DuoCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text('Гардероб', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: -0.5)),
                       const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
-                        children: [for (final i in items) _tile(i)],
+                      // Колонки по ширине, плитки тянутся — без пустоты справа (F-045 BR-03).
+                      LayoutBuilder(
+                        builder: (context, c) => GridView.count(
+                          key: const Key('clothes.grid'),
+                          crossAxisCount: (c.maxWidth / 72).floor().clamp(4, 8),
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 10,
+                          childAspectRatio: 0.8,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          children: [for (final i in items) _tile(i)],
+                        ),
                       ),
                       const SizedBox(height: 10),
                       Text(
@@ -126,23 +132,27 @@ class _ClothesScreenState extends State<ClothesScreen> {
       onTap: () => _tap(item),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        width: 68,
-        height: 84,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
           color: worn || trying ? FinniColors.primary.withValues(alpha: 0.1) : FinniColors.fill,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: worn || trying ? FinniColors.primary : Colors.transparent, width: 2),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(item.emoji, style: const TextStyle(fontSize: 30)),
-            const SizedBox(height: 2),
-            Text(
-              owned ? (worn ? 'надето' : 'снято') : '${item.price} мон.',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: owned ? FinniColors.primary : FinniColors.muted),
-            ),
-          ],
+        // Содержимое ужимается под плитку на узких экранах (F-045 BR-04).
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(item.emoji, style: const TextStyle(fontSize: 30)),
+              const SizedBox(height: 2),
+              Text(
+                owned ? (worn ? 'надето' : 'снято') : '${item.price} мон.',
+                maxLines: 1,
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: owned ? FinniColors.primary : FinniColors.muted),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -50,6 +50,17 @@ class _SavingsScreenState extends State<SavingsScreen> {
     showToast(context, f.messages, emoji: f.ok ? '🐷' : '😮', color: f.ok ? FinniColors.save : null);
   }
 
+  /// Шаг 1: выбрать сумму — герой реагирует, видно, что теряем (F-044).
+  Future<void> _pickWithdraw() async {
+    final amount = await showModalBottomSheet<int>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => WithdrawSheet(game: game),
+    );
+    if (amount != null && amount > 0) await _withdraw(amount);
+  }
+
+  /// Шаг 2: второе подтверждение (ТЗ А.8, «Защита копилки»).
   Future<void> _withdraw(int amount) async {
     final goal = game.goal;
     final before = game.economy.savings.value;
@@ -72,7 +83,11 @@ class _SavingsScreenState extends State<SavingsScreen> {
             children: [
               const Center(child: IconTile(Icons.warning_amber_rounded, color: FinniColors.orange, size: 52)),
               const SizedBox(height: 12),
-              Text('Снять $amount из копилки?', textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+              Text(
+                'Снять $amount из копилки?',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 10),
               Panel(
                 padding: const EdgeInsets.all(12),
@@ -85,19 +100,9 @@ class _SavingsScreenState extends State<SavingsScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              DuoButton(
-                key: const Key('withdraw.keep'),
-                label: 'Оставить в копилке',
-                color: FinniColors.teal,
-                onPressed: () => Navigator.of(sheet).pop(false),
-              ),
+              DuoButton(key: const Key('withdraw.keep'), label: 'Оставить в копилке', color: FinniColors.teal, onPressed: () => Navigator.of(sheet).pop(false)),
               const SizedBox(height: 10),
-              DuoButton(
-                key: const Key('withdraw.confirm'),
-                label: 'Да, снять',
-                color: FinniColors.surface,
-                onPressed: () => Navigator.of(sheet).pop(true),
-              ),
+              DuoButton(key: const Key('withdraw.confirm'), label: 'Да, снять', color: FinniColors.surface, onPressed: () => Navigator.of(sheet).pop(true)),
             ],
           ),
         ),
@@ -144,7 +149,11 @@ class _SavingsScreenState extends State<SavingsScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(goal.emoji, textAlign: TextAlign.center, style: const TextStyle(fontSize: 64)),
-              Text('Цель достигнута!', textAlign: TextAlign.center, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
+              Text(
+                'Цель достигнута!',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+              ),
               const SizedBox(height: 6),
               Text(
                 goal.reward == GoalReward.gift ? 'Подарок готов — друг будет рад!' : '${goal.title} — теперь твоё. Ты копил и дождался.',
@@ -222,7 +231,12 @@ class _SavingsScreenState extends State<SavingsScreen> {
         return Scaffold(
           appBar: AppBar(
             title: const Text('Копилка'),
-            actions: [Padding(padding: const EdgeInsets.only(right: 12), child: CoinChip(value: wallet))],
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: CoinChip(value: wallet),
+              ),
+            ],
           ),
           body: ConfettiBurst(
             controller: _confetti,
@@ -249,7 +263,11 @@ class _SavingsScreenState extends State<SavingsScreen> {
                                   height: 170,
                                 ),
                               ),
-                              SizedBox(width: 130, height: 150, child: MascotView(look: MascotLook.fromGame(game), controller: _mascot, size: 130)),
+                              SizedBox(
+                                width: 130,
+                                height: 150,
+                                child: MascotView(look: MascotLook.fromGame(game), controller: _mascot, size: 130),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 14),
@@ -276,10 +294,20 @@ class _SavingsScreenState extends State<SavingsScreen> {
                             ),
                             if (game.canRedeem) ...[
                               const SizedBox(height: 12),
-                              DuoButton(key: const Key('goal.redeem'), label: 'Забрать: ${goal.title}', icon: Icons.celebration_rounded, color: FinniColors.need, onPressed: _redeem),
+                              DuoButton(
+                                key: const Key('goal.redeem'),
+                                label: 'Забрать: ${goal.title}',
+                                icon: Icons.celebration_rounded,
+                                color: FinniColors.need,
+                                onPressed: _redeem,
+                              ),
                             ],
                           ] else
-                            const Text('Выбери цель ниже — и копилка станет мечтой.', textAlign: TextAlign.center, style: TextStyle(fontSize: 15, color: FinniColors.muted)),
+                            const Text(
+                              'Выбери цель ниже — и копилка станет мечтой.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 15, color: FinniColors.muted),
+                            ),
                         ],
                       ),
                     ),
@@ -317,26 +345,21 @@ class _SavingsScreenState extends State<SavingsScreen> {
                       ],
                     ),
                   ),
+                  const DuoSection('Копилка как вклад'),
+                  Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: _depositCard(saved)),
                   if (saved > 0)
-                    GroupedSection(
-                      header: 'Снять из копилки',
-                      footer: 'Цель отодвинется. Мы спросим ещё раз перед снятием.',
-                      children: [
-                        for (final a in [5, 10])
-                          if (saved >= a)
-                            GroupedRow(
-                              key: Key('withdraw.$a'),
-                              icon: Icons.remove_circle_outline_rounded,
-                              iconColor: FinniColors.orange,
-                              title: 'Снять $a',
-                              onTap: () => _withdraw(a),
-                            ),
-                      ],
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      child: DuoButton(
+                        key: const Key('withdraw.open'),
+                        label: 'Взять из копилки',
+                        icon: Icons.account_balance_wallet_rounded,
+                        height: 48,
+                        color: FinniColors.surface,
+                        onPressed: _pickWithdraw,
+                      ),
                     ),
-                  GroupedSection(
-                    header: 'Цели',
-                    children: [for (final g in game.content.goals) _goalCard(g)],
-                  ),
+                  GroupedSection(header: 'Цели', children: [for (final g in game.content.goals) _goalCard(g)]),
                 ],
               ),
             ),
@@ -346,12 +369,59 @@ class _SavingsScreenState extends State<SavingsScreen> {
     );
   }
 
+  /// Копилка как накопительный счёт: 10% каждую ночь (F-044).
+  Widget _depositCard(int saved) {
+    final tonight = game.interestTonight;
+    final pct = game.content.config.interestPercent;
+    final example = max(30, saved);
+    return DuoCard(
+      key: const Key('savings.deposit'),
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('🏦', style: TextStyle(fontSize: 30)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      game.snapshot.withdrewToday ? 'Сегодня снимали — ночью без прибавки' : 'Этой ночью: +$tonight 🌙',
+                      key: const Key('savings.tonight'),
+                      style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: game.snapshot.withdrewToday ? FinniColors.orange : FinniColors.save),
+                    ),
+                    Text('Каждую ночь копилка растёт на $pct% — 1 монета за каждые 10.', style: const TextStyle(fontSize: 14, color: FinniColors.muted)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(color: FinniColors.fill, borderRadius: BorderRadius.circular(12)),
+            child: Text(
+              'Пример: отложил $example — утром в копилке ${example + game.interestFor(example)}. '
+              'Чем больше копишь, тем больше прибавка. Снял монеты — прибавки этой ночью не будет.',
+              style: const TextStyle(fontSize: 14),
+            ),
+          ),
+          if (saved > 0 && saved < 10) ...[
+            const SizedBox(height: 8),
+            Text('Ещё ${10 - saved} до первой монетки прибавки!', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _goalCard(GoalDef g) {
     final done = game.inventory.goalsDone.contains(g.id);
     final selected = game.snapshot.goalId == g.id;
-    final option = selected && game.snapshot.goalOption != null
-        ? g.options.firstWhere((o) => o.id == game.snapshot.goalOption)
-        : null;
+    final option = selected && game.snapshot.goalOption != null ? g.options.firstWhere((o) => o.id == game.snapshot.goalOption) : null;
     return GroupedRow(
       key: Key('goal.${g.id}'),
       leading: Container(
@@ -372,4 +442,147 @@ class _SavingsScreenState extends State<SavingsScreen> {
       onTap: done || selected ? null : () => _choose(g),
     );
   }
+}
+
+/// Выбор суммы снятия: степпер, быстрые суммы, реакция героя и что теряем (F-044).
+class WithdrawSheet extends StatefulWidget {
+  const WithdrawSheet({super.key, required this.game});
+  final GameController game;
+
+  @override
+  State<WithdrawSheet> createState() => WithdrawSheetState();
+}
+
+class WithdrawSheetState extends State<WithdrawSheet> {
+  late final int _saved = widget.game.economy.savings.value;
+  late int _amount = min(5, _saved);
+
+  void _set(int v) {
+    buzz(Buzz.light);
+    setState(() => _amount = v.clamp(1, _saved));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final game = widget.game;
+    final goal = game.goal;
+    final share = _amount / _saved;
+    final (face, line) = share < 0.25
+        ? ('🙂', 'Ладно, немножко можно.')
+        : share < 0.6
+        ? ('😟', 'Ой… мечта отодвинется.')
+        : ('😢', 'Почти всё? Мы же так копили…');
+    final tonight = game.interestTonight;
+    final left = _saved - _amount;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Взять из копилки',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 8),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 250),
+              child: Row(
+                key: ValueKey(face),
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(face, style: const TextStyle(fontSize: 40)),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text('${game.profile.petName}: «$line»', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton.filledTonal(
+                  key: const Key('withdraw.minus'),
+                  iconSize: 30,
+                  onPressed: _amount > 1 ? () => _set(_amount - 1) : null,
+                  icon: const Icon(Icons.remove_rounded),
+                ),
+                SizedBox(
+                  width: 110,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const CoinIcon(size: 26),
+                      const SizedBox(width: 6),
+                      Text(
+                        '$_amount',
+                        key: const Key('withdraw.amount'),
+                        style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w800),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton.filledTonal(
+                  key: const Key('withdraw.plus'),
+                  iconSize: 30,
+                  onPressed: _amount < _saved ? () => _set(_amount + 1) : null,
+                  icon: const Icon(Icons.add_rounded),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              children: [
+                for (final a in [5, 10])
+                  if (a < _saved) ChoiceChip(key: Key('withdraw.$a'), label: Text('$a'), selected: _amount == a, onSelected: (_) => _set(a)),
+                ChoiceChip(key: const Key('withdraw.all'), label: Text('Всё ($_saved)'), selected: _amount == _saved, onSelected: (_) => _set(_saved)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Panel(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _line('🐷', 'Останется в копилке', '$left'),
+                  if (goal != null) _line(goal.emoji, 'До цели «${goal.title}»', '${max(0, goal.cost - _saved)} → ${max(0, goal.cost - left)}'),
+                  _line('🌙', 'Прибавка этой ночью', tonight == 0 ? '0' : '+$tonight → 0', warn: tonight > 0),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            DuoButton(key: const Key('withdraw.cancel'), label: 'Оставить в копилке', color: FinniColors.teal, onPressed: () => Navigator.of(context).pop()),
+            const SizedBox(height: 10),
+            DuoButton(
+              key: const Key('withdraw.next'),
+              label: 'Взять $_amount',
+              color: FinniColors.surface,
+              onPressed: () => Navigator.of(context).pop(_amount),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _line(String emoji, String title, String value, {bool warn = false}) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 3),
+    child: Row(
+      children: [
+        Text(emoji, style: const TextStyle(fontSize: 18)),
+        const SizedBox(width: 8),
+        Expanded(child: Text(title, style: const TextStyle(fontSize: 15))),
+        Text(
+          value,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: warn ? FinniColors.orange : FinniColors.ink),
+        ),
+      ],
+    ),
+  );
 }

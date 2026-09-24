@@ -46,12 +46,13 @@ const _emotion = {
 PetWish wishFor(GameController g) {
   final kind = () {
     if (!g.planConfirmed) return WishKind.plan;
+    // День знакомства: сначала урок и игра, нужды просыпаются потом (F-042, F-043).
+    if (g.isIntroDay && !g.lessonPaidToday) return WishKind.quest;
+    if (g.isIntroDay && !g.gameRewardToday) return WishKind.play;
     for (final item in g.todaysNeeds) {
       if (!g.isBoughtToday(item.id)) return _needWish[item.need] ?? WishKind.eat;
     }
     if (!g.lessonPaidToday) return WishKind.quest; // урок дня (F-025)
-    // Поиграть — по желанию (F-036); в день знакомства герой зовёт поиграть, чтобы показать игры (F-042).
-    if (g.isIntroDay && !g.gameRewardToday) return WishKind.play;
     if (g.economy.savedThisPeriod.value == 0) return WishKind.save;
     return WishKind.sleep;
   }();
@@ -71,5 +72,7 @@ PetWish wishFor(GameController g) {
 /// Своя реплика для каждой вещи нужного (F-032): «Хочу супчика с хлебом!».
 String? _needAsk(GameController g, WishKind kind) {
   if (kind != WishKind.eat && kind != WishKind.drink && kind != WishKind.wash) return null;
+  // Мягкий переход дня знакомства: «после урока я проголодался…» (F-043).
+  if (g.isIntroDay && kind == WishKind.eat) return g.content.text('wish.eat.intro');
   return g.todaysNeeds.where((i) => !g.isBoughtToday(i.id)).firstOrNull?.ask;
 }
