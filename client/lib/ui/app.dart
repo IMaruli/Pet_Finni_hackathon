@@ -81,7 +81,7 @@ class _FinniAppState extends State<FinniApp> {
             onAdult: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => AdultScreen(game: game))),
           ),
           _Stage.intro => IntroScreen(onDone: () => setState(() => _stage = _Stage.hero)),
-          _Stage.hero => CreateHeroScreen(game: game),
+          _Stage.hero => FinikStyleScreen(game: game),
         };
       },
     );

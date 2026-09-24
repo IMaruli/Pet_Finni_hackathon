@@ -155,6 +155,16 @@ class _NightScreenState extends State<NightScreen> with SingleTickerProviderStat
             textAlign: TextAlign.center,
             style: const TextStyle(color: FinniColors.coin, fontSize: 22, fontWeight: FontWeight.w700),
           ),
+        if (s.stageBefore < 3 && s.stageAfter >= 3) // SA F-023 BR-09
+          Padding(
+            key: const Key('night.monkeyUnlocked'),
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              game.content.text('skin.monkey.unlocked'),
+              textAlign: TextAlign.center,
+              style: white.copyWith(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+          ),
         const SizedBox(height: 12),
         _card(
           child: Column(

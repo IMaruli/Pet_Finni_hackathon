@@ -58,7 +58,7 @@ void main() {
     for (final hair in hairs) {
       for (final mood in PetMood.values) {
         for (var stage = 1; stage <= 3; stage++) {
-          for (final skin in [null, 'monkey']) {
+          for (final skin in [null, 'finik', 'cat', 'bunny', 'monkey']) {
             await tester.pumpWidget(
               MaterialApp(
                 home: MascotView(

@@ -1,7 +1,7 @@
 {
   "goals": [
     {"id": "room2", "title": "Вторая комната", "emoji": "🏠", "description": "Дом станет больше: появится игровая комната", "cost": 50, "reward": "room", "options": []},
-    {"id": "skin_monkey", "title": "Облик «Обезьянка»", "emoji": "🐵", "description": "Редкий облик героя с ушками и мордочкой", "cost": 50, "reward": "skin", "options": []},
+    {"id": "gift", "title": "Подарок другу", "emoji": "🎁", "description": "Копим на подарок: радовать других тоже приятно", "cost": 40, "reward": "gift", "options": []},
     {"id": "furniture", "title": "Крупная мебель", "emoji": "🛋️", "description": "Одна большая вещь в комнату. Выбери, какая", "cost": 50, "reward": "furniture", "options": [
       {"id": "sofa", "title": "Диван", "emoji": "🛋️"},
       {"id": "shelf", "title": "Книжная полка", "emoji": "📚"},

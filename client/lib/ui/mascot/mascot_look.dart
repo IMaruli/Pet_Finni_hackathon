@@ -34,11 +34,14 @@ final class MascotLook {
 
   factory MascotLook.fromGame(GameController game) {
     final content = game.content;
-    return MascotLook.fromLook(
-      content.look(game.profile.lookId),
+    final profile = game.profile;
+    final look = content.look(profile.lookId);
+    return MascotLook(
+      color: Color(profile.color ?? look.color),
+      hair: profile.hair ?? look.hair,
       mood: game.mood,
       stage: game.stage,
-      skin: game.inventory.skin,
+      skin: profile.skin,
       accessories: {
         for (final id in game.inventory.worn) ?content.item(id).accessory,
       },
@@ -50,7 +53,7 @@ final class MascotLook {
   /// tuft|bangs|buns
   final String hair;
 
-  /// 'monkey' или null.
+  /// finik (или null) | cat | bunny | monkey (SA F-023).
   final String? skin;
 
   /// bandana|glasses|bow|headphones
@@ -65,6 +68,11 @@ final class MascotLook {
       MascotLook(color: color, hair: hair, mood: mood, stage: stage, skin: skin, accessories: accessories, emotion: e);
 
   bool get isMonkey => skin == 'monkey';
+  bool get isCat => skin == 'cat';
+  bool get isBunny => skin == 'bunny';
+
+  /// Причёска есть у Финика и Мартышки; у Котика и Зайки — ушки.
+  bool get hasHair => !isCat && !isBunny;
   Color get bodyColor => isMonkey ? const Color(0xFF9A6234) : color;
 
   double get scale => switch (stage) {

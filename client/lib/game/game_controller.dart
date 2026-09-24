@@ -97,13 +97,16 @@ final class GameController extends ChangeNotifier {
     required String playerName,
     required String petName,
     required String lookId,
+    String skin = 'finik',
+    int? color,
+    String? hair,
   }) async {
     var e = EconomyState.empty();
     e = _engine.apply(e, Credit(GameCoins(content.config.startCoins), 'start')).state;
     e = _engine.apply(e, Credit(GameCoins(content.config.pocketMoney), 'pocket:1')).state;
     await _commit(
       GameSnapshot(
-        profile: Profile(playerName: playerName, petName: petName, lookId: lookId),
+        profile: Profile(playerName: playerName, petName: petName, lookId: lookId, skin: skin, color: color, hair: hair),
         economy: e,
         inventory: Inventory.empty,
         goalId: null,
@@ -127,6 +130,24 @@ final class GameController extends ChangeNotifier {
   }
 
   Future<void> setSound(bool on) => _commit(snapshot.copyWith(soundOn: on));
+
+  // ---------- Облик (SA F-023) ----------
+
+  /// Мартышка — награда за рост; старые сохранения с целью-обезьянкой тоже открывают её.
+  bool isSkinUnlocked(String skin) {
+    final def = content.skin(skin);
+    if (def == null) return false;
+    return stage >= def.unlockStage || (skin == 'monkey' && inventory.skin == 'monkey');
+  }
+
+  /// Смена облика бесплатна.
+  Future<GameFeedback> restyle({String? skin, int? color, String? hair}) async {
+    if (skin != null && !isSkinUnlocked(skin)) {
+      return _fail(FeedbackReason.locked, [content.text('skin.monkey.locked', {'pet': profile.petName})]);
+    }
+    await _commit(snapshot.copyWith(profile: profile.restyled(skin: skin, color: color, hair: hair)));
+    return const GameFeedback(ok: true);
+  }
 
   // ---------- Бюджет и покупки ----------
 
@@ -260,6 +281,7 @@ final class GameController extends ChangeNotifier {
       GoalReward.room => inv.copyWith(rooms: 2),
       GoalReward.skin => inv.copyWith(skin: 'monkey'),
       GoalReward.furniture => inv.copyWith(furniture: snapshot.goalOption),
+      GoalReward.gift => inv, // радость дарить: цель отмечена в goalsDone
     };
     await _commit(snapshot.copyWith(economy: r.state, inventory: inv, clearGoal: true));
     return GameFeedback(ok: true, messages: _texts(r));

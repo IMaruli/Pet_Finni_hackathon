@@ -66,10 +66,11 @@ final class MascotPainter extends CustomPainter {
     _body(canvas);
     if (look.isMonkey) _muzzle(canvas);
     _cheeks(canvas);
+    if (look.isCat) _whiskers(canvas);
     _eyes(canvas);
     _brows(canvas);
     _mouth(canvas);
-    _hair(canvas, front: true);
+    if (look.hasHair) _hair(canvas, front: true);
     _accessories(canvas);
     canvas.restore();
   }
@@ -103,7 +104,9 @@ final class MascotPainter extends CustomPainter {
         canvas.drawCircle(p.offset, _r * 0.18, Paint()..color = const Color(0xFFE9B98C));
       }
     }
-    if (look.hair == 'buns') _buns(canvas, front: false);
+    if (look.isCat) _catEars(canvas);
+    if (look.isBunny) _bunnyEars(canvas);
+    if (look.hasHair && look.hair == 'buns') _buns(canvas, front: false);
     if (look.accessories.contains('headphones')) _cups(canvas, front: false);
   }
 
@@ -270,6 +273,70 @@ final class MascotPainter extends CustomPainter {
         _line(canvas, [for (var u = 0.0; u <= 1.0001; u += 0.1) (-0.25 - 0.08 * sin(pi * u), -0.22 + 0.44 * u)], _ink, 0.05);
       case PetMood.uneasy:
         _line(canvas, [for (var u = 0.0; u <= 1.0001; u += 0.1) (-0.36 + 0.06 * sin(pi * u), -0.15 + 0.3 * u)], _ink, 0.045);
+    }
+  }
+
+  // ---------- Скины F-023 ----------
+
+  static const _innerEar = Color(0xFFFFB3C7);
+
+  void _catEars(Canvas canvas) {
+    for (final side in [-1.0, 1.0]) {
+      final a = _p(0.98, side * 0.28);
+      final b = _p(0.55, side * 1.0);
+      final tip = _p(1.0, side * 0.72, lift: 1.55);
+      if (tip.z < -0.4) continue;
+      Path tri(Offset p, Offset q, Offset t) => Path()
+        ..moveTo(p.dx, p.dy)
+        ..quadraticBezierTo((p.dx + t.dx) / 2 - (q.dx - p.dx) * 0.08, (p.dy + t.dy) / 2, t.dx, t.dy)
+        ..quadraticBezierTo((q.dx + t.dx) / 2 + (q.dx - p.dx) * 0.08, (q.dy + t.dy) / 2, q.dx, q.dy)
+        ..close();
+      canvas.drawPath(tri(a.offset, b.offset, tip.offset), Paint()..color = _darken(look.bodyColor, 0.06));
+      Offset toward(Offset o, double k) => Offset.lerp(o, tip.offset, k)!;
+      canvas.drawPath(
+        tri(toward(a.offset, 0.35), toward(b.offset, 0.35), toward(tip.offset, 0) + (a.offset + b.offset - tip.offset * 2) * 0.08),
+        Paint()..color = _innerEar,
+      );
+    }
+  }
+
+  void _bunnyEars(Canvas canvas) {
+    for (final side in [-1.0, 1.0]) {
+      final base = _p(1.12, side * 0.42);
+      final tip = _p(1.18, side * 0.62, lift: 2.05);
+      if (tip.z < -0.4) continue;
+      final d = tip.offset - base.offset;
+      final len = d.distance;
+      canvas.save();
+      canvas.translate((base.offset.dx + tip.offset.dx) / 2, (base.offset.dy + tip.offset.dy) / 2);
+      canvas.rotate(atan2(d.dy, d.dx) + pi / 2);
+      final outer = Rect.fromCenter(center: Offset.zero, width: _r * 0.36, height: len * 1.1);
+      canvas.drawOval(
+        outer,
+        Paint()
+          ..shader = LinearGradient(
+            colors: [_lighten(look.bodyColor, 0.25), look.bodyColor, _darken(look.bodyColor, 0.12)],
+          ).createShader(outer),
+      );
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(0, -len * 0.04), width: _r * 0.16, height: len * 0.8),
+        Paint()..color = _innerEar,
+      );
+      canvas.restore();
+    }
+  }
+
+  void _whiskers(Canvas canvas) {
+    final paint = Paint()
+      ..color = _ink.withValues(alpha: 0.55)
+      ..strokeWidth = _r * 0.022
+      ..strokeCap = StrokeCap.round;
+    for (final side in [-1.0, 1.0]) {
+      final p = _p(-0.16, side * 0.6);
+      if (p.z < 0.15) continue;
+      for (final tilt in [-0.07, 0.07]) {
+        canvas.drawLine(p.offset, p.offset + Offset(side * _r * 0.42, tilt * _r * 1.6), paint);
+      }
     }
   }
 

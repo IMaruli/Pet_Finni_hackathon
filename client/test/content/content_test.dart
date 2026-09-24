@@ -101,4 +101,13 @@ void main() {
     ((files['items']['items'] as List).first as Map)['kind'] = 'luxury';
     expect(() => GameContent.fromJson(files), throwsFormatException);
   });
+
+  test('skins and palette for Finik style (F-023)', () {
+    final c = content;
+    expect(c.skins.map((s) => s.id), ['finik', 'cat', 'bunny', 'monkey']);
+    expect(c.skins.last.unlockStage, 3);
+    expect(c.skins.first.unlockStage, 1);
+    expect(c.palette.length, greaterThanOrEqualTo(8));
+    expect(c.goals.map((g) => g.id), isNot(contains('skin_monkey')));
+  });
 }

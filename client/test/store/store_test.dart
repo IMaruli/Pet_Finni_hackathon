@@ -57,6 +57,19 @@ void main() {
     expect(back.lastSummary, isNull);
   });
 
+  test('old profile without style reads as Finik (F-023)', () {
+    final p = Profile.fromJson({'playerName': 'Аня', 'petName': 'Финя', 'lookId': 'sun_tuft'});
+    expect(p.skin, 'finik');
+    expect(p.color, isNull);
+    expect(p.hair, isNull);
+    final styled = Profile.fromJson(
+      const Profile(playerName: 'Аня', petName: 'Банни', lookId: 'sun_tuft', skin: 'bunny', color: 0xFF6EDDB0, hair: 'bangs').toJson(),
+    );
+    expect(styled.skin, 'bunny');
+    expect(styled.color, 0xFF6EDDB0);
+    expect(styled.hair, 'bangs');
+  });
+
   test('wrong version is a format error', () {
     final json = sample().toJson()..['version'] = 99;
     expect(() => GameSnapshot.fromJson(json), throwsFormatException);

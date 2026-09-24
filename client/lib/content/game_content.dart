@@ -16,6 +16,8 @@ final class GameContent {
     required this.goals,
     required this.quests,
     required this.looks,
+    required this.skins,
+    required this.palette,
     required this.texts,
     required this.glossary,
     required this.sortCards,
@@ -36,6 +38,8 @@ final class GameContent {
       goals: list('goals', 'goals', GoalDef.fromJson),
       quests: list('quests', 'quests', Quest.fromJson),
       looks: list('looks', 'looks', Look.fromJson),
+      skins: list('looks', 'skins', SkinDef.fromJson),
+      palette: list('looks', 'palette', PaletteColor.fromJson),
       texts: (copy['texts'] as Map<String, dynamic>).cast<String, String>(),
       glossary: [
         for (final g in copy['glossary'] as List) GlossaryEntry.fromJson(g as Map<String, dynamic>),
@@ -51,6 +55,8 @@ final class GameContent {
   final List<GoalDef> goals;
   final List<Quest> quests;
   final List<Look> looks;
+  final List<SkinDef> skins;
+  final List<PaletteColor> palette;
   final Map<String, String> texts;
   final List<GlossaryEntry> glossary;
   final List<SortCard> sortCards;
@@ -66,6 +72,7 @@ final class GameContent {
   ShopItem item(String id) => items.firstWhere((i) => i.id == id);
   GoalDef goal(String id) => goals.firstWhere((g) => g.id == id);
   Look look(String id) => looks.firstWhere((l) => l.id == id, orElse: () => looks.first);
+  SkinDef? skin(String id) => skins.where((s) => s.id == id).firstOrNull;
 
   List<ShopItem> needsForDay(int day) =>
       [for (final id in config.needRotation[(day - 1) % config.needRotation.length]) item(id)];
@@ -92,6 +99,8 @@ final class GameContent {
     unique('goals', goals.map((g) => g.id));
     unique('quests', quests.map((q) => q.id));
     unique('looks', looks.map((l) => l.id));
+    unique('skins', skins.map((s) => s.id));
+    unique('palette', palette.map((p) => p.id));
     unique('puzzles', puzzles.map((p) => p.id));
 
     for (final i in items) {
@@ -141,6 +150,8 @@ final class GameContent {
     if (quests.length < 6) problems.add('volume: at least 6 quests');
     if (quests.map((q) => q.theme).toSet().length < 3) problems.add('volume: 3 quest themes');
     if (looks.length < 9) problems.add('volume: at least 9 looks');
+    if (skins.where((s) => s.unlockStage == 1).length < 3) problems.add('volume: at least 3 open skins');
+    if (palette.length < 8) problems.add('volume: at least 8 colors');
     if (config.demoPeriods < 5) problems.add('volume: at least 5 demo periods');
     if (sortCards.length < 6) problems.add('volume: at least 6 sort cards');
     if (puzzles.isEmpty) problems.add('volume: at least 1 budget puzzle');

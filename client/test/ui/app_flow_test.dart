@@ -47,8 +47,9 @@ Future<void> onboard(WidgetTester t, String name) async {
   for (var i = 0; i < 3; i++) {
     await tapKey(t, 'intro.next');
   }
-  await t.enterText(find.byKey(const Key('hero.player')), name);
   await tapKey(t, 'hero.hair.buns');
+  await tapKey(t, 'hero.color.mint');
+  await t.enterText(find.byKey(const Key('hero.player')), name);
   await tapKey(t, 'hero.go');
   await settle(t, 20);
 }
@@ -151,6 +152,15 @@ void main() {
     expect(find.text('надето'), findsOneWidget);
     await tapKey(t, 'clothes.glasses');
     expect(find.text('снято'), findsOneWidget);
+
+    // F-023: облик из Одежды — Мартышка закрыта, Зайка выбирается бесплатно.
+    await tapKey(t, 'clothes.style');
+    await tapKey(t, 'hero.skin.monkey');
+    expect(find.byKey(const Key('hero.skin.lockHint')), findsOneWidget);
+    await tapKey(t, 'hero.skin.bunny');
+    expect(find.byKey(const Key('hero.hair.tuft')), findsNothing); // у Зайки ушки
+    await tapKey(t, 'hero.go');
+    await settle(t, 20);
     await t.pageBack();
     await settle(t);
 

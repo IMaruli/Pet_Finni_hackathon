@@ -7,6 +7,7 @@ import '../mascot/mascot_view.dart';
 import '../theme.dart';
 import '../widgets/buy_sheet.dart';
 import '../widgets/duo.dart';
+import 'create_hero_screen.dart';
 
 /// Одежда (Figma 07): рамка с героем и шкаф налепок, тап = примерка (SA F-017 BR-11).
 class ClothesScreen extends StatefulWidget {
@@ -62,7 +63,17 @@ class _ClothesScreenState extends State<ClothesScreen> {
           accessories: {...base.accessories, ?trying?.accessory},
         );
         return Scaffold(
-          appBar: AppBar(title: const Text('Одежда')),
+          appBar: AppBar(
+            title: const Text('Одежда'),
+            actions: [
+              TextButton.icon(
+                key: const Key('clothes.style'),
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => FinikStyleScreen(game: game, create: false))),
+                icon: const Icon(Icons.palette_rounded, size: 20),
+                label: const Text('Облик'),
+              ),
+            ],
+          ),
           body: SafeArea(
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),

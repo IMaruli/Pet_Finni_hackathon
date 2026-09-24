@@ -290,6 +290,42 @@ void main() {
     expect(game.mood, PetMood.glad);
   });
 
+  group('Finik style (F-023)', () {
+    test('profile keeps the chosen skin, color and hair', () async {
+      final g = await fresh();
+      await g.createProfile(playerName: 'Аня', petName: 'Банни', lookId: 'sun_tuft', skin: 'bunny', color: 0xFF6EDDB0, hair: 'buns');
+      expect(g.profile.skin, 'bunny');
+      expect(g.profile.color, 0xFF6EDDB0);
+      expect((await fresh()).profile.hair, 'buns');
+    });
+
+    test('restyle is free and saved', () async {
+      final coins = game.economy.available;
+      expect((await game.restyle(skin: 'cat', color: 0xFFB79CFF)).ok, isTrue);
+      expect(game.profile.skin, 'cat');
+      expect(game.profile.color, 0xFFB79CFF);
+      expect(game.economy.available, coins);
+      expect((await fresh()).profile.skin, 'cat');
+    });
+
+    test('monkey waits for the grown-up stage', () async {
+      expect(game.isSkinUnlocked('bunny'), isTrue);
+      expect(game.isSkinUnlocked('monkey'), isFalse);
+      final f = await game.restyle(skin: 'monkey');
+      expect(f.reason, FeedbackReason.locked);
+      expect(f.messages.single, contains('взрослым'));
+      expect(game.profile.skin, 'finik');
+      expect((await game.restyle(skin: 'dragon')).reason, FeedbackReason.locked);
+      for (var d = 0; d < 4; d++) {
+        await goodDay();
+        await game.endDay();
+      }
+      expect(game.stage, 3);
+      expect(game.isSkinUnlocked('monkey'), isTrue);
+      expect((await game.restyle(skin: 'monkey')).ok, isTrue);
+    });
+  });
+
   group('needs first (F-021)', () {
     test('a want before needs is refused and costs nothing', () async {
       await game.confirmPlan(need: game.todaysNeedSum, want: 20, save: 0);

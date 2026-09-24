@@ -5,7 +5,7 @@ enum ItemSlot { consumable, hero, room }
 
 enum QuestTheme { budget, save, buy }
 
-enum GoalReward { room, skin, furniture }
+enum GoalReward { room, skin, furniture, gift }
 
 T _enum<T extends Enum>(List<T> values, Object? raw, String field) {
   for (final v in values) {
@@ -152,6 +152,31 @@ final class Quest {
   final String emoji;
   final List<QuestLine> lines;
   final List<QuestChoice> choices;
+}
+
+/// Скин героя (SA F-023). [unlockStage] > 1 — открывается ростом героя.
+final class SkinDef {
+  const SkinDef({required this.id, required this.title, this.unlockStage = 1});
+  factory SkinDef.fromJson(Map<String, dynamic> j) =>
+      SkinDef(id: j['id'] as String, title: j['title'] as String, unlockStage: j['unlockStage'] as int? ?? 1);
+  final String id;
+  final String title;
+  final int unlockStage;
+}
+
+/// Цвет палитры героя (SA F-023).
+final class PaletteColor {
+  const PaletteColor({required this.id, required this.title, required this.color});
+  factory PaletteColor.fromJson(Map<String, dynamic> j) => PaletteColor(
+    id: j['id'] as String,
+    title: j['title'] as String,
+    color: 0xFF000000 | int.parse((j['color'] as String).replaceFirst('#', ''), radix: 16),
+  );
+  final String id;
+  final String title;
+
+  /// ARGB.
+  final int color;
 }
 
 final class Look {

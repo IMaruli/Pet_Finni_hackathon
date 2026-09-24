@@ -4,16 +4,52 @@ import 'economy_codec.dart';
 List<String> _strings(Object? raw) => [for (final s in raw as List) s as String];
 
 final class Profile {
-  const Profile({required this.playerName, required this.petName, required this.lookId});
+  const Profile({
+    required this.playerName,
+    required this.petName,
+    required this.lookId,
+    this.skin = 'finik',
+    this.color,
+    this.hair,
+  });
   factory Profile.fromJson(Map<String, dynamic> j) => Profile(
     playerName: j['playerName'] as String,
     petName: j['petName'] as String,
     lookId: j['lookId'] as String,
+    skin: j['skin'] as String? ?? 'finik',
+    color: j['color'] as int?,
+    hair: j['hair'] as String?,
   );
   final String playerName;
   final String petName;
   final String lookId;
-  Map<String, dynamic> toJson() => {'playerName': playerName, 'petName': petName, 'lookId': lookId};
+
+  /// finik|cat|bunny|monkey (SA F-023).
+  final String skin;
+
+  /// ARGB; `null` — цвет облика [lookId].
+  final int? color;
+
+  /// tuft|bangs|buns; `null` — причёска облика [lookId].
+  final String? hair;
+
+  Profile restyled({String? skin, int? color, String? hair}) => Profile(
+    playerName: playerName,
+    petName: petName,
+    lookId: lookId,
+    skin: skin ?? this.skin,
+    color: color ?? this.color,
+    hair: hair ?? this.hair,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'playerName': playerName,
+    'petName': petName,
+    'lookId': lookId,
+    'skin': skin,
+    'color': ?color,
+    'hair': ?hair,
+  };
 }
 
 final class Inventory {
