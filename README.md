@@ -217,5 +217,6 @@ flutter install             # поставить на подключённый �
 | 📘 Бизнес-описание механик со скриншотами | [`docs/business`](docs/business/README.md) |
 | 🛠 Техническое описание клиента | [`client/README.md`](client/README.md) |
 | 📐 Системные спецификации по историям (F-002 … F-053) | [`docs/work`](docs/work/README.md) |
+| ✅ Полный аудит по ТЗ: статусы «реализовано / в работе / не начато» и план до финала | [`docs/work/product/TZ_FULL_AUDIT.md`](docs/work/product/TZ_FULL_AUDIT.md) |
 | ✅ Соответствие правилам ТЗ (аудит 2026-09-25) | [`docs/work/product/TZ_RULES_COMPLIANCE.md`](docs/work/product/TZ_RULES_COMPLIANCE.md) |
 | 📦 Релиз и чеклист сдачи | [`docs/release/RELEASE_v1.0.0.md`](docs/release/RELEASE_v1.0.0.md) |
