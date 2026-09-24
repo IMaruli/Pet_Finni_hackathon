@@ -51,9 +51,9 @@ class _CreateHeroScreenState extends State<CreateHeroScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
           children: [
-            const Text('Питомец Финни', textAlign: TextAlign.center, style: TextStyle(color: FinniColors.teal, fontWeight: FontWeight.w800)),
+            const Text('Питомец Финни', textAlign: TextAlign.center, style: TextStyle(color: FinniColors.teal, fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
-            const Text('Как зовут героя?', textAlign: TextAlign.center, style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900)),
+            const Text('Как зовут героя?', textAlign: TextAlign.center, style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
             Center(
               child: MascotView(
                 look: MascotLook.fromLook(content.look(_lookId), mood: PetMood.glad, stage: 1),
@@ -95,7 +95,7 @@ class _CreateHeroScreenState extends State<CreateHeroScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: ChoiceChip(
                       key: Key('hero.hair.$id'),
-                      label: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
+                      label: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
                       selected: _hair == id,
                       onSelected: (_) {
                         setState(() => _hair = id);

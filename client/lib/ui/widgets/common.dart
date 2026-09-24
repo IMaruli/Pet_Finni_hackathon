@@ -24,60 +24,60 @@ void buzz(Buzz kind) {
   }
 }
 
-/// Монеты с анимированным счётчиком.
+/// Игровая монета: жёлтый круг с ободком (вместо эмодзи в интерфейсе).
+class CoinIcon extends StatelessWidget {
+  const CoinIcon({super.key, this.size = 18});
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFFFFD84D), Color(0xFFF5A500)]),
+      border: Border.all(color: const Color(0xFFE29400), width: size * 0.08),
+    ),
+  );
+}
+
+/// Баланс: капсула с монетой и анимированным числом.
 class CoinChip extends StatelessWidget {
-  const CoinChip({
-    super.key,
-    required this.value,
-    this.label,
-    this.emoji = '🪙',
-    this.color = FinniColors.coin,
-  });
+  const CoinChip({super.key, required this.value, this.label, this.emoji, this.color = FinniColors.coin});
   final int value;
   final String? label;
-  final String emoji;
+
+  /// Устарело (F-018): иконка всегда монета, кроме копилки.
+  final String? emoji;
   final Color color;
 
   @override
   Widget build(BuildContext context) {
+    final piggy = emoji == '🐷';
     return Semantics(
-      label: '${label ?? 'Монеты'}: $value',
+      label: '${label ?? (piggy ? 'Копилка' : 'Монеты')}: $value',
       child: ExcludeSemantics(
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: FinniColors.surface,
-            borderRadius: BorderRadius.circular(40),
-            border: Border.all(color: color.withValues(alpha: 0.6), width: 2),
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(color: FinniColors.surface, borderRadius: BorderRadius.circular(20)),
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(emoji, style: const TextStyle(fontSize: 20)),
+                if (piggy) const Icon(Icons.savings_rounded, size: 18, color: FinniColors.save) else const CoinIcon(),
                 const SizedBox(width: 6),
                 TweenAnimationBuilder<double>(
                   tween: Tween(end: value.toDouble()),
                   duration: const Duration(milliseconds: 500),
                   builder: (_, v, _) => Text(
                     '${v.round()}',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                    ),
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, letterSpacing: -0.3, fontFeatures: [FontFeature.tabularFigures()]),
                   ),
                 ),
                 if (label != null) ...[
-                  const SizedBox(width: 6),
-                  Text(
-                    label!,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: FinniColors.muted,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  const SizedBox(width: 4),
+                  Text(label!, style: const TextStyle(fontSize: 13, color: FinniColors.muted)),
                 ],
               ],
             ),
@@ -96,22 +96,17 @@ class BasketBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ink = Color.lerp(basket.color, const Color(0xFF000000), 0.15)!;
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: small ? 8 : 10,
-        vertical: small ? 2 : 4,
-      ),
-      decoration: BoxDecoration(
-        color: basket.color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        '${basket.emoji} ${basket.title}',
-        style: TextStyle(
-          fontSize: small ? 12 : 14,
-          fontWeight: FontWeight.w800,
-          color: basket.color,
-        ),
+      padding: EdgeInsets.symmetric(horizontal: small ? 8 : 10, vertical: small ? 2 : 4),
+      decoration: BoxDecoration(color: basket.color.withValues(alpha: 0.13), borderRadius: BorderRadius.circular(20)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(basket.icon, size: small ? 12 : 14, color: ink),
+          const SizedBox(width: 4),
+          Text(basket.title, style: TextStyle(fontSize: small ? 12 : 13, fontWeight: FontWeight.w600, color: ink)),
+        ],
       ),
     );
   }
@@ -135,19 +130,12 @@ class Panel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: color ?? FinniColors.surface,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(16),
       elevation: 0,
       child: InkWell(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(16),
         onTap: onTap,
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: FinniColors.line, width: 2),
-          ),
-          child: child,
-        ),
+        child: Padding(padding: padding, child: child),
       ),
     );
   }
@@ -203,7 +191,7 @@ class MenuTile extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -227,7 +215,7 @@ class MenuTile extends StatelessWidget {
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 11,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -265,9 +253,9 @@ class SpeechBubble extends StatelessWidget {
           bottomLeft: Radius.circular(tailLeft ? 4 : 22),
           bottomRight: Radius.circular(tailLeft ? 22 : 4),
         ),
-        border: Border.all(color: FinniColors.line, width: 2),
+        boxShadow: const [BoxShadow(color: Color(0x0F000000), blurRadius: 8, offset: Offset(0, 2))],
       ),
-      child: Text(text, style: const TextStyle(fontSize: 17, height: 1.35)),
+      child: Text(text, style: const TextStyle(fontSize: 17, height: 1.35, letterSpacing: -0.3)),
     );
   }
 }
@@ -285,11 +273,16 @@ void showToast(
   messenger.showSnackBar(
     SnackBar(
       duration: const Duration(milliseconds: 2800),
-      backgroundColor: color ?? FinniColors.ink,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      backgroundColor: const Color(0xF21C1C1E),
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       content: Row(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 26)),
+          Container(
+            width: 8,
+            height: 32,
+            decoration: BoxDecoration(color: color ?? FinniColors.primary, borderRadius: BorderRadius.circular(4)),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(

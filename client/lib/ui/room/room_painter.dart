@@ -83,8 +83,8 @@ final class RoomPainter extends CustomPainter {
   final double feetY;
 
   bool get _play => room == 2;
-  Color get _wall => _play ? const Color(0xFFBFE3D8) : const Color(0xFFF2BFA1);
-  Color get _wood => _play ? const Color(0xFFD9BE96) : const Color(0xFFCF9A62);
+  Color get _wall => _play ? const Color(0xFFD3E2D8) : const Color(0xFFE7DDD2);
+  Color get _wood => _play ? const Color(0xFFD2B892) : const Color(0xFFC9A57C);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -109,7 +109,7 @@ final class RoomPainter extends CustomPainter {
     if (!_play) _bigPlant(canvas, g);
 
     if (!_play && owned.contains('rug')) {
-      _rug(canvas, g, const Color(0xFFD98C8C), const Color(0xFFF3C6C0));
+      _rug(canvas, g, const Color(0xFFC7A79C), const Color(0xFFE9DCD4));
     }
     if (!_play) {
       switch (furniture) {
@@ -959,7 +959,7 @@ final class RoomPainter extends CustomPainter {
         canvas.drawCircle(c.translate(b.width * dx, 0), b.width * r, cloud);
       }
     }
-    _rug(canvas, g, const Color(0xFF6FB8F0), const Color(0xFFB9E2FF));
+    _rug(canvas, g, const Color(0xFF9DB9CF), const Color(0xFFD9E6EF));
     // Кубики.
     const cubes = [Color(0xFFE0668F), Color(0xFFF2CF6B), Color(0xFF5DB6A6)];
     for (var i = 0; i < 3; i++) {

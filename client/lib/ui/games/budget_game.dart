@@ -95,7 +95,7 @@ class _BudgetGameState extends State<BudgetGame> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  Text(_puzzle.title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
+                  Text(_puzzle.title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
                   Text(
                     'Бюджет ${_puzzle.budget} 🪙. Возьми всё нужное и не выйди за бюджет.',
                     textAlign: TextAlign.center,
@@ -106,7 +106,7 @@ class _BudgetGameState extends State<BudgetGame> {
                   if (_message != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
-                      child: Text(_message!, textAlign: TextAlign.center, style: const TextStyle(color: FinniColors.primary, fontWeight: FontWeight.w800, fontSize: 16)),
+                      child: Text(_message!, textAlign: TextAlign.center, style: const TextStyle(color: FinniColors.primary, fontWeight: FontWeight.w600, fontSize: 16)),
                     ),
                 ],
               ),
@@ -134,12 +134,12 @@ class _BudgetGameState extends State<BudgetGame> {
                       const SizedBox(width: 8),
                       Text(
                         '${c.total} / ${_puzzle.budget}',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: c.over > 0 ? FinniColors.want : FinniColors.ink),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: c.over > 0 ? FinniColors.want : FinniColors.ink),
                       ),
                     ],
                   ),
                   if (c.over > 0)
-                    Text('Перебор на ${c.over} 🪙', style: const TextStyle(color: FinniColors.want, fontWeight: FontWeight.w800)),
+                    Text('Перебор на ${c.over} 🪙', style: const TextStyle(color: FinniColors.want, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 10),
                   Row(
                     children: [
@@ -186,13 +186,13 @@ class _BudgetGameState extends State<BudgetGame> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(item.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                    Text(item.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 2),
                     BasketBadge(basketOf(item.kind), small: true),
                   ],
                 ),
               ),
-              Text('${item.price} 🪙', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+              Text('${item.price} 🪙', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
               const SizedBox(width: 8),
               Icon(on ? Icons.check_circle : Icons.add_circle_outline, color: on ? FinniColors.need : FinniColors.muted, size: 30),
             ],

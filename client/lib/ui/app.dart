@@ -104,7 +104,7 @@ class _Splash extends StatelessWidget {
               interactive: false,
             ),
             SizedBox(height: 12),
-            Text('Финни', style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900)),
+            Text('Финни', style: TextStyle(fontSize: 36, fontWeight: FontWeight.w700)),
             Text('учимся обращаться с монетами', style: TextStyle(color: FinniColors.muted)),
           ],
         ),
@@ -126,7 +126,7 @@ class _ErrorScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Что-то сломалось 🛠️', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900)),
+              const Text('Что-то сломалось 🛠️', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               const Text('Позови взрослого. Для разработчика:'),
               const SizedBox(height: 12),

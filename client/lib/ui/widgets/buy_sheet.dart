@@ -65,7 +65,7 @@ Future<void> buyFlow(BuildContext context, GameController game, ShopItem item, {
         actions: [
           DuoButton(
             label: 'Заработать заданием',
-            emoji: '📜',
+            icon: Icons.auto_stories_rounded,
             color: FinniColors.teal,
             onPressed: () {
               Navigator.of(sheet).pop();
@@ -75,7 +75,7 @@ Future<void> buyFlow(BuildContext context, GameController game, ShopItem item, {
           const SizedBox(height: 10),
           DuoButton(
             label: 'Сыграть в игру',
-            emoji: '🎮',
+            icon: Icons.sports_esports_rounded,
             color: FinniColors.blue,
             onPressed: () {
               Navigator.of(sheet).pop();
@@ -114,7 +114,7 @@ class _Sheet extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(emoji, textAlign: TextAlign.center, style: const TextStyle(fontSize: 52)),
-            Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
+            Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
             const SizedBox(height: 6),
             Text(text, textAlign: TextAlign.center, style: const TextStyle(color: FinniColors.muted, fontSize: 16)),
             const SizedBox(height: 18),
@@ -174,7 +174,7 @@ class _BuySheetState extends State<_BuySheet> {
               Center(child: MascotView(look: preview, size: 170))
             else
               Text(item.emoji, textAlign: TextAlign.center, style: const TextStyle(fontSize: 64)),
-            Text(item.title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900)),
+            Text(item.title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
             const SizedBox(height: 6),
             Center(child: DuoChip(text: itemSubtitle(item), color: basketOf(item.kind).color)),
             const SizedBox(height: 8),
@@ -185,7 +185,7 @@ class _BuySheetState extends State<_BuySheet> {
               child: Text(
                 after >= 0 ? 'В кошельке $wallet 🪙 → останется $after 🪙' : 'В кошельке $wallet 🪙, а стоит ${item.price} 🪙',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
               ),
             ),
             if (item.kind == ItemKind.want && game.planConfirmed)

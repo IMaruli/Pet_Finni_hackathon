@@ -99,7 +99,7 @@ class _QuestScreenState extends State<QuestScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(color: FinniColors.surface, borderRadius: BorderRadius.circular(20)),
-                  child: Text('Тема: ${_themeTitle[_quest.theme]}', style: const TextStyle(fontWeight: FontWeight.w800)),
+                  child: Text('Тема: ${_themeTitle[_quest.theme]}', style: const TextStyle(fontWeight: FontWeight.w600)),
                 ),
               ),
               Center(child: MascotView(look: look, controller: _mascot, size: 150, semanticsLabel: game.profile.petName)),
@@ -111,7 +111,7 @@ class _QuestScreenState extends State<QuestScreen> {
                 ),
               if (_allShown && _result == null) ...[
                 const SizedBox(height: 16),
-                Text('Что сделает ${game.profile.petName}?', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w900)),
+                Text('Что сделает ${game.profile.petName}?', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
                 for (var i = 0; i < _quest.choices.length; i++)
                   Padding(
@@ -179,7 +179,7 @@ class _QuestScreenState extends State<QuestScreen> {
           children: [
             Text(
               choice.wise ? '🌟 Мудрое решение!' : '🤔 Можно лучше. Вот почему:',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             Text('«${_fill(choice.text)}»', style: const TextStyle(fontStyle: FontStyle.italic, color: FinniColors.muted)),
@@ -195,7 +195,7 @@ class _QuestScreenState extends State<QuestScreen> {
                 child: Text(
                   '+${f.reward} 🪙  Задание: ${_quest.title}',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: FinniColors.need),
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: FinniColors.need),
                 ),
               )
             else

@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 import '../../content/models.dart';
 import '../../economy/catalog_item.dart';
 import '../../game/game_controller.dart';
+import '../screens/plan_screen.dart';
 import '../screens/savings_screen.dart';
 import '../theme.dart';
 import '../widgets/buy_sheet.dart';
 import '../widgets/common.dart';
 import '../widgets/duo.dart';
 
-/// Магазин (Figma 06): строки с иконкой, типом и ценой (SA F-017 BR-10).
+/// Магазин (Figma 06) в стиле списков iOS (SA F-017 BR-10, F-018 BR-06).
 class ShopTab extends StatelessWidget {
   const ShopTab({super.key, required this.game});
   final GameController game;
@@ -18,105 +19,86 @@ class ShopTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: ListView(
-        padding: const EdgeInsets.only(bottom: 24),
+        padding: const EdgeInsets.only(bottom: 32),
         children: [
           DuoHeader(title: 'Магазин', trailing: CoinChip(value: game.economy.available.value)),
           if (!game.planConfirmed)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: DuoCard(
-                color: Color(0xFFFFF4D6),
-                padding: EdgeInsets.all(12),
-                child: Text('🫙 Сначала план дня — тогда видно, на что хватит.', style: TextStyle(fontWeight: FontWeight.w800)),
-              ),
+            GroupedSection(
+              children: [
+                GroupedRow(
+                  icon: Icons.pie_chart_rounded,
+                  title: 'Сначала план дня',
+                  subtitle: 'Так видно, на что хватит монет',
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PlanScreen(game: game))),
+                ),
+              ],
             ),
-          const DuoSection('Нужное — на сегодня', color: FinniColors.need),
-          for (final item in game.todaysNeeds) _itemRow(context, item),
-          const DuoSection('Хочу — сразу в комнату или на героя', color: FinniColors.want),
-          for (final item in game.content.wantItems) _itemRow(context, item),
-          const DuoSection('Копим — цели', color: FinniColors.orange),
-          for (final g in game.content.goals) _goalRow(context, g),
+          GroupedSection(
+            header: 'Нужное на сегодня',
+            footer: 'Нужное каждый день новое: завтра понадобится снова.',
+            children: [for (final item in game.todaysNeeds) _itemRow(context, item)],
+          ),
+          GroupedSection(
+            header: 'Хочу',
+            children: [for (final item in game.content.wantItems) _itemRow(context, item)],
+          ),
+          GroupedSection(
+            header: 'Копим',
+            footer: 'Цели покупаются из копилки.',
+            children: [for (final g in game.content.goals) _goalRow(context, g)],
+          ),
         ],
       ),
     );
   }
 
+  Widget _emojiTile(String emoji) => Container(
+    width: 40,
+    height: 40,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(color: FinniColors.fill, borderRadius: BorderRadius.circular(10)),
+    child: Text(emoji, style: const TextStyle(fontSize: 22)),
+  );
+
+  Widget _price(int price) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    decoration: BoxDecoration(color: FinniColors.fill, borderRadius: BorderRadius.circular(20)),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const CoinIcon(size: 15),
+        const SizedBox(width: 5),
+        Text('$price', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+      ],
+    ),
+  );
+
   Widget _itemRow(BuildContext context, ShopItem item) {
     final owned = item.slot != ItemSlot.consumable && game.inventory.owned.contains(item.id);
     final boughtNeed = item.kind == ItemKind.need && game.isBoughtToday(item.id);
     final done = owned || boughtNeed;
-    return _row(
+    return GroupedRow(
       key: Key('shopRow.${item.id}'),
-      emoji: item.emoji,
+      leading: _emojiTile(item.emoji),
       title: item.title,
       subtitle: itemSubtitle(item),
-      price: done ? (owned ? '✓ есть' : '✓ куплено') : '${item.price}',
-      done: done,
+      trailing: done
+          ? Text(owned ? '✓ есть' : '✓ куплено', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: FinniColors.need))
+          : _price(item.price),
+      chevron: false,
       onTap: done ? null : () => buyFlow(context, game, item),
     );
   }
 
   Widget _goalRow(BuildContext context, GoalDef g) {
     final done = game.inventory.goalsDone.contains(g.id);
-    return _row(
+    return GroupedRow(
       key: Key('shopGoal.${g.id}'),
-      emoji: g.emoji,
+      leading: _emojiTile(g.emoji),
       title: g.title,
-      subtitle: 'копим · цель копилки',
-      price: done ? '✓ есть' : '${g.cost}',
-      done: done,
+      subtitle: done ? 'Получено' : 'Цель копилки',
+      trailing: done ? const Icon(Icons.check_circle_rounded, color: FinniColors.need) : _price(g.cost),
       onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => SavingsScreen(game: game))),
-    );
-  }
-
-  Widget _row({
-    required Key key,
-    required String emoji,
-    required String title,
-    required String subtitle,
-    required String price,
-    required bool done,
-    VoidCallback? onTap,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-      child: DuoCard(
-        key: key,
-        onTap: onTap,
-        padding: const EdgeInsets.all(10),
-        child: Row(
-          children: [
-            Container(
-              width: 58,
-              height: 58,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(color: const Color(0xFFFBF1E1), borderRadius: BorderRadius.circular(16)),
-              child: Text(emoji, style: const TextStyle(fontSize: 32)),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
-                  Text(subtitle, style: const TextStyle(fontSize: 13, color: FinniColors.muted)),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: done ? FinniColors.need.withValues(alpha: 0.15) : FinniColors.primary.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                done ? price : '🪙 $price',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: done ? FinniColors.need : FinniColors.ink),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

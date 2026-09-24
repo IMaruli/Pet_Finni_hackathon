@@ -59,7 +59,7 @@ class _IntroScreenState extends State<IntroScreen> {
             const SizedBox(height: 12),
             Text(
               widget.replay ? 'Подсказка' : 'Привет! Это игра про монеты',
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
             const Padding(
@@ -93,7 +93,7 @@ class _IntroScreenState extends State<IntroScreen> {
                           const SizedBox(height: 8),
                           Text(
                             '${c.basket.emoji} ${c.basket.title}',
-                            style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: c.basket.color),
+                            style: TextStyle(fontSize: 34, fontWeight: FontWeight.w700, color: c.basket.color),
                           ),
                           const SizedBox(height: 8),
                           Flexible(

@@ -98,7 +98,7 @@ class _PlanScreenState extends State<PlanScreen> {
             ),
             child: Text(
               _left == 0 ? 'Все $_available 🪙 разложены ✓' : 'Не разложено: $_left 🪙 из $_available',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
             ),
           ),
         ),
@@ -188,7 +188,7 @@ class _PlanScreenState extends State<PlanScreen> {
           height: 48,
           alignment: Alignment.center,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900)),
+          child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w700)),
         ),
       ),
     );
@@ -231,7 +231,7 @@ class _PlanScreenState extends State<PlanScreen> {
                       BasketBadge(b),
                       Text(
                         '${b == Basket.save ? 'отложено' : 'потрачено'} ${facts[b]!.$2} из ${facts[b]!.$1}',
-                        style: const TextStyle(fontWeight: FontWeight.w800),
+                        style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),

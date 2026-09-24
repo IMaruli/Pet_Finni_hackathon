@@ -37,7 +37,7 @@ class _AdultGateState extends State<AdultGate> with SingleTickerProviderStateMix
       mainAxisSize: MainAxisSize.min,
       children: [
         const Text('👪', style: TextStyle(fontSize: 56)),
-        const Text('Раздел для взрослых', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
+        const Text('Раздел для взрослых', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
         const SizedBox(height: 6),
         const Text('Нажмите и удерживайте кнопку 3 секунды', style: TextStyle(color: FinniColors.muted)),
         const SizedBox(height: 24),
@@ -60,7 +60,7 @@ class _AdultGateState extends State<AdultGate> with SingleTickerProviderStateMix
                     backgroundColor: FinniColors.line,
                     color: FinniColors.primary,
                   ),
-                  const Center(child: Text('Держать', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900))),
+                  const Center(child: Text('Держать', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700))),
                 ],
               ),
             ),
@@ -142,7 +142,7 @@ class _AdultScreenState extends State<AdultScreen> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text('Чему учит приложение', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+        const Text('Чему учит приложение', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
         const Text(
           'Все суммы — вымышленные игровые монеты. Они не имеют ценности вне игры и ни с чем не связаны.',
@@ -153,11 +153,11 @@ class _AdultScreenState extends State<AdultScreen> {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: Text(emoji, style: const TextStyle(fontSize: 28)),
-            title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
+            title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
             subtitle: Text(text),
           ),
         const SizedBox(height: 12),
-        const Text('Прогресс', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+        const Text('Прогресс', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
         const SizedBox(height: 8),
         Panel(
           child: Column(
@@ -209,7 +209,7 @@ class _AdultScreenState extends State<AdultScreen> {
       children: [
         Expanded(child: Text(k, style: const TextStyle(color: FinniColors.muted))),
         const SizedBox(width: 8),
-        Flexible(child: Text(v, textAlign: TextAlign.right, style: const TextStyle(fontWeight: FontWeight.w800))),
+        Flexible(child: Text(v, textAlign: TextAlign.right, style: const TextStyle(fontWeight: FontWeight.w600))),
       ],
     ),
   );

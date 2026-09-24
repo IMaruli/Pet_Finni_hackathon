@@ -116,7 +116,7 @@ class _SortGameState extends State<SortGame> with SingleTickerProviderStateMixin
                     const SizedBox(width: 8),
                     Expanded(child: ProgressBar(value: 1 - _timer.value, color: FinniColors.primary)),
                     const SizedBox(width: 8),
-                    Text('${(widget.seconds * (1 - _timer.value)).ceil()} с', style: const TextStyle(fontWeight: FontWeight.w900)),
+                    Text('${(widget.seconds * (1 - _timer.value)).ceil()} с', style: const TextStyle(fontWeight: FontWeight.w700)),
                   ],
                 ),
               ),
@@ -160,7 +160,7 @@ class _SortGameState extends State<SortGame> with SingleTickerProviderStateMixin
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 12),
                                 child: Text(r.current.title, textAlign: TextAlign.center,
-                                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
+                                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
                               ),
                             ],
                           ),
@@ -178,7 +178,7 @@ class _SortGameState extends State<SortGame> with SingleTickerProviderStateMixin
                         _lastRight! ? '✅ Верно!' : '❌ Не совсем — разберём в конце',
                         style: TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                           color: _lastRight! ? FinniColors.need : FinniColors.want,
                         ),
                       ),
@@ -201,7 +201,7 @@ class _SortGameState extends State<SortGame> with SingleTickerProviderStateMixin
   Widget _bigButton(Basket b, ItemKind kind, Key key) => DuoButton(
     key: key,
     label: kind == ItemKind.need ? 'Нужно' : 'Хочу',
-    emoji: b.emoji,
+    icon: b.icon,
     color: b.color,
     height: 68,
     onPressed: () => _answer(kind),

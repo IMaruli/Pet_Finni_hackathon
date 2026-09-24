@@ -132,7 +132,7 @@ class _NightScreenState extends State<NightScreen> with SingleTickerProviderStat
         children: [
           const Text('💤', style: TextStyle(fontSize: 40)),
           CustomPaint(size: const Size.square(200), painter: MascotPainter(look: look, pose: const SpherePose(0, 0.15), blink: 1)),
-          Text('Спокойной ночи, ${widget.game.profile.petName}!', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
+          Text('Спокойной ночи, ${widget.game.profile.petName}!', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -147,19 +147,19 @@ class _NightScreenState extends State<NightScreen> with SingleTickerProviderStat
       key: const ValueKey('summary'),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       children: [
-        Text('Итог дня ${s.day}', textAlign: TextAlign.center, style: white.copyWith(fontSize: 26, fontWeight: FontWeight.w900)),
+        Text('Итог дня ${s.day}', textAlign: TextAlign.center, style: white.copyWith(fontSize: 26, fontWeight: FontWeight.w700)),
         Center(child: MascotView(look: look, controller: _mascot, size: 170, semanticsLabel: name)),
         if (s.grew)
           Text(
             game.content.text('stage.up', {'pet': name, 'n': game.content.text('stage.${s.stageAfter}')}),
             textAlign: TextAlign.center,
-            style: const TextStyle(color: FinniColors.coin, fontSize: 22, fontWeight: FontWeight.w900),
+            style: const TextStyle(color: FinniColors.coin, fontSize: 22, fontWeight: FontWeight.w700),
           ),
         const SizedBox(height: 12),
         _card(
           child: Column(
             children: [
-              const Text('План и факт', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+              const Text('План и факт', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               PlanFactBars(summary: s),
             ],
@@ -178,7 +178,7 @@ class _NightScreenState extends State<NightScreen> with SingleTickerProviderStat
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Настроение: ${game.content.text('mood.${s.mood.name}')}', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
+                    Text('Настроение: ${game.content.text('mood.${s.mood.name}')}', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
                     Text(game.content.text('mood.${s.mood.name}.why', {'pet': name})),
                   ],
                 ),
@@ -192,7 +192,7 @@ class _NightScreenState extends State<NightScreen> with SingleTickerProviderStat
             children: [
               Text(
                 s.good ? '✅ Хороший день!' : '🌱 Завтра будет лучше',
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 10),
               _ladder(s),
@@ -239,7 +239,7 @@ class _NightScreenState extends State<NightScreen> with SingleTickerProviderStat
                   Text(
                     widget.game.content.text('stage.$st'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: st <= s.stageAfter ? Colors.white : FinniColors.ink),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: st <= s.stageAfter ? Colors.white : FinniColors.ink),
                   ),
                   Text(
                     st == 1 ? 'старт' : '${need[st]} хор. дня',

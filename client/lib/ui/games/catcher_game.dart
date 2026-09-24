@@ -113,7 +113,7 @@ class _CatcherGameState extends State<CatcherGame> with SingleTickerProviderStat
                   const SizedBox(width: 12),
                   Expanded(child: ProgressBar(value: m.score / m.config.target, color: FinniColors.need)),
                   const SizedBox(width: 12),
-                  Text('⏱️ ${m.timeLeft.ceil()}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+                  Text('⏱️ ${m.timeLeft.ceil()}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
                 ],
               ),
             ),
@@ -148,7 +148,7 @@ class _CatcherGameState extends State<CatcherGame> with SingleTickerProviderStat
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 18,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w700,
                                   color: p.good ? FinniColors.need : FinniColors.want,
                                 ),
                               ),
@@ -177,7 +177,7 @@ class _CatcherGameState extends State<CatcherGame> with SingleTickerProviderStat
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text('🪙 💰 — лови!', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900)),
+                                  const Text('🪙 💰 — лови!', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
                                   const SizedBox(height: 8),
                                   Text(
                                     '${m.config.temptations.join(' ')} — хотелки. Поймаешь — они съедят ${m.config.temptationPenalty} монеты из банки.',

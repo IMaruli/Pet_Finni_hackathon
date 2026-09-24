@@ -30,14 +30,14 @@ Future<bool> showGameResult(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(win ? '🏆' : '💪', textAlign: TextAlign.center, style: const TextStyle(fontSize: 56)),
-              Text(headline, textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
+              Text(headline, textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               Text(
                 f.reward > 0 ? '+${f.reward} 🪙 в кошелёк' : 'Награда за игру сегодня уже была',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 20,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: f.reward > 0 ? FinniColors.need : FinniColors.muted,
                 ),
               ),

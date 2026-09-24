@@ -69,7 +69,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text('⚠️', textAlign: TextAlign.center, style: TextStyle(fontSize: 44)),
-              Text('Снять $amount 🪙 из копилки?', textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
+              Text('Снять $amount 🪙 из копилки?', textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
               const SizedBox(height: 10),
               Panel(
                 padding: const EdgeInsets.all(12),
@@ -133,7 +133,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Какую вещь хочешь?', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
+                const Text('Какую вещь хочешь?', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 10,
@@ -210,7 +210,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                   ),
                   const SizedBox(height: 12),
                   if (goal != null) ...[
-                    Text('Цель: ${goal.title}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w900)),
+                    Text('Цель: ${goal.title}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 8),
                     ProgressBar(value: saved / goal.cost, color: FinniColors.save, height: 18),
                     const SizedBox(height: 6),
@@ -234,7 +234,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                   ] else
                     const Text('Выбери цель ниже — и копилка станет мечтой.', textAlign: TextAlign.center, style: TextStyle(fontSize: 17)),
                   const SizedBox(height: 16),
-                  const Text('Отложить из кошелька', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                  const Text('Отложить из кошелька', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
@@ -262,7 +262,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                   ),
                   if (saved > 0) ...[
                     const SizedBox(height: 16),
-                    const Text('Снять из копилки', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                    const Text('Снять из копилки', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 4),
                     const Text('Можно, но цель отодвинется. Мы спросим дважды.', style: TextStyle(color: FinniColors.muted)),
                     const SizedBox(height: 8),
@@ -276,7 +276,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                     ),
                   ],
                   const SizedBox(height: 20),
-                  const Text('Цели', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900)),
+                  const Text('Цели', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 8),
                   for (final g in game.content.goals) _goalCard(g),
                 ],
@@ -308,7 +308,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(option == null ? g.title : '${g.title}: ${option.title}', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                  Text(option == null ? g.title : '${g.title}: ${option.title}', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
                   Text(g.description, style: const TextStyle(color: FinniColors.muted)),
                 ],
               ),
@@ -316,7 +316,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
             const SizedBox(width: 8),
             Text(
               done ? 'Есть ✓' : (selected ? 'Копим' : '${g.cost} 🪙'),
-              style: TextStyle(fontWeight: FontWeight.w900, color: done ? FinniColors.need : FinniColors.ink),
+              style: TextStyle(fontWeight: FontWeight.w700, color: done ? FinniColors.need : FinniColors.ink),
             ),
           ],
         ),

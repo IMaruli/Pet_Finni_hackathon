@@ -21,9 +21,9 @@ class RoleScreen extends StatelessWidget {
           child: Column(
             children: [
               const Spacer(),
-              const Text('Питомец Финни', style: TextStyle(color: FinniColors.teal, fontWeight: FontWeight.w800, fontSize: 16)),
+              const Text('Питомец Финни', style: TextStyle(color: FinniColors.teal, fontWeight: FontWeight.w600, fontSize: 16)),
               const SizedBox(height: 8),
-              const Text('Кто заходит?', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900)),
+              const Text('Кто заходит?', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700)),
               const SizedBox(height: 6),
               const Text('Выбери режим — можно сменить позже', style: TextStyle(color: FinniColors.muted)),
               const SizedBox(height: 24),
@@ -69,7 +69,7 @@ class RoleScreen extends StatelessWidget {
         children: [
           SizedBox(height: 84, child: Center(child: icon)),
           const SizedBox(height: 8),
-          Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
+          Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
           Text(subtitle, style: const TextStyle(color: FinniColors.muted)),
         ],
       ),

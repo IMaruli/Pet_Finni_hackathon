@@ -68,7 +68,7 @@ void main() {
     // А.1–3: роль, знакомство, герой.
     expect(find.text('Кто заходит?'), findsOneWidget);
     await onboard(t, 'Аня');
-    expect(find.text('🪙 60'), findsOneWidget);
+    expect(find.text('60'), findsOneWidget);
 
     // А.5 план.
     await tapKey(t, 'home.next');

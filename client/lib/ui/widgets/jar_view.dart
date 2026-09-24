@@ -102,7 +102,7 @@ class _JarViewState extends State<JarView> with SingleTickerProviderStateMixin {
                             '${widget.coins}',
                             style: TextStyle(
                               fontSize: widget.height * 0.2,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w700,
                               color: FinniColors.ink,
                               shadows: const [Shadow(color: Colors.white, blurRadius: 6)],
                             ),
@@ -118,7 +118,7 @@ class _JarViewState extends State<JarView> with SingleTickerProviderStateMixin {
               const SizedBox(height: 6),
               Text(
                 '${widget.emoji} ${widget.title}',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: widget.color),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: widget.color),
               ),
             ],
           ],

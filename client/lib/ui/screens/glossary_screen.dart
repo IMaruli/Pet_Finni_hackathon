@@ -23,7 +23,7 @@ class GlossaryScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(e.term, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w900)),
+                  Text(e.term, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 4),
                   Text(e.meaning, style: const TextStyle(fontSize: 17)),
                 ],

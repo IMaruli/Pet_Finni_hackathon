@@ -56,7 +56,7 @@ class PlanFactBars extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         '${basket.emoji} ${basket.title}',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: ink),
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: ink),
                       ),
                     ],
                   ),
@@ -83,7 +83,7 @@ class PlanFactBars extends StatelessWidget {
       return Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Text('$value', style: TextStyle(fontSize: 14, height: 1.2, fontWeight: FontWeight.w900, color: ink)),
+          Text('$value', style: TextStyle(fontSize: 14, height: 1.2, fontWeight: FontWeight.w700, color: ink)),
           const SizedBox(height: 4),
           TweenAnimationBuilder<double>(
             tween: Tween(begin: 0, end: value / top),

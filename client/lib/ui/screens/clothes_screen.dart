@@ -73,9 +73,13 @@ class _ClothesScreenState extends State<ClothesScreen> {
                     height: 280,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFDCEBF3),
                       borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: const Color(0xFFB9975F), width: 8),
+                      gradient: const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0xFFFFFFFF), Color(0xFFE9E9F2)],
+                      ),
+                      boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 20, offset: Offset(0, 8))],
                     ),
                     child: MascotView(look: look, controller: _mascot, size: 230, semanticsLabel: game.profile.petName),
                   ),
@@ -85,7 +89,7 @@ class _ClothesScreenState extends State<ClothesScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Шкаф — тап = примерка', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+                      const Text('Гардероб', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: -0.5)),
                       const SizedBox(height: 12),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -121,9 +125,9 @@ class _ClothesScreenState extends State<ClothesScreen> {
         width: 68,
         height: 84,
         decoration: BoxDecoration(
-          color: worn || trying ? FinniColors.primary.withValues(alpha: 0.35) : const Color(0xFFFBF1E1),
+          color: worn || trying ? FinniColors.primary.withValues(alpha: 0.1) : FinniColors.fill,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: worn ? FinniColors.teal : (trying ? FinniColors.primary : FinniColors.line), width: 3),
+          border: Border.all(color: worn || trying ? FinniColors.primary : Colors.transparent, width: 2),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -131,8 +135,8 @@ class _ClothesScreenState extends State<ClothesScreen> {
             Text(item.emoji, style: const TextStyle(fontSize: 30)),
             const SizedBox(height: 2),
             Text(
-              owned ? (worn ? 'надето' : 'снято') : '🪙${item.price}',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: owned ? FinniColors.teal : FinniColors.ink),
+              owned ? (worn ? 'надето' : 'снято') : '${item.price} мон.',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: owned ? FinniColors.primary : FinniColors.muted),
             ),
           ],
         ),
