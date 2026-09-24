@@ -68,6 +68,7 @@
 | F-049 | CI: релизный APK в GitHub Actions | [ops/F-049](ops/F-049_CI_RELEASE_APK_SA_SPEC.md) | `.github/workflows/android-apk.yml`, `android/app/build.gradle.kts` | запуск Actions |
 | F-051 | Качество комнаты, повороты героя, места одежды | [ui/F-051](ui/F-051_ROOM_QUALITY_WEAR_SLOTS_SA_SPEC.md) | `ui/room3d/*`, `ui/mascot/mascot_view.dart`, `game/game_controller.dart`, `ui/tabs/home_tab.dart` | `room3d_test`, `game_controller_test`, `content_test` |
 | F-052 | Обои в полоску | [ui/F-052](ui/F-052_STRIPED_WALLPAPER_SA_SPEC.md) | `ui/room3d/room_builder.dart` | `room3d_test` |
+| F-053 | Релиз 1.0: название, иконка, заставка | [ops/F-053](ops/F-053_RELEASE_1_0_SA_SPEC.md) | `android/app/src/main/*`, `tool/icon/`, `README.md`, `docs/release/` | эмулятор, CI |
 
 **Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
 См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.
