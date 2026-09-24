@@ -39,6 +39,10 @@
 | BR-13 | Кнопки в стиле Duolingo: объём (нижний бортик 4 dp), нажатие «проваливает» кнопку | Must |
 | BR-14 | Экраны плана, копилки, задания, ночи, взрослого — на новых компонентах | Must |
 | BR-15 | Шрифт — системный, жирные начертания | Should |
+| BR-16 | Комната «уютная» (запрос Егора 2026-09-24): лучи света из окна, пылинки в луче (анимация), мягкие тени в углах и под мебелью, стеновые панели, обои, карниз, доски пола разных оттенков, отблеск окна на полу | Must |
+| BR-17 | Декор всегда: подвесной светильник, часы на боковой стене, большое растение в углу, растение на подоконнике | Must |
+| BR-18 | Ночь: лунный луч, звёзды в окне, тёплое свечение ночника и светильника | Must |
+| BR-19 | Анимация — только слой пылинок (`RoomAmbience`), статичная комната не перерисовывается каждый кадр | Must |
 
 ## 4. Описание
 
@@ -131,7 +135,8 @@ class DuoTabBar extends StatelessWidget { const DuoTabBar({required int index, r
 class RoomScene extends StatelessWidget {
   const RoomScene({required Inventory inventory, required int room, bool night = false, Widget? hero, double heroSize});
 }
-final class RoomPainter extends CustomPainter { RoomPainter({required Set<String> owned, String? furniture, required int room, bool night}); }
+final class RoomPainter extends CustomPainter { RoomPainter({required Set<String> owned, String? furniture, required int room, bool night, double feetY}); }
+class RoomAmbience extends StatefulWidget { const RoomAmbience({required double feetY, bool night, bool animated = true}); } // пылинки в луче
 Offset heroAnchor(Size size); // точка «ног» героя на коврике
 
 // shell

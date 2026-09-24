@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../../store/snapshot.dart';
+import 'room_ambience.dart';
 import 'room_painter.dart';
 
 /// Полноэкранная комната с героем на коврике (SA F-017).
@@ -13,6 +14,7 @@ class RoomScene extends StatelessWidget {
     this.hero,
     this.heroScale = 0.56,
     this.feetY = 0.84,
+    this.animated = true,
   });
 
   final Inventory inventory;
@@ -25,6 +27,9 @@ class RoomScene extends StatelessWidget {
 
   /// Где стоит герой по высоте (доля).
   final double feetY;
+
+  /// Пылинки в луче; в статичных превью выключаются.
+  final bool animated;
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +47,7 @@ class RoomScene extends StatelessWidget {
                 painter: RoomPainter(owned: inventory.owned, furniture: inventory.furniture, room: room, night: night, feetY: feetY),
               ),
             ),
+            if (room == 1) RoomAmbience(feetY: feetY, night: night, animated: animated),
             if (hero != null)
               Positioned(
                 left: feet.dx - heroSize / 2,
