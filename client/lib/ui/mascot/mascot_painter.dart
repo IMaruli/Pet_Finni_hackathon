@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/rendering.dart';
 
 import '../../economy/economy_state.dart';
+import '../../game/pet_wish.dart';
 import 'mascot_look.dart';
 import 'sphere.dart';
 
@@ -164,20 +165,33 @@ final class MascotPainter extends CustomPainter {
   };
 
   void _eyes(Canvas canvas) {
-    final ry = _eyeR * (look.mood == PetMood.uneasy ? 0.88 : 1.0);
+    final e = look.emotion;
+    final ry = _eyeR * (look.mood == PetMood.uneasy && e == null ? 0.88 : 1.0);
     final rx = ry * 0.72;
     for (final side in [-1.0, 1.0]) {
       final lon = side * 0.32;
       const lat = 0.13;
+      if (e == PetEmotion.excited) {
+        // Счастливые дуги «^ ^».
+        _line(canvas, [for (var u = -1.0; u <= 1.0; u += 0.2) (lat - 0.02 + 0.07 * (1 - u * u), lon + u * rx * 1.1)], _ink, 0.055);
+        continue;
+      }
+      if (e == PetEmotion.sleepy) {
+        // Сонные веки: нижняя половинка глаза и тяжёлое веко сверху.
+        _patch(canvas, lat - ry * 0.35, lon, ry * 0.32, rx, _ink);
+        _line(canvas, [for (var u = -1.0; u <= 1.0; u += 0.2) (lat - ry * 0.2 + 0.015 * (1 - u * u), lon + u * rx * 1.15)], _ink, 0.04);
+        continue;
+      }
       if (blink > 0.85) {
         _line(canvas, [for (var u = -1.0; u <= 1.0; u += 0.2) (lat - 0.02 * (1 - u * u), lon + u * rx)], _ink, 0.045);
         continue;
       }
-      final open = ry * (1 - blink);
-      _patch(canvas, lat, lon, open, rx, _ink);
+      final k = e == PetEmotion.curious && side > 0 ? 1.15 : 1.0;
+      final open = ry * k * (1 - blink);
+      _patch(canvas, lat, lon, open, rx * k, _ink);
       if (open > ry * 0.4) {
         _patch(canvas, lat + open * 0.38, lon - rx * 0.3, 0.045, 0.04, const Color(0xFFFFFFFF));
-        if (look.mood == PetMood.glad) {
+        if (look.mood == PetMood.glad || e == PetEmotion.hungry || e == PetEmotion.thirsty) {
           _patch(canvas, lat - open * 0.35, lon + rx * 0.35, 0.022, 0.02, const Color(0xFFFFFFFF));
         }
       }
@@ -185,7 +199,22 @@ final class MascotPainter extends CustomPainter {
   }
 
   void _brows(Canvas canvas) {
-    final w = 0.04;
+    const w = 0.04;
+    switch (look.emotion) {
+      case PetEmotion.hungry || PetEmotion.thirsty || PetEmotion.grubby:
+        for (final side in [-1.0, 1.0]) {
+          _line(canvas, [(0.41, side * 0.17), (0.37, side * 0.44)], _ink, w);
+        }
+        return;
+      case PetEmotion.curious:
+        _line(canvas, [(0.38, -0.18), (0.39, -0.32), (0.37, -0.45)], _ink, w);
+        _line(canvas, [(0.44, 0.17), (0.49, 0.32), (0.45, 0.46)], _ink, w);
+        return;
+      case PetEmotion.sleepy || PetEmotion.excited:
+        return;
+      case PetEmotion.calm || null:
+        break;
+    }
     if (look.mood == PetMood.uneasy) {
       for (final side in [-1.0, 1.0]) {
         _line(canvas, [(0.40, side * 0.16), (0.33, side * 0.46)], _ink, w);
@@ -197,19 +226,46 @@ final class MascotPainter extends CustomPainter {
     }
   }
 
+  void _bigSmile(Canvas canvas) {
+    final top = [for (var u = 0.0; u <= 1.0001; u += 0.1) (-0.2 - 0.03 * sin(pi * u), -0.3 + 0.6 * u)];
+    final bottom = [for (var u = 1.0; u >= -0.0001; u -= 0.1) (-0.2 - 0.25 * sin(pi * u), -0.3 + 0.6 * u)];
+    final pts = [for (final (lat, lon) in [...top, ...bottom]) _p(lat, lon)];
+    if (pts.every((p) => p.z < 0.05)) return;
+    final path = Path()..addPolygon([for (final p in pts) p.offset], true);
+    canvas.drawPath(path, Paint()..color = const Color(0xFF7A2630));
+    canvas.save();
+    canvas.clipPath(path);
+    _patch(canvas, -0.44, 0, 0.12, 0.2, const Color(0xFFFF7B8B));
+    canvas.restore();
+  }
+
   void _mouth(Canvas canvas) {
+    switch (look.emotion) {
+      case PetEmotion.excited:
+        _bigSmile(canvas);
+        return;
+      case PetEmotion.hungry:
+        _patch(canvas, -0.29, 0, 0.085, 0.075, const Color(0xFF7A2630));
+        return;
+      case PetEmotion.thirsty:
+        _patch(canvas, -0.28, 0, 0.07, 0.09, const Color(0xFF7A2630));
+        _patch(canvas, -0.37, 0.02, 0.06, 0.06, const Color(0xFFFF7B8B));
+        return;
+      case PetEmotion.grubby:
+        _line(canvas, [for (var u = 0.0; u <= 1.0001; u += 0.1) (-0.3 + 0.025 * sin(u * 3 * pi), -0.16 + 0.32 * u)], _ink, 0.045);
+        return;
+      case PetEmotion.sleepy:
+        _patch(canvas, -0.3, 0, 0.05, 0.045, const Color(0xFF7A2630));
+        return;
+      case PetEmotion.curious:
+        _line(canvas, [for (var u = 0.0; u <= 1.0001; u += 0.1) (-0.26 - 0.05 * sin(pi * u), -0.02 + 0.26 * u)], _ink, 0.05);
+        return;
+      case PetEmotion.calm || null:
+        break;
+    }
     switch (look.mood) {
       case PetMood.glad:
-        final top = [for (var u = 0.0; u <= 1.0001; u += 0.1) (-0.2 - 0.03 * sin(pi * u), -0.3 + 0.6 * u)];
-        final bottom = [for (var u = 1.0; u >= -0.0001; u -= 0.1) (-0.2 - 0.25 * sin(pi * u), -0.3 + 0.6 * u)];
-        final pts = [for (final (lat, lon) in [...top, ...bottom]) _p(lat, lon)];
-        if (pts.every((p) => p.z < 0.05)) return;
-        final path = Path()..addPolygon([for (final p in pts) p.offset], true);
-        canvas.drawPath(path, Paint()..color = const Color(0xFF7A2630));
-        canvas.save();
-        canvas.clipPath(path);
-        _patch(canvas, -0.44, 0, 0.12, 0.2, const Color(0xFFFF7B8B));
-        canvas.restore();
+        _bigSmile(canvas);
       case PetMood.steady:
         _line(canvas, [for (var u = 0.0; u <= 1.0001; u += 0.1) (-0.25 - 0.08 * sin(pi * u), -0.22 + 0.44 * u)], _ink, 0.05);
       case PetMood.uneasy:

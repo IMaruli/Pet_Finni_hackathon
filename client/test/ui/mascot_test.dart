@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:finni/content/models.dart';
 import 'package:finni/economy/economy_state.dart';
+import 'package:finni/game/pet_wish.dart';
 import 'package:finni/ui/mascot/mascot_look.dart';
 import 'package:finni/ui/mascot/mascot_view.dart';
 import 'package:finni/ui/mascot/sphere.dart';
@@ -100,5 +101,24 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     expect(tester.takeException(), isNull);
     expect(find.bySemanticsLabel(RegExp('радуется')), findsOneWidget);
+  });
+
+  testWidgets('every emotion renders, animated and static', (tester) async {
+    for (final e in PetEmotion.values) {
+      for (final animated in [false, true]) {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Center(
+              child: MascotView(
+                look: MascotLook(color: const Color(0xFFFFCC33), hair: 'tuft', mood: PetMood.steady, stage: 2, emotion: e),
+                animated: animated,
+              ),
+            ),
+          ),
+        );
+        await tester.pump(const Duration(seconds: 3));
+        expect(tester.takeException(), isNull, reason: '$e');
+      }
+    }
   });
 }

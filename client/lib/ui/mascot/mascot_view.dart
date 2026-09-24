@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
+import '../../game/pet_wish.dart';
 import 'mascot_look.dart';
 import 'mascot_painter.dart';
 import 'sphere.dart';
@@ -33,9 +34,13 @@ final class MascotView extends StatefulWidget {
     this.interactive = true,
     this.animated = true,
     this.semanticsLabel,
+    this.onTap,
   });
 
   final MascotLook look;
+
+  /// Тап по герою (помимо прыжка): например, реплика о самочувствии.
+  final VoidCallback? onTap;
   final MascotController? controller;
   final double size;
   final bool interactive;
@@ -119,6 +124,8 @@ class _MascotViewState extends State<MascotView> with SingleTickerProviderStateM
         _blinkStart = _t;
         _nextBlink = _t + 2 + _rand.nextDouble() * 3;
       }
+      // Восторг: сам подпрыгивает время от времени (F-020 BR-06).
+      if (widget.look.emotion == PetEmotion.excited && _t - _jumpStart > 2.4) _jumpStart = _t;
     });
   }
 
@@ -136,13 +143,28 @@ class _MascotViewState extends State<MascotView> with SingleTickerProviderStateM
     var squash = 0.0;
     var roll = 0.0;
 
+    final emotion = widget.look.emotion;
     if (widget.animated) {
       yaw = 0.22 * sin(0.7 * _t) + _dragYaw;
       pitch = 0.06 * sin(1.1 * _t) + _dragPitch;
       squash = 0.05 * sin(2.2 * _t);
+      switch (emotion) {
+        case PetEmotion.hungry || PetEmotion.thirsty || PetEmotion.grubby:
+          roll = 0.08 * sin(1.6 * _t);
+          yaw = 0.1 * sin(0.8 * _t) + _dragYaw;
+        case PetEmotion.sleepy:
+          pitch = 0.2 + 0.1 * sin(0.8 * _t) + _dragPitch;
+          squash = 0.09 * sin(1.2 * _t);
+          roll = 0.05 * sin(0.6 * _t);
+        case PetEmotion.curious:
+          yaw = 0.55 * sin(0.9 * _t) + _dragYaw;
+          roll = 0.08 * sin(0.45 * _t);
+        case PetEmotion.excited || PetEmotion.calm || null:
+          break;
+      }
 
       final b = (_t - _blinkStart) / 0.16;
-      if (b >= 0 && b <= 1) blink = 1 - (2 * b - 1).abs();
+      if (b >= 0 && b <= 1 && emotion != PetEmotion.sleepy) blink = 1 - (2 * b - 1).abs();
 
       final j = _phase(_jumpStart, _jumpTime);
       if (j >= 0) {
@@ -189,7 +211,10 @@ class _MascotViewState extends State<MascotView> with SingleTickerProviderStateM
     if (widget.interactive && widget.animated) {
       child = GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => _jumpStart = _t,
+        onTap: () {
+          _jumpStart = _t;
+          widget.onTap?.call();
+        },
         onPanStart: (_) => _dragging = true,
         onPanUpdate: (d) {
           _dragYaw = (_dragYaw + d.delta.dx * 0.012).clamp(-1.4, 1.4);
@@ -198,6 +223,37 @@ class _MascotViewState extends State<MascotView> with SingleTickerProviderStateM
         onPanEnd: (_) => _dragging = false,
         onPanCancel: () => _dragging = false,
         child: child,
+      );
+    }
+
+    if (emotion == PetEmotion.sleepy && widget.animated) {
+      final sz = widget.size;
+      child = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          child,
+          for (var i = 0; i < 3; i++)
+            () {
+              final ph = (_t * 0.45 + i / 3) % 1.0;
+              return Positioned(
+                left: sz * (0.62 + ph * 0.2),
+                top: sz * (0.22 - ph * 0.28),
+                child: IgnorePointer(
+                  child: Opacity(
+                    opacity: sin(ph * pi).clamp(0.0, 1.0),
+                    child: Text(
+                      'z',
+                      style: TextStyle(
+                        fontSize: sz * (0.09 + ph * 0.07),
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF5E5CE6),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }(),
+        ],
       );
     }
 

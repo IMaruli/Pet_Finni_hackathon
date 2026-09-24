@@ -18,6 +18,7 @@ Future<void> settle(WidgetTester t, [int frames = 12]) async {
 
 Future<void> tapKey(WidgetTester t, String key) async {
   final f = find.byKey(Key(key));
+  if (f.evaluate().isEmpty) await settle(t, 8); // реплика героя «печатает…»
   if (f.evaluate().isEmpty) {
     await t.scrollUntilVisible(f, 200, scrollable: find.byWidgetPredicate((w) => w is Scrollable && w.axisDirection == AxisDirection.down && w.physics is! NeverScrollableScrollPhysics).first);
   }

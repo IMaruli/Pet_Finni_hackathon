@@ -3,6 +3,7 @@ import 'package:flutter/painting.dart';
 import '../../content/models.dart';
 import '../../economy/economy_state.dart';
 import '../../game/game_controller.dart';
+import '../../game/pet_wish.dart';
 
 /// Всё, что определяет внешний вид героя в кадре.
 final class MascotLook {
@@ -13,6 +14,7 @@ final class MascotLook {
     required this.stage,
     this.skin,
     this.accessories = const {},
+    this.emotion,
   });
 
   factory MascotLook.fromLook(
@@ -55,6 +57,12 @@ final class MascotLook {
   final Set<String> accessories;
   final PetMood mood;
   final int stage;
+
+  /// Эмоция желания (F-020). `null` — лицо по настроению дня.
+  final PetEmotion? emotion;
+
+  MascotLook withEmotion(PetEmotion? e) =>
+      MascotLook(color: color, hair: hair, mood: mood, stage: stage, skin: skin, accessories: accessories, emotion: e);
 
   bool get isMonkey => skin == 'monkey';
   Color get bodyColor => isMonkey ? const Color(0xFF9A6234) : color;

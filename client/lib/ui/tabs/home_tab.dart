@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../game/game_controller.dart';
+import '../../game/pet_wish.dart';
 import '../mascot/mascot_look.dart';
 import '../mascot/mascot_view.dart';
 import '../room/room_scene.dart';
@@ -17,16 +18,7 @@ import '../shell/main_shell.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/duo.dart';
-
-enum DayStep { plan, needs, quest, game, save }
-
-DayStep nextStep(GameController g) {
-  if (!g.planConfirmed) return DayStep.plan;
-  if (!g.needsDone) return DayStep.needs;
-  if (!g.questDoneToday) return DayStep.quest;
-  if (!g.gameRewardToday) return DayStep.game;
-  return DayStep.save;
-}
+import '../widgets/pet_speech.dart';
 
 /// Дом (Figma 02): комната на весь экран, герой, плавающие элементы (SA F-017 BR-03).
 class HomeTab extends StatefulWidget {
@@ -40,6 +32,19 @@ class HomeTab extends StatefulWidget {
 class _HomeTabState extends State<HomeTab> {
   final _mascot = MascotController();
   int _room = 1;
+
+  /// Реплика о самочувствии после тапа по герою (F-020 BR-07).
+  String? _moodLine;
+  int _moodGen = 0;
+
+  void _sayMood() {
+    final gen = ++_moodGen;
+    final mood = game.mood.name;
+    setState(() => _moodLine = game.content.text('mood.$mood.why', {'pet': game.profile.petName}));
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted && gen == _moodGen) setState(() => _moodLine = null);
+    });
+  }
 
   GameController get game => widget.game;
 
@@ -61,7 +66,8 @@ class _HomeTabState extends State<HomeTab> {
     return LayoutBuilder(
       builder: (context, box) {
         final size = Size(box.maxWidth, box.maxHeight);
-        const feetY = 0.66;
+        final wish = wishFor(game);
+        const feetY = 0.74;
         final heroSize = size.width * 0.5;
         return Stack(
           children: [
@@ -71,8 +77,22 @@ class _HomeTabState extends State<HomeTab> {
                 room: room,
                 feetY: feetY,
                 heroScale: 0.5,
-                hero: MascotView(look: MascotLook.fromGame(game), controller: _mascot, size: heroSize, semanticsLabel: name),
-                heroBadge: _needBubble(),
+                hero: MascotView(
+                  look: MascotLook.fromGame(game).withEmotion(_moodLine == null ? wish.emotion : null),
+                  controller: _mascot,
+                  size: heroSize,
+                  semanticsLabel: name,
+                  onTap: _sayMood,
+                ),
+                heroBadge: _moodLine != null
+                    ? PetSpeech(text: _moodLine!)
+                    : PetSpeech(
+                        text: wish.text,
+                        action: wish.action,
+                        actionKey: const Key('home.next'),
+                        accent: _accent(wish.kind),
+                        onAction: () => _fulfil(wish.kind),
+                      ),
               ),
             ),
             SafeArea(
@@ -101,8 +121,6 @@ class _HomeTabState extends State<HomeTab> {
                       DuoIconButton(key: const Key('home.room'), icon: Icons.weekend_rounded, label: 'Комната', color: FinniColors.orange, onTap: () => _open(RoomScreen(game: game))),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  _nextCard(),
                 ],
               ),
             ),
@@ -179,62 +197,22 @@ class _HomeTabState extends State<HomeTab> {
     ),
   );
 
-  Widget _needBubble() {
-    final missing = [for (final i in game.todaysNeeds) if (!game.isBoughtToday(i.id)) i];
-    final (dot, text, onTap) = !game.planConfirmed
-        ? (FinniColors.primary, 'Сначала план дня', () => _open(PlanScreen(game: game)))
-        : missing.isNotEmpty
-        ? (FinniColors.orange, 'Нужно: ${missing.first.title.toLowerCase()} · ${missing.first.price}', () => ShellScope.go(context, ShellTab.shop))
-        : (FinniColors.need, '${game.content.text('mood.${game.mood.name}')} · всё нужное есть', null);
-    return GestureDetector(
-      onTap: onTap,
-      child: Glass(
-        radius: 18,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(width: 8, height: 8, decoration: BoxDecoration(color: dot, shape: BoxShape.circle)),
-            const SizedBox(width: 8),
-            Flexible(child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, letterSpacing: -0.2))),
-          ],
-        ),
-      ),
-    );
-  }
+  Color _accent(WishKind kind) => switch (kind) {
+    WishKind.eat || WishKind.drink || WishKind.wash => FinniColors.need,
+    WishKind.quest => FinniColors.orange,
+    WishKind.play => FinniColors.blue,
+    WishKind.save => FinniColors.save,
+    WishKind.plan || WishKind.sleep => FinniColors.primary,
+  };
 
-  Widget _nextCard() {
-    final step = nextStep(game);
-    final (icon, title, text, action, color, VoidCallback onTap) = switch (step) {
-      DayStep.plan => (Icons.pie_chart_rounded, 'План дня', 'Разложи монеты по трём банкам', 'Начать', FinniColors.primary, () => _open(PlanScreen(game: game))),
-      DayStep.needs => (Icons.shopping_basket_rounded, 'Купи нужное', 'Иначе ${game.profile.petName} загрустит', 'Магазин', FinniColors.need, () => ShellScope.go(context, ShellTab.shop)),
-      DayStep.quest => (Icons.auto_stories_rounded, 'Квест дня', 'Сцена с выбором · +${game.content.config.rewardWise}', 'Играть', FinniColors.orange, () => _open(QuestScreen(game: game))),
-      DayStep.game => (Icons.sports_esports_rounded, 'Игра дня', 'До +${game.content.config.rewardWise} монет', 'Играть', FinniColors.blue, () => ShellScope.go(context, ShellTab.games)),
-      DayStep.save => (Icons.savings_rounded, 'Отложи в копилку', 'А потом — спать', 'Копилка', FinniColors.save, () => _open(SavingsScreen(game: game))),
-    };
-    return Glass(
-      radius: 22,
-      tint: const Color(0xD9FFFFFF),
-      padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
-      child: Row(
-        children: [
-          IconTile(icon, color: color, size: 44),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, letterSpacing: -0.4)),
-                Text(text, style: const TextStyle(fontSize: 13, color: FinniColors.muted)),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          DuoButton(key: const Key('home.next'), label: action, color: color, expand: false, height: 40, onPressed: onTap),
-        ],
-      ),
-    );
-  }
+  void _fulfil(WishKind kind) => switch (kind) {
+    WishKind.plan => _open(PlanScreen(game: game)),
+    WishKind.eat || WishKind.drink || WishKind.wash => ShellScope.go(context, ShellTab.shop),
+    WishKind.quest => _open(QuestScreen(game: game)),
+    WishKind.play => ShellScope.go(context, ShellTab.games),
+    WishKind.save => _open(SavingsScreen(game: game)),
+    WishKind.sleep => goToSleep(context, game),
+  };
 
   void _help() {
     showModalBottomSheet<void>(
