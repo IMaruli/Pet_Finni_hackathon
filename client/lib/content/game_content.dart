@@ -60,6 +60,9 @@ final class GameContent {
   List<ShopItem> get needItems => items.where((i) => i.kind == ItemKind.need).toList();
   List<ShopItem> get wantItems => items.where((i) => i.kind == ItemKind.want).toList();
 
+  /// Хотелки-вкусности: расходуемые «хочу» (SA F-022 BR-04).
+  List<ShopItem> get treatItems => [for (final i in wantItems) if (i.slot == ItemSlot.consumable) i];
+
   ShopItem item(String id) => items.firstWhere((i) => i.id == id);
   GoalDef goal(String id) => goals.firstWhere((g) => g.id == id);
   Look look(String id) => looks.firstWhere((l) => l.id == id, orElse: () => looks.first);

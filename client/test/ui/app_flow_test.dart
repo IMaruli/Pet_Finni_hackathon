@@ -86,23 +86,32 @@ void main() {
     await t.tapAt(const Offset(20, 40)); // закрыть шторку
     await settle(t, 20);
 
-    // А.7 покупки во вкладке «Магазин».
-    await tapKey(t, 'nav.shop');
-    await tapKey(t, 'shopRow.glasses');
+    // А.7 покупки по разделам Дома (F-022): хотелка ждёт нужное (F-021).
+    await tapKey(t, 'nav.home');
+    await tapKey(t, 'home.treats');
+    await tapKey(t, 'shopRow.icecream');
     expect(find.byKey(const Key('needsFirst.sheet')), findsOneWidget);
     await tapKey(t, 'needsFirst.go'); // «Купить: Завтрак»
     await tapKey(t, 'shop.buy');
     await settle(t, 30);
-    await scrollTo(t, find.byKey(const Key('shopRow.water')));
+    await t.pageBack();
+    await settle(t, 20);
+    await tapKey(t, 'home.needs');
     await tapKey(t, 'shopRow.water');
     await tapKey(t, 'shop.buy');
-    expect(find.text('✓ куплено'), findsWidgets); // вода видна, завтрак уехал выше
-    await tapKey(t, 'shopRow.glasses');
+    await settle(t, 30);
+    expect(find.text('✓ куплено'), findsNWidgets(2));
+    await t.pageBack();
+    await settle(t, 20);
+    await tapKey(t, 'home.clothes');
+    await tapKey(t, 'clothes.glasses'); // примерка
+    await tapKey(t, 'clothes.glasses'); // покупка
     await tapKey(t, 'shop.buy');
     await settle(t, 30);
+    await t.pageBack();
+    await settle(t, 20);
 
     // А.6 квест с Дома.
-    await tapKey(t, 'nav.home');
     await tapKey(t, 'home.next');
     for (var i = 0; i < 5; i++) {
       await t.tap(find.byKey(const Key('quest.tap')), warnIfMissed: false);
@@ -207,13 +216,15 @@ void main() {
     await tapKey(t, 'home.next');
     await tapKey(t, 'plan.suggest');
     await tapKey(t, 'plan.done');
-    await settle(t, 10);
-    await tapKey(t, 'nav.shop');
+    await settle(t, 40); // тост плана уезжает с кнопок
+    await tapKey(t, 'home.needs');
     for (final id in ['breakfast', 'water']) {
       await tapKey(t, 'shopRow.$id');
       await tapKey(t, 'shop.buy');
       await settle(t, 30);
     }
+    await t.pageBack();
+    await settle(t, 20);
 
     await tapKey(t, 'nav.games');
     await tapKey(t, 'games.sort');

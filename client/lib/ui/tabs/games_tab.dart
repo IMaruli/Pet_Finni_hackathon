@@ -4,27 +4,24 @@ import '../../game/game_controller.dart';
 import '../games/budget_game.dart';
 import '../games/catcher_game.dart';
 import '../games/sort_game.dart';
-import '../screens/plan_screen.dart';
 import '../theme.dart';
 import '../widgets/buy_sheet.dart';
 import '../widgets/common.dart';
 import '../widgets/duo.dart';
 
 final class _Card {
-  const _Card(this.id, this.icon, this.title, this.teaches, this.colors, {this.rewarded = true});
+  const _Card(this.id, this.icon, this.title, this.teaches, this.colors);
   final String id;
   final IconData icon;
   final String title;
   final String teaches;
   final List<Color> colors;
-  final bool rewarded;
 }
 
 const _cards = [
   _Card('sort', Icons.swipe_rounded, 'Нужно или хочу?', 'Отличать нужное', [Color(0xFF34C759), Color(0xFF30B0C7)]),
   _Card('budget', Icons.receipt_long_rounded, 'Уложись в бюджет', 'Покупки по средствам', [Color(0xFF5E5CE6), Color(0xFF007AFF)]),
   _Card('catcher', Icons.savings_rounded, 'Копилка-ловец', 'Копить без соблазнов', [Color(0xFFFF9500), Color(0xFFFF2D55)]),
-  _Card('plan', Icons.pie_chart_rounded, 'План дня', 'Три банки', [Color(0xFF8E8E93), Color(0xFF636366)], rewarded: false),
 ];
 
 /// Игры (Figma 03): карточки с градиентной обложкой (SA F-017 BR-07, F-018).
@@ -35,7 +32,6 @@ class GamesTab extends StatelessWidget {
   Widget _screen(String id) => switch (id) {
     'sort' => SortGame(game: game),
     'budget' => BudgetGame(game: game),
-    'plan' => PlanScreen(game: game),
     _ => CatcherGame(game: game),
   };
 
@@ -72,7 +68,7 @@ class GamesTab extends StatelessWidget {
 
   Widget _card(BuildContext context, _Card c, int reward) {
     final best = game.snapshot.gameBest[c.id];
-    final locked = c.rewarded && game.gamesLocked;
+    final locked = game.gamesLocked;
     return DuoCard(
       key: Key('games.${c.id}'),
       padding: EdgeInsets.zero,
@@ -99,7 +95,7 @@ class GamesTab extends StatelessWidget {
               child: Stack(
                 children: [
                   Center(child: Icon(locked ? Icons.lock_rounded : c.icon, size: 44, color: Colors.white)),
-                  if (c.rewarded && !game.gameRewardToday && !locked)
+                  if (!game.gameRewardToday && !locked)
                     Positioned(
                       top: 10,
                       right: 10,

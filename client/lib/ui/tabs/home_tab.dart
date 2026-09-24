@@ -6,6 +6,7 @@ import '../mascot/mascot_look.dart';
 import '../mascot/mascot_view.dart';
 import '../room/room_scene.dart';
 import '../screens/adult_screen.dart';
+import '../screens/category_screen.dart';
 import '../screens/clothes_screen.dart';
 import '../screens/glossary_screen.dart';
 import '../screens/intro_screen.dart';
@@ -115,10 +116,12 @@ class _HomeTabState extends State<HomeTab> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      DuoIconButton(key: const Key('home.clothes'), icon: Icons.checkroom_rounded, label: 'Одежда', onTap: () => _open(ClothesScreen(game: game))),
-                      DuoIconButton(key: const Key('home.savings'), icon: Icons.savings_rounded, label: 'Копилка', color: FinniColors.save, onTap: () => _open(SavingsScreen(game: game))),
-                      DuoIconButton(key: const Key('home.sleep'), icon: Icons.bedtime_rounded, label: 'Спать', color: FinniColors.primary, onTap: () => goToSleep(context, game)),
-                      DuoIconButton(key: const Key('home.room'), icon: Icons.weekend_rounded, label: 'Комната', color: FinniColors.orange, onTap: () => _open(RoomScreen(game: game))),
+                      // Пять разделов: одно действие — одно место (SA F-022 BR-02).
+                      Expanded(child: DuoIconButton(key: const Key('home.needs'), icon: Icons.shopping_basket_rounded, label: 'Нужное', color: FinniColors.need, onTap: () => _open(CategoryScreen(game: game, category: ShopCategory.needs)))),
+                      Expanded(child: DuoIconButton(key: const Key('home.treats'), icon: Icons.icecream_rounded, label: 'Хотелки', color: FinniColors.want, onTap: () => _open(CategoryScreen(game: game, category: ShopCategory.treats)))),
+                      Expanded(child: DuoIconButton(key: const Key('home.clothes'), icon: Icons.checkroom_rounded, label: 'Одежда', onTap: () => _open(ClothesScreen(game: game)))),
+                      Expanded(child: DuoIconButton(key: const Key('home.room'), icon: Icons.weekend_rounded, label: 'Дом', color: FinniColors.orange, onTap: () => _open(RoomScreen(game: game)))),
+                      Expanded(child: DuoIconButton(key: const Key('home.savings'), icon: Icons.savings_rounded, label: 'Копилка', color: FinniColors.save, onTap: () => _open(SavingsScreen(game: game)))),
                     ],
                   ),
                 ],
@@ -207,7 +210,7 @@ class _HomeTabState extends State<HomeTab> {
 
   void _fulfil(WishKind kind) => switch (kind) {
     WishKind.plan => _open(PlanScreen(game: game)),
-    WishKind.eat || WishKind.drink || WishKind.wash => ShellScope.go(context, ShellTab.shop),
+    WishKind.eat || WishKind.drink || WishKind.wash => _open(CategoryScreen(game: game, category: ShopCategory.needs)),
     WishKind.quest => _open(QuestScreen(game: game)),
     WishKind.play => ShellScope.go(context, ShellTab.games),
     WishKind.save => _open(SavingsScreen(game: game)),

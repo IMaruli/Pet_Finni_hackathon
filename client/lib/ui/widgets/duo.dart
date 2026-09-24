@@ -246,7 +246,7 @@ class Glass extends StatelessWidget {
   }
 }
 
-/// Круглая стеклянная кнопка с подписью (Дом: Одежда, Копилка, Спать, Комната).
+/// Круглая стеклянная кнопка с подписью (разделы Дома, F-022).
 class DuoIconButton extends StatelessWidget {
   const DuoIconButton({super.key, required this.icon, required this.label, required this.onTap, this.color = FinniColors.ink});
   final IconData icon;
@@ -262,21 +262,24 @@ class DuoIconButton extends StatelessWidget {
       child: ExcludeSemantics(
         child: Pressable(
           onTap: onTap,
-          child: SizedBox(
-            width: 72,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 72),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Glass(radius: 26, padding: const EdgeInsets.all(13), child: Icon(icon, size: 26, color: color)),
                 const SizedBox(height: 4),
-                Text(
-                  label,
-                  maxLines: 1,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: FinniColors.ink,
-                    shadows: [Shadow(color: Color(0xCCFFFFFF), blurRadius: 6)],
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: FinniColors.ink,
+                      shadows: [Shadow(color: Color(0xCCFFFFFF), blurRadius: 6)],
+                    ),
                   ),
                 ),
               ],
@@ -461,7 +464,7 @@ class GroupedRow extends StatelessWidget {
   }
 }
 
-enum ShellTab { games, tasks, home, lessons, shop }
+enum ShellTab { games, tasks, home, lessons }
 
 extension ShellTabLook on ShellTab {
   IconData get icon => switch (this) {
@@ -469,7 +472,6 @@ extension ShellTabLook on ShellTab {
     ShellTab.tasks => Icons.check_circle_outline_rounded,
     ShellTab.home => Icons.home_outlined,
     ShellTab.lessons => Icons.menu_book_outlined,
-    ShellTab.shop => Icons.shopping_bag_outlined,
   };
 
   IconData get activeIcon => switch (this) {
@@ -477,7 +479,6 @@ extension ShellTabLook on ShellTab {
     ShellTab.tasks => Icons.check_circle_rounded,
     ShellTab.home => Icons.home_rounded,
     ShellTab.lessons => Icons.menu_book_rounded,
-    ShellTab.shop => Icons.shopping_bag_rounded,
   };
 
   String get title => switch (this) {
@@ -485,7 +486,6 @@ extension ShellTabLook on ShellTab {
     ShellTab.tasks => 'Задания',
     ShellTab.home => 'Дом',
     ShellTab.lessons => 'Уроки',
-    ShellTab.shop => 'Магазин',
   };
 }
 

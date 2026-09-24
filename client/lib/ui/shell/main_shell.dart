@@ -4,7 +4,6 @@ import '../../game/game_controller.dart';
 import '../tabs/games_tab.dart';
 import '../tabs/home_tab.dart';
 import '../tabs/lessons_tab.dart';
-import '../tabs/shop_tab.dart';
 import '../tabs/tasks_tab.dart';
 import '../widgets/common.dart';
 import '../widgets/duo.dart';
@@ -19,7 +18,7 @@ abstract final class ShellScope {
   }
 }
 
-/// Оболочка с таб-баром: Игры · Задания · Дом · Уроки · Магазин (SA F-017).
+/// Оболочка с таб-баром: Игры · Задания · Дом · Уроки (SA F-017, F-022 BR-01).
 class MainShell extends StatefulWidget {
   const MainShell({super.key, required this.game, this.initialTab = ShellTab.home});
   final GameController game;
@@ -65,7 +64,6 @@ class _MainShellState extends State<MainShell> {
               TasksTab(game: game),
               HomeTab(game: game),
               LessonsTab(game: game),
-              ShopTab(game: game),
             ],
           ),
           bottomNavigationBar: DuoTabBar(

@@ -4,6 +4,8 @@
     {"id": "water", "kind": "need", "price": 8, "title": "Вода", "emoji": "💧", "effect": "Без воды грустно и вяло", "slot": "consumable"},
     {"id": "care", "kind": "need", "price": 10, "title": "Уход: зубы и умывание", "emoji": "🪥", "effect": "Чистый и свежий", "slot": "consumable"},
     {"id": "chocolate", "kind": "want", "price": 12, "title": "Шоколадка", "emoji": "🍫", "effect": "Вкусно! Радость до вечера", "slot": "consumable"},
+    {"id": "icecream", "kind": "want", "price": 10, "title": "Мороженое", "emoji": "🍦", "effect": "Холодное и сладкое! Радость до вечера", "slot": "consumable"},
+    {"id": "lemonade", "kind": "want", "price": 9, "title": "Лимонад", "emoji": "🧃", "effect": "Шипучий праздник! Радость до вечера", "slot": "consumable"},
     {"id": "bandana", "kind": "want", "price": 14, "title": "Бандана", "emoji": "🧣", "effect": "Надевается на героя", "slot": "hero", "accessory": "bandana"},
     {"id": "glasses", "kind": "want", "price": 15, "title": "Крутые очки", "emoji": "🕶️", "effect": "Надеваются на героя", "slot": "hero", "accessory": "glasses"},
     {"id": "bow", "kind": "want", "price": 12, "title": "Бантик", "emoji": "🎀", "effect": "Надевается на героя", "slot": "hero", "accessory": "bow"},

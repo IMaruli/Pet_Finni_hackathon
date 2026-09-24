@@ -5,9 +5,8 @@ import '../../game/game_controller.dart';
 import '../room/room_scene.dart';
 import '../theme.dart';
 import '../widgets/buy_sheet.dart';
-import 'savings_screen.dart';
 
-/// Комната (Figma 08): комната во весь экран + лента вещей снизу (SA F-017 BR-12).
+/// Дом (Figma 08): комната во весь экран + лента вещей в комнату; цели — только в Копилке (SA F-017 BR-12, F-022 BR-06).
 class RoomScreen extends StatefulWidget {
   const RoomScreen({super.key, required this.game});
   final GameController game;
@@ -27,12 +26,10 @@ class _RoomScreenState extends State<RoomScreen> {
       listenable: game,
       builder: (context, _) {
         final roomItems = [for (final i in game.content.wantItems) if (i.slot == ItemSlot.room) i];
-        final furnitureGoal = game.content.goals.firstWhere((g) => g.reward == GoalReward.furniture);
-        final roomGoal = game.content.goals.firstWhere((g) => g.reward == GoalReward.room);
         return Scaffold(
           extendBodyBehindAppBar: true,
           appBar: AppBar(
-            title: const Text('Комната'),
+            title: const Text('Дом'),
             backgroundColor: Colors.transparent,
             actions: [
               if (game.inventory.rooms > 1)
@@ -64,23 +61,6 @@ class _RoomScreenState extends State<RoomScreen> {
                             owned: game.inventory.owned.contains(i.id),
                             onTap: () => buyFlow(context, game, i),
                           ),
-                        for (final o in furnitureGoal.options)
-                          _tile(
-                            key: 'roomItem.${o.id}',
-                            emoji: o.emoji,
-                            title: o.title,
-                            status: game.inventory.furniture == o.id ? '✓ есть' : 'в копилке',
-                            owned: game.inventory.furniture == o.id,
-                            onTap: () => _toSavings(),
-                          ),
-                        _tile(
-                          key: 'roomItem.room2',
-                          emoji: roomGoal.emoji,
-                          title: roomGoal.title,
-                          status: game.inventory.rooms > 1 ? '✓ есть' : 'в копилке',
-                          owned: game.inventory.rooms > 1,
-                          onTap: () => _toSavings(),
-                        ),
                       ],
                     ),
                   ),
@@ -92,8 +72,6 @@ class _RoomScreenState extends State<RoomScreen> {
       },
     );
   }
-
-  void _toSavings() => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => SavingsScreen(game: game)));
 
   Widget _tile({
     required String key,

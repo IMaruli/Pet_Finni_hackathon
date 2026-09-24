@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../game/game_controller.dart';
 import '../screens/night_screen.dart';
+import '../screens/category_screen.dart';
 import '../screens/plan_screen.dart';
 import '../screens/quest_screen.dart';
 import '../screens/savings_screen.dart';
@@ -64,7 +65,7 @@ class TasksTab extends StatelessWidget {
                 subtitle: game.todaysNeeds.map((i) => i.title.toLowerCase()).join(', '),
                 value: '${game.todaysNeedSum}',
                 done: game.needsDone,
-                onTap: () => ShellScope.go(context, ShellTab.shop),
+                onTap: () => _push(context, CategoryScreen(game: game, category: ShopCategory.needs)),
               ),
               GroupedRow(
                 key: const Key('tasks.quest'),

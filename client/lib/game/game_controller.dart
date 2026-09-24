@@ -77,7 +77,7 @@ final class GameController extends ChangeNotifier {
   }
 
   PetMood _withTreat(PetMood base) =>
-      base == PetMood.steady && isBoughtToday('chocolate') ? PetMood.glad : base;
+      base == PetMood.steady && content.treatItems.any((i) => isBoughtToday(i.id)) ? PetMood.glad : base;
 
   int get stage => economy.petStage;
   String get stageTitle => content.text('stage.$stage');

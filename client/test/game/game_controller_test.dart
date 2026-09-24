@@ -282,6 +282,14 @@ void main() {
     expect((await fresh()).hasProfile, isFalse);
   });
 
+  test('any treat makes the day glad once needs are covered (F-022)', () async {
+    expect(game.content.treatItems.map((i) => i.id), ['chocolate', 'icecream', 'lemonade']);
+    await game.confirmPlan(need: game.todaysNeedSum, want: 10, save: 0);
+    await buyNeeds();
+    await game.buy('icecream', commandId: game.newCommandId());
+    expect(game.mood, PetMood.glad);
+  });
+
   group('needs first (F-021)', () {
     test('a want before needs is refused and costs nothing', () async {
       await game.confirmPlan(need: game.todaysNeedSum, want: 20, save: 0);
