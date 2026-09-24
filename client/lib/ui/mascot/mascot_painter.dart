@@ -443,6 +443,165 @@ final class MascotPainter extends CustomPainter {
       _headband(canvas);
       _cups(canvas, front: true);
     }
+    if (a.contains('scarf')) _scarf(canvas);
+    if (a.contains('bowtie')) _bowtie(canvas);
+    if (a.contains('cap')) _cap(canvas);
+    if (a.contains('crown')) _crown(canvas);
+    if (a.contains('partyhat')) _partyHat(canvas);
+    if (a.contains('flower')) _flower(canvas);
+  }
+
+  // ---------- Гардероб F-030 ----------
+
+  /// Точки линии на сфере (широта [lat]) спереди, слева направо, в экранных координатах.
+  List<Offset> _band(double lat, {double from = -1.5, double to = 1.5, double lift = 1.0}) => [
+    for (var u = 0.0; u <= 1.0001; u += 0.05) _p(lat, from + (to - from) * u, lift: lift).offset,
+  ];
+
+  void _cap(Canvas canvas) {
+    const blue = Color(0xFF3D7BD9);
+    // Купол: всё, что выше линии широты 0.55, в пределах силуэта головы.
+    final edge = _band(0.55, from: -1.7, to: 1.7);
+    final above = Path()..moveTo(edge.first.dx, edge.first.dy);
+    for (final p in edge.skip(1)) {
+      above.lineTo(p.dx, p.dy);
+    }
+    above
+      ..lineTo(edge.last.dx + _r, edge.last.dy)
+      ..lineTo(edge.last.dx + _r, _c.dy - _r * 3)
+      ..lineTo(edge.first.dx - _r, _c.dy - _r * 3)
+      ..lineTo(edge.first.dx - _r, edge.first.dy)
+      ..close();
+    final head = Path()..addOval(Rect.fromCircle(center: _c, radius: _r * 1.04));
+    final dome = Path.combine(PathOperation.intersect, above, head);
+    canvas.drawPath(
+      dome,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(-0.3, -0.6),
+          colors: [_lighten(blue, 0.3), blue, _darken(blue, 0.2)],
+        ).createShader(Rect.fromCircle(center: _c, radius: _r)),
+    );
+    // Козырёк: полукруг вперёд-вниз от середины линии.
+    final mid = _p(0.52, 0, lift: 1.02);
+    if (mid.z > 0) {
+      final o = mid.offset;
+      canvas.drawPath(
+        Path()..addArc(Rect.fromCenter(center: o, width: _r * 1.3, height: _r * 0.42), 0, pi),
+        Paint()..color = _darken(blue, 0.22),
+      );
+    }
+    final btn = _p(1.5, 0, lift: 1.05);
+    canvas.drawCircle(btn.offset, _r * 0.07, Paint()..color = _darken(blue, 0.3));
+  }
+
+  void _crown(Canvas canvas) {
+    const gold = Color(0xFFF5C518);
+    final base = _band(0.78, from: -0.95, to: 0.95, lift: 1.02);
+    final up = Offset(0, -_r * 0.34);
+    final path = Path()..moveTo(base.first.dx, base.first.dy);
+    // Зубцы вверх по экрану: 5 пиков.
+    const peaks = 5;
+    for (var i = 0; i <= peaks * 2; i++) {
+      final k = i / (peaks * 2);
+      final p = base[(k * (base.length - 1)).round()];
+      path.lineTo(p.dx + (i.isOdd ? 0 : 0), p.dy + (i.isEven ? up.dy : up.dy * 0.35));
+    }
+    path.lineTo(base.last.dx, base.last.dy);
+    for (final p in base.reversed) {
+      path.lineTo(p.dx, p.dy);
+    }
+    path.close();
+    canvas.drawPath(path, Paint()..color = gold);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = _darken(gold, 0.25)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = _r * 0.03,
+    );
+    for (var i = 0; i <= peaks * 2; i += 2) {
+      final k = i / (peaks * 2);
+      final p = base[(k * (base.length - 1)).round()] + up;
+      canvas.drawCircle(p, _r * 0.05, Paint()..color = const Color(0xFFFFF3B0));
+    }
+    for (final (k, c) in [(0.25, const Color(0xFFE53935)), (0.5, const Color(0xFF1E88E5)), (0.75, const Color(0xFF43A047))]) {
+      final p = base[(k * (base.length - 1)).round()] + Offset(0, up.dy * 0.2);
+      canvas.drawCircle(p, _r * 0.055, Paint()..color = c);
+    }
+  }
+
+  void _scarf(Canvas canvas) {
+    const red = Color(0xFFE53950);
+    final top = [for (var u = 0.0; u <= 1.0001; u += 0.04) (-0.34, -1.6 + 3.2 * u)];
+    final bottom = [for (var u = 1.0; u >= -0.0001; u -= 0.04) (-0.56, -1.6 + 3.2 * u)];
+    _polygon(canvas, [...top, ...bottom], red, lift: 1.04);
+    for (var lon = -1.2; lon <= 1.21; lon += 0.3) {
+      _patch(canvas, -0.45, lon, 0.1, 0.035, const Color(0xE6FFFFFF), lift: 1.045);
+    }
+    final end = _p(-0.5, 0.75, lift: 1.06);
+    if (end.z > -0.1) {
+      final o = end.offset;
+      final r = RRect.fromRectAndRadius(Rect.fromLTWH(o.dx - _r * 0.1, o.dy, _r * 0.2, _r * 0.5), Radius.circular(_r * 0.05));
+      canvas.drawRRect(r, Paint()..color = _darken(red, 0.08));
+      canvas.drawRect(Rect.fromLTWH(o.dx - _r * 0.1, o.dy + _r * 0.2, _r * 0.2, _r * 0.06), Paint()..color = const Color(0xE6FFFFFF));
+    }
+  }
+
+  void _bowtie(Canvas canvas) {
+    final p = _p(-0.8, 0, lift: 1.05);
+    if (p.z < 0) return;
+    const purple = Color(0xFF7E57C2);
+    final o = p.offset;
+    final paint = Paint()..color = purple;
+    for (final side in [-1.0, 1.0]) {
+      canvas.drawPath(
+        Path()
+          ..moveTo(o.dx, o.dy)
+          ..lineTo(o.dx + side * _r * 0.3, o.dy - _r * 0.15)
+          ..lineTo(o.dx + side * _r * 0.3, o.dy + _r * 0.15)
+          ..close(),
+        paint,
+      );
+    }
+    canvas.drawCircle(o, _r * 0.07, Paint()..color = _darken(purple, 0.2));
+  }
+
+  void _partyHat(Canvas canvas) {
+    final base = projectVector(0, -0.9, 0.2, pose, _c, _r).offset;
+    final apex = projectVector(0.15, -1.75, 0.1, pose, _c, _r).offset;
+    final axis = apex - base;
+    final n = Offset(-axis.dy, axis.dx) / axis.distance * _r * 0.34;
+    final cone = Path()
+      ..moveTo(base.dx + n.dx, base.dy + n.dy)
+      ..lineTo(apex.dx, apex.dy)
+      ..lineTo(base.dx - n.dx, base.dy - n.dy)
+      ..close();
+    canvas.drawPath(cone, Paint()..color = const Color(0xFF26C6DA));
+    canvas.save();
+    canvas.clipPath(cone);
+    final stripe = Paint()
+      ..color = const Color(0xFFFFEB3B)
+      ..strokeWidth = _r * 0.1;
+    for (final k in [0.25, 0.55]) {
+      final c = Offset.lerp(base, apex, k)!;
+      canvas.drawLine(c - n * 2 + axis * 0.08, c + n * 2 - axis * 0.08, stripe);
+    }
+    canvas.restore();
+    canvas.drawOval(Rect.fromCenter(center: base, width: n.distance * 2.2, height: _r * 0.12), Paint()..color = const Color(0xFF00ACC1));
+    canvas.drawCircle(apex, _r * 0.1, Paint()..color = const Color(0xFFFF5FA2));
+  }
+
+  void _flower(Canvas canvas) {
+    final p = _p(0.72, -0.95, lift: 1.06);
+    if (p.z < -0.1) return;
+    final o = p.offset;
+    final petal = Paint()..color = const Color(0xFFFF8FB8);
+    for (var i = 0; i < 5; i++) {
+      final a = i * 2 * pi / 5 + pose.yaw * 0.2;
+      canvas.drawCircle(o + Offset(cos(a), sin(a)) * _r * 0.1, _r * 0.08, petal);
+    }
+    canvas.drawCircle(o, _r * 0.065, Paint()..color = const Color(0xFFFFD54F));
   }
 
   void _bandana(Canvas canvas) {

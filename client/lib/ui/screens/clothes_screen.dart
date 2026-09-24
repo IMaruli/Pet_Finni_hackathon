@@ -102,8 +102,9 @@ class _ClothesScreenState extends State<ClothesScreen> {
                     children: [
                       const Text('Гардероб', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: -0.5)),
                       const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
                         children: [for (final i in items) _tile(i)],
                       ),
                       const SizedBox(height: 10),

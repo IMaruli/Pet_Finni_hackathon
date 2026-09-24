@@ -66,7 +66,7 @@ void main() {
                     color: const Color(0xFFFFCC33),
                     hair: hair,
                     skin: skin,
-                    accessories: const {'bandana', 'glasses', 'bow', 'headphones', 'nope'},
+                    accessories: const {'bandana', 'glasses', 'bow', 'headphones', 'cap', 'crown', 'scarf', 'bowtie', 'partyhat', 'flower', 'nope'},
                     mood: mood,
                     stage: stage,
                   ),

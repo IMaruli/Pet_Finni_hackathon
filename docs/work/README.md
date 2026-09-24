@@ -46,6 +46,7 @@
 | F-027 | Потребности в комнате: миски и неухоженный питомец | [ui/F-027](ui/F-027_NEEDS_IN_ROOM_SA_SPEC.md) | `game/bowls.dart`, `ui/room3d/room_builder.dart`, `ui/mascot/mascot_painter.dart` | `game_controller_test`, `room3d_test`, `mascot_test` |
 | F-028 | Время суток в комнате | [ui/F-028](ui/F-028_DAY_TIME_SA_SPEC.md) | `game/pet_wish.dart`, `ui/room3d/room_builder.dart`, `ui/room/room_scene.dart` | `pet_wish_test`, `room3d_test` |
 | F-029 | Вещи в комнату, цели-вещи, исправление отрисовки | [ui/F-029](ui/F-029_ROOM_ITEMS_SA_SPEC.md) | `ui/room3d/`, `assets/content/items.json`, `goals.json` | `room3d_test`, `game_controller_test`, `content_test` |
+| F-030 | Больше одежды | [ui/F-030](ui/F-030_WARDROBE_SA_SPEC.md) | `ui/mascot/mascot_painter.dart`, `ui/screens/clothes_screen.dart` | `mascot_test` |
 
 **Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
 См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.
