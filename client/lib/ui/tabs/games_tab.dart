@@ -6,6 +6,7 @@ import '../games/catcher_game.dart';
 import '../games/sort_game.dart';
 import '../screens/plan_screen.dart';
 import '../theme.dart';
+import '../widgets/buy_sheet.dart';
 import '../widgets/common.dart';
 import '../widgets/duo.dart';
 
@@ -47,7 +48,9 @@ class GamesTab extends StatelessWidget {
         children: [
           DuoHeader(
             title: 'Игры',
-            subtitle: game.gameRewardToday ? 'Награда за сегодня получена — играй для тренировки' : 'Первая игра сегодня — до +$reward монет',
+            subtitle: game.gamesLocked
+                ? '${game.profile.petName} голоден: сначала нужное, потом игры'
+                : game.gameRewardToday ? 'Награда за сегодня получена — играй для тренировки' : 'Первая игра сегодня — до +$reward монет',
             trailing: CoinChip(value: game.economy.available.value),
           ),
           Padding(
@@ -69,10 +72,16 @@ class GamesTab extends StatelessWidget {
 
   Widget _card(BuildContext context, _Card c, int reward) {
     final best = game.snapshot.gameBest[c.id];
+    final locked = c.rewarded && game.gamesLocked;
     return DuoCard(
       key: Key('games.${c.id}'),
       padding: EdgeInsets.zero,
-      onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => _screen(c.id))),
+      onTap: locked
+          ? () {
+              buzz(Buzz.heavy);
+              showNeedsFirst(context, game, text: game.gamesLockedText);
+            }
+          : () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => _screen(c.id))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -81,12 +90,16 @@ class GamesTab extends StatelessWidget {
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: c.colors),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: locked ? [for (final col in c.colors) Color.lerp(col, const Color(0xFFC7C7CC), 0.7)!] : c.colors,
+                ),
               ),
               child: Stack(
                 children: [
-                  Center(child: Icon(c.icon, size: 44, color: Colors.white)),
-                  if (c.rewarded && !game.gameRewardToday)
+                  Center(child: Icon(locked ? Icons.lock_rounded : c.icon, size: 44, color: Colors.white)),
+                  if (c.rewarded && !game.gameRewardToday && !locked)
                     Positioned(
                       top: 10,
                       right: 10,
@@ -108,7 +121,7 @@ class GamesTab extends StatelessWidget {
                 Text(c.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, letterSpacing: -0.3)),
                 const SizedBox(height: 2),
                 Text(
-                  best == null ? c.teaches : 'Рекорд: $best',
+                  locked ? 'Сначала нужное' : (best == null ? c.teaches : 'Рекорд: $best'),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 13, color: FinniColors.muted),

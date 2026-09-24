@@ -46,6 +46,18 @@ final class GameController extends ChangeNotifier {
   bool isBoughtToday(String itemId) => snapshot.boughtToday.contains(itemId);
   bool get needsDone => todaysNeeds.every((i) => isBoughtToday(i.id));
 
+  // Сначала нужное (SA F-021).
+  List<ShopItem> get needsLeft => [for (final i in todaysNeeds) if (!isBoughtToday(i.id)) i];
+  int get needsLeftCost => needsLeft.fold(0, (s, i) => s + i.price);
+  String get needsLeftTitles => needsLeft.map((i) => i.title).join(', ');
+  bool get canAffordNeeds => economy.available.value >= needsLeftCost;
+
+  /// Игры с наградой ждут нужное; открыты, если на нужное не хватает — чтобы заработать.
+  bool get gamesLocked => needsLeft.isNotEmpty && canAffordNeeds;
+  String get gamesLockedText => planConfirmed
+      ? content.text('rule.games_locked', {'pet': profile.petName, 'needs': needsLeftTitles})
+      : content.text('rule.games_no_plan');
+
   bool get planConfirmed => economy.plan != null;
   Quest get todaysQuest => content.questForDay(day);
   bool get questDoneToday => snapshot.questDoneToday;
@@ -145,6 +157,10 @@ final class GameController extends ChangeNotifier {
         }
       } else if (item.slot != ItemSlot.consumable && inventory.owned.contains(itemId)) {
         return _fail(FeedbackReason.alreadyOwned, ['Это у тебя уже есть!']);
+      } else if (needsLeft.isNotEmpty) {
+        return _fail(FeedbackReason.needsFirst, [
+          content.text('rule.want_blocked', {'pet': profile.petName, 'needs': needsLeftTitles}),
+        ]);
       }
     }
 
@@ -183,6 +199,11 @@ final class GameController extends ChangeNotifier {
   // ---------- Копилка и цель ----------
 
   Future<GameFeedback> toSavings(int amount) async {
+    if (needsLeft.isNotEmpty && economy.available.value - amount < needsLeftCost) {
+      return _fail(FeedbackReason.needsFirst, [
+        content.text('rule.save_blocked', {'n': '$amount', 'needs': needsLeftTitles}),
+      ]);
+    }
     final r = _engine.apply(economy, TransferToSavings(GameCoins(amount)));
     if (r.error != null) {
       final missing = amount - economy.available.value;

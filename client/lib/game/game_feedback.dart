@@ -10,6 +10,7 @@ enum FeedbackReason {
   noGoal,
   needOption,
   withdrawNotPending,
+  needsFirst,
 }
 
 /// Результат действия игрока: удалось ли и что сказать ребёнку.

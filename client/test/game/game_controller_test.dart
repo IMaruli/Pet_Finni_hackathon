@@ -31,6 +31,12 @@ void main() {
     await game.createProfile(playerName: 'Аня', petName: 'Финни', lookId: 'sun_tuft');
   });
 
+  Future<void> buyNeeds() async {
+    for (final item in game.todaysNeeds) {
+      await game.buy(item.id, commandId: game.newCommandId());
+    }
+  }
+
   /// Хороший день: план, всё нужное, немного отложить.
   Future<void> goodDay({int save = 2}) async {
     final need = game.todaysNeedSum;
@@ -97,6 +103,7 @@ void main() {
 
   test('hero sticker is owned, worn, and not sold twice', () async {
     await game.confirmPlan(need: game.todaysNeedSum, want: 20, save: 0);
+    await buyNeeds();
     expect((await game.buy('glasses', commandId: game.newCommandId())).ok, isTrue);
     expect(game.inventory.owned, contains('glasses'));
     expect(game.inventory.worn, contains('glasses'));
@@ -109,7 +116,8 @@ void main() {
 
   test('insufficient funds reports how much is missing', () async {
     await game.confirmPlan(need: game.todaysNeedSum, want: 0, save: 0);
-    await game.toSavings(50);
+    await buyNeeds();
+    await game.toSavings(game.economy.available.value - 5);
     final f = await game.buy('headphones', commandId: game.newCommandId());
     expect(f.reason, FeedbackReason.insufficient);
     expect(f.missing, 18 - game.economy.available.value);
@@ -132,11 +140,9 @@ void main() {
 
   test('chocolate makes the day glad only when needs are covered', () async {
     await game.confirmPlan(need: game.todaysNeedSum, want: 12, save: 0);
+    await buyNeeds();
+    expect(game.mood, PetMood.steady);
     await game.buy('chocolate', commandId: game.newCommandId());
-    expect(game.economy.petMood, PetMood.uneasy);
-    for (final item in game.todaysNeeds) {
-      await game.buy(item.id, commandId: game.newCommandId());
-    }
     expect(game.mood, PetMood.glad);
     expect(game.inventory.owned, isNot(contains('chocolate')));
   });
@@ -274,5 +280,63 @@ void main() {
     expect(game.hasProfile, isFalse);
     expect(store.raw, isNull);
     expect((await fresh()).hasProfile, isFalse);
+  });
+
+  group('needs first (F-021)', () {
+    test('a want before needs is refused and costs nothing', () async {
+      await game.confirmPlan(need: game.todaysNeedSum, want: 20, save: 0);
+      final before = game.economy.available;
+      final f = await game.buy('glasses', commandId: game.newCommandId());
+      expect(f.ok, isFalse);
+      expect(f.reason, FeedbackReason.needsFirst);
+      expect(f.messages.single, contains('Завтрак'));
+      expect(game.economy.available, before);
+      expect(game.inventory.owned, isNot(contains('glasses')));
+    });
+
+    test('needs themselves are never blocked, wants open after them', () async {
+      await game.confirmPlan(need: game.todaysNeedSum, want: 20, save: 0);
+      expect(game.needsLeft.map((i) => i.id), ['breakfast', 'water']);
+      expect(game.needsLeftCost, 16);
+      expect((await game.buy('breakfast', commandId: game.newCommandId())).ok, isTrue);
+      expect(game.needsLeftTitles, 'Вода');
+      expect((await game.buy('water', commandId: game.newCommandId())).ok, isTrue);
+      expect(game.needsLeft, isEmpty);
+      expect((await game.buy('glasses', commandId: game.newCommandId())).ok, isTrue);
+    });
+
+    test('savings may not eat the money for needs', () async {
+      await game.confirmPlan(need: game.todaysNeedSum, want: 0, save: 10);
+      final spare = game.economy.available.value - game.needsLeftCost;
+      final f = await game.toSavings(spare + 1);
+      expect(f.reason, FeedbackReason.needsFirst);
+      expect(game.economy.savings.value, 0);
+      expect((await game.toSavings(spare)).ok, isTrue);
+      await buyNeeds();
+      expect(game.economy.available.value, 0);
+    });
+
+    test('games wait for the plan and the needs', () async {
+      expect(game.gamesLocked, isTrue); // нет плана
+      await game.confirmPlan(need: game.todaysNeedSum, want: 0, save: 0);
+      expect(game.gamesLocked, isTrue); // голоден, монет хватает
+      await buyNeeds();
+      expect(game.gamesLocked, isFalse);
+    });
+
+    test('games open when coins do not cover the needs: a way to earn', () async {
+      final raw = {
+        for (final name in ContentLoader.files)
+          name: jsonDecode(File('assets/content/$name.json').readAsStringSync()),
+      };
+      (raw['config'] as Map<String, dynamic>)
+        ..['startCoins'] = 5
+        ..['pocketMoney'] = 5;
+      final poor = GameController(content: GameContent.fromJson(raw), store: MemoryProfileStore(), newId: () => 'p${ids++}');
+      await poor.init();
+      await poor.createProfile(playerName: 'Аня', petName: 'Финни', lookId: 'sun_tuft');
+      expect(poor.canAffordNeeds, isFalse);
+      expect(poor.gamesLocked, isFalse);
+    });
   });
 }

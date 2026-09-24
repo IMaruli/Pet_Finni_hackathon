@@ -4,6 +4,7 @@ import '../../content/models.dart';
 import '../../economy/catalog_item.dart';
 import '../../game/game_controller.dart';
 import '../../game/game_feedback.dart';
+import '../../game/pet_wish.dart';
 import '../mascot/mascot_look.dart';
 import '../mascot/mascot_view.dart';
 import '../screens/plan_screen.dart';
@@ -42,6 +43,12 @@ Future<void> buyFlow(BuildContext context, GameController game, ShopItem item, {
         ],
       ),
     );
+    return;
+  }
+  if (item.kind == ItemKind.want && game.needsLeft.isNotEmpty) {
+    mascot?.shake();
+    buzz(Buzz.heavy);
+    await showNeedsFirst(context, game);
     return;
   }
   final result = await showModalBottomSheet<GameFeedback>(
@@ -99,10 +106,45 @@ Future<void> buyFlow(BuildContext context, GameController game, ShopItem item, {
   }
 }
 
+/// Финни голоден: сначала нужное, потом хотелки и игры (SA F-021 BR-06).
+/// [text] — своя причина (например, для игр); по умолчанию — про покупку «хочу».
+Future<void> showNeedsFirst(BuildContext context, GameController game, {String? text}) {
+  final next = game.needsLeft.first;
+  final look = MascotLook.fromGame(game).withEmotion(wishFor(game).emotion);
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    builder: (sheet) => _Sheet(
+      key: const Key('needsFirst.sheet'),
+      hero: MascotView(look: look, size: 120),
+      title: 'Сначала нужное',
+      text: text ?? game.content.text('rule.want_blocked', {'pet': game.profile.petName, 'needs': game.needsLeftTitles}),
+      actions: [
+        DuoButton(
+          key: const Key('needsFirst.go'),
+          label: game.planConfirmed ? 'Купить: ${next.title}' : 'Разложить монеты',
+          color: game.planConfirmed ? FinniColors.need : FinniColors.primary,
+          onPressed: () {
+            Navigator.of(sheet).pop();
+            if (game.planConfirmed) {
+              buyFlow(context, game, next);
+            } else {
+              Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PlanScreen(game: game)));
+            }
+          },
+        ),
+        const SizedBox(height: 10),
+        DuoButton(label: 'Позже', color: FinniColors.surface, onPressed: () => Navigator.of(sheet).pop()),
+      ],
+    ),
+  );
+}
+
 class _Sheet extends StatelessWidget {
-  const _Sheet({required this.icon, required this.color, required this.title, required this.text, required this.actions});
-  final IconData icon;
+  const _Sheet({super.key, this.icon, this.color = FinniColors.primary, this.hero, required this.title, required this.text, required this.actions});
+  final IconData? icon;
   final Color color;
+  final Widget? hero;
   final String title;
   final String text;
   final List<Widget> actions;
@@ -116,7 +158,7 @@ class _Sheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Center(child: IconTile(icon, color: color, size: 52)),
+            Center(child: hero ?? IconTile(icon!, color: color, size: 52)),
             const SizedBox(height: 12),
             Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, letterSpacing: -0.5)),
             const SizedBox(height: 6),

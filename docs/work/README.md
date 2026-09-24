@@ -31,6 +31,11 @@
 | F-014 | Копилка и цели | [ui/F-014](ui/F-014_SAVINGS_GOALS_SA_SPEC.md) | `ui/screens/savings_screen.dart` | `app_flow_test` |
 | F-015 | Ночь: итог дня | [ui/F-015](ui/F-015_NIGHT_SUMMARY_SA_SPEC.md) | `ui/screens/night_screen.dart` | `app_flow_test` |
 | F-016 | Взрослым, словарик, оболочка | [ui/F-016](ui/F-016_ADULT_GLOSSARY_APP_SA_SPEC.md) | `ui/app.dart`, `ui/screens/adult_screen.dart` | `app_flow_test` |
+| F-017 | Редизайн по Figma | [ui/F-017](ui/F-017_UI_REDESIGN_SA_SPEC.md) | `ui/shell/`, `ui/tabs/` | `app_flow_test` |
+| F-018 | Дизайн-система v2 | [ui/F-018](ui/F-018_DESIGN_SYSTEM_SA_SPEC.md) | `ui/theme.dart`, `ui/widgets/duo.dart` | `app_flow_test` |
+| F-019 | 3D-комнаты | [ui/F-019](ui/F-019_ROOM_3D_SA_SPEC.md) | `ui/room3d/`, `ui/room/room_scene.dart` | `test/ui/room3d_test.dart` |
+| F-020 | Желания героя | [ui/F-020](ui/F-020_PET_WISHES_SA_SPEC.md) | `game/pet_wish.dart`, `ui/widgets/pet_speech.dart` | `test/game/pet_wish_test.dart` |
+| F-021 | Сначала нужное | [game/F-021](game/F-021_NEEDS_FIRST_SA_SPEC.md) | `game/game_controller.dart`, `ui/tabs/games_tab.dart`, `ui/widgets/buy_sheet.dart` | `game_controller_test`, `app_flow_test` |
 
 **Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
 См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.

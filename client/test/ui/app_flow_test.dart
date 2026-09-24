@@ -79,11 +79,21 @@ void main() {
     await tapKey(t, 'plan.done');
     await settle(t, 10);
 
+    // F-021: игры и хотелки ждут нужное.
+    await tapKey(t, 'nav.games');
+    await tapKey(t, 'games.sort');
+    expect(find.byKey(const Key('needsFirst.sheet')), findsOneWidget);
+    await t.tapAt(const Offset(20, 40)); // закрыть шторку
+    await settle(t, 20);
+
     // А.7 покупки во вкладке «Магазин».
     await tapKey(t, 'nav.shop');
-    await tapKey(t, 'shopRow.breakfast');
+    await tapKey(t, 'shopRow.glasses');
+    expect(find.byKey(const Key('needsFirst.sheet')), findsOneWidget);
+    await tapKey(t, 'needsFirst.go'); // «Купить: Завтрак»
     await tapKey(t, 'shop.buy');
     await settle(t, 30);
+    await scrollTo(t, find.byKey(const Key('shopRow.water')));
     await tapKey(t, 'shopRow.water');
     await tapKey(t, 'shop.buy');
     expect(find.text('✓ куплено'), findsWidgets); // вода видна, завтрак уехал выше
@@ -194,6 +204,16 @@ void main() {
     await t.pumpWidget(FinniApp(store: MemoryProfileStore(), loadContent: () async => content));
     await settle(t, 20);
     await onboard(t, 'Тим');
+    await tapKey(t, 'home.next');
+    await tapKey(t, 'plan.suggest');
+    await tapKey(t, 'plan.done');
+    await settle(t, 10);
+    await tapKey(t, 'nav.shop');
+    for (final id in ['breakfast', 'water']) {
+      await tapKey(t, 'shopRow.$id');
+      await tapKey(t, 'shop.buy');
+      await settle(t, 30);
+    }
 
     await tapKey(t, 'nav.games');
     await tapKey(t, 'games.sort');

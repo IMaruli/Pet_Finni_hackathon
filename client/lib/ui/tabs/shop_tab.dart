@@ -39,7 +39,7 @@ class ShopTab extends StatelessWidget {
             children: [for (final item in game.todaysNeeds) _itemRow(context, item)],
           ),
           GroupedSection(
-            header: 'Хочу',
+            header: game.needsLeft.isEmpty ? 'Хочу' : 'Хочу · после нужного',
             children: [for (final item in game.content.wantItems) _itemRow(context, item)],
           ),
           GroupedSection(
@@ -60,12 +60,13 @@ class ShopTab extends StatelessWidget {
     child: Text(emoji, style: const TextStyle(fontSize: 22)),
   );
 
-  Widget _price(int price) => Container(
+  Widget _price(int price, {bool locked = false}) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
     decoration: BoxDecoration(color: FinniColors.fill, borderRadius: BorderRadius.circular(20)),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (locked) ...[const Icon(Icons.lock_rounded, size: 14, color: FinniColors.muted), const SizedBox(width: 4)],
         const CoinIcon(size: 15),
         const SizedBox(width: 5),
         Text('$price', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
@@ -84,7 +85,7 @@ class ShopTab extends StatelessWidget {
       subtitle: itemSubtitle(item),
       trailing: done
           ? Text(owned ? '✓ есть' : '✓ куплено', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: FinniColors.need))
-          : _price(item.price),
+          : _price(item.price, locked: item.kind == ItemKind.want && game.needsLeft.isNotEmpty),
       chevron: false,
       onTap: done ? null : () => buyFlow(context, game, item),
     );
