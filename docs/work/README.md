@@ -81,6 +81,7 @@
 | F-063 | Уроки понятнее | [game/F-063](game/F-063_LESSON_CONTENT_FIXES_SA_SPEC.md) | `assets/content/lessons.json`, `ui/lesson/` | `lesson_test`, `content_test` |
 | F-064 | Кнопки итога мини-игры | [ui/F-064](ui/F-064_MINIGAME_RESULT_BUTTONS_SA_SPEC.md) | `ui/games/` | `app_flow_test` |
 | F-065 | Двойная комната | [ui/F-065](ui/F-065_DOUBLE_ROOM_SA_SPEC.md) | `ui/room3d/room_builder.dart`, `ui/tabs/home_tab.dart` | `room3d_test` |
+| F-066 | План: лишний «+» не ломает «Готово» | [ui/F-066](ui/F-066_PLAN_STEPPER_BUG_SA_SPEC.md) | `ui/screens/plan_screen.dart` | `plan_screen_test` |
 
 **Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
 См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.
