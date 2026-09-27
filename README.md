@@ -12,6 +12,10 @@
 > **[Релиз v1.2.2 в GitHub Releases](https://github.com/IMaruli/Pet_Finni_hackathon/releases/tag/v1.2.2)** — файл `finni-1.2.2.apk` (~53 МБ, Android 7.0+; ТЗ требует 8.0+). Все релизы — [Releases](https://github.com/IMaruli/Pet_Finni_hackathon/releases).
 > Скопируйте APK на телефон, откройте его и разрешите установку из этого источника. Каждый пуш тоже собирает APK: **Actions → Android APK → Artifacts → `finni-apk`**.
 
+> ### 🎬 Промо и запись приложения
+> **[Промо-материалы на Яндекс Диске](https://disk.yandex.ru/d/d3zIb8Cg6BFYmQ)** — презентация и сопутствующие файлы.
+> **[Запись приложения](https://disk.yandex.ru/i/OTgwsRBrmhxnTQ)** — видео прохождения.
+
 > ### 📖 История Финни
 > Как появились идея и герой: концепт от нейросети, своя 3D-сцена в Blender, страшный первый маскот, сломанный рендер и путь до релиза — **[сторибук](docs/story/README.md)**.
 
@@ -288,3 +292,5 @@ flutter install             # поставить на подключённый �
 | 📄 Сопроводительная документация по разделу 5 ТЗ (PDF) | [`docs/documentation/Finni_Documentation.pdf`](docs/documentation/Finni_Documentation.pdf) · [Markdown](docs/documentation/FINNI_DOCUMENTATION.md) · [карта контента](docs/documentation/CONTENT_MAP.md) |
 | 🏪 Черновик карточки RuStore | [`docs/release/rustore/CARD.md`](docs/release/rustore/CARD.md) |
 | 📦 Релиз и чеклист сдачи | [`docs/release/RELEASE_v1.0.0.md`](docs/release/RELEASE_v1.0.0.md) |
+| 🎬 Промо-материалы | [Яндекс Диск](https://disk.yandex.ru/d/d3zIb8Cg6BFYmQ) |
+| 🎥 Запись приложения | [Яндекс Диск](https://disk.yandex.ru/i/OTgwsRBrmhxnTQ) |
