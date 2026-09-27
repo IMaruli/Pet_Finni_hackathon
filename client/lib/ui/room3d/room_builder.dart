@@ -28,6 +28,9 @@ abstract final class RoomBuilder {
   /// Двойная комната (F-065): игровая сдвинута вправо на [annexShift], граница обоев — [annexWall].
   static const annexShift = 4.2, annexWall = 2.2;
 
+  /// Герой в двойной комнате — в проёме между спальней и игровой (F-065).
+  static const annexHeroSpot = Vec3(2.2, 0, 0.7);
+
   static const _lampPos = Vec3(-1.2, 0, 0.95);
   static const _pendantPos = Vec3(0.2, 2.75, -0.2);
 
@@ -166,7 +169,7 @@ abstract final class RoomBuilder {
 
   static void _shell(List<Mesh> m, {required bool play, required DayTime time, bool fullBleed = false, bool annex = false}) {
     // Во весь экран: пол и стены длиннее и выше, срезов диорамы нет (F-048). С игровой — ещё шире (F-065).
-    final x1 = fullBleed ? (annex ? far + annexShift : far) : 2.0, z1 = fullBleed ? far : 2.0, wh = fullBleed ? top : h;
+    final x1 = fullBleed ? (annex ? far + annexShift : far) : 2.0, z1 = fullBleed ? far : 2.0, wh = fullBleed ? (annex ? top + 3 : top) : h;
     final wallC = play ? const Color(0xFFCFE3D7) : const Color(0xFFE9DED2);
     final panelC = play ? const Color(0xFFE6F0EA) : const Color(0xFFF3ECE3);
     final capC = const Color(0xFFFBF8F3);
