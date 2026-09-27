@@ -14,7 +14,7 @@ skill = {
     'share': 'Планировать подарки и оценивать свои решения (компетенции 3, 5)',
     'ads': 'Распознавать рекламные уловки, беречь пароли и платежи (компетенции 3, 5)',
 }
-kind = {'card': 'карточка', 'sort': 'разложи', 'next': 'что дальше', 'order': 'собери правило', 'pairs': 'пары', 'pick': 'выбор'}
+kind = {'card': 'карточка', 'sort': 'разложи', 'next': 'что дальше', 'order': 'вставь слова', 'pairs': 'пары', 'pick': 'выбор'}
 def cell(s): return s.replace('|', '/').replace('\n', ' ').replace('{pet}', 'Финни')
 def logic(st):
     t = st['type']
@@ -27,12 +27,16 @@ def logic(st):
         good = [o['text'] for o in st['outcomes'] if o.get('good')]
         return f"{cell(st['situation'])} → {', '.join(good)}"
     if t == 'pick': return f"{cell(st['question'])} → {st['options'][st['answer']]}"
-    if t == 'order': return ' '.join(st['tiles'])
+    if t == 'order':
+        given = set(st.get('given', []))
+        sentence = ' '.join(w if i in given else f'[{w}]' for i, w in enumerate(st['tiles']))
+        scene = st.get('scene')
+        return (f"{scene['emoji']} {cell(scene['text'])} → " if scene else '') + sentence
     if t == 'pairs': return '; '.join(f"{a} — {b}" for a, b in st['pairs'])
     return None
 print('# Карта образовательного контента\n')
 print('Сгенерировано из `client/assets/content/lessons.json` скриптом `docs/documentation/make_content_map.py`. '
-      'Каждый урок: мысль (карточка) → практика → ситуация с последствием («что дальше») → правило. '
+      'Каждый урок: мысль (карточка) → практика → ситуация с последствием («что дальше») → правило. В «вставь слова» [в скобках] — пропуски, которые ребёнок заполняет; остальные слова уже стоят. '
       'После каждого ответа — объяснение, при ошибке — подсказка и «Выбрать снова» / повтор.\n')
 print('| № | Тема | Урок | Ожидаемый навык | Шаги | Правильная логика | Объяснение ребёнку |')
 print('|---|------|------|-----------------|------|-------------------|--------------------|')
