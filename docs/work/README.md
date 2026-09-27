@@ -62,6 +62,26 @@
 | F-043 | Мягкий первый день | [game/F-043](game/F-043_SOFT_FIRST_DAY_SA_SPEC.md) | `game/game_controller.dart`, `game/pet_wish.dart` | `game_controller_test`, `app_flow_test` |
 | F-044 | Копилка как вклад | [game/F-044](game/F-044_SAVINGS_DEPOSIT_SA_SPEC.md) | `economy/`, `game/game_controller.dart`, `ui/screens/savings_screen.dart` | `economy`, `game_controller_test`, `app_flow_test` |
 | F-045 | Вёрстка «Одежды» | [ui/F-045](ui/F-045_CLOTHES_LAYOUT_SA_SPEC.md) | `ui/screens/clothes_screen.dart` | `app_flow_test` |
+| F-046 | Перетаскивание в уроках | [ui/F-046](ui/F-046_DRAG_SORT_SA_SPEC.md) | `ui/lesson/lesson_steps.dart` | `lesson_test` |
+| F-047 | Фото из зоопарка на виду | [ui/F-047](ui/F-047_ZOO_PHOTO_PLACE_SA_SPEC.md) | `ui/room3d/room_builder.dart` | `room3d_test` |
+| F-048 | Комната во весь экран | [ui/F-048](ui/F-048_FULL_SCREEN_ROOM_SA_SPEC.md) | `ui/room3d/room_builder.dart`, `ui/room/room_scene.dart`, `ui/tabs/home_tab.dart` | `room3d_test` |
+| F-049 | CI: релизный APK в GitHub Actions | [ops/F-049](ops/F-049_CI_RELEASE_APK_SA_SPEC.md) | `.github/workflows/android-apk.yml`, `android/app/build.gradle.kts` | запуск Actions |
+| F-051 | Качество комнаты, повороты героя, места одежды | [ui/F-051](ui/F-051_ROOM_QUALITY_WEAR_SLOTS_SA_SPEC.md) | `ui/room3d/*`, `ui/mascot/mascot_view.dart`, `game/game_controller.dart`, `ui/tabs/home_tab.dart` | `room3d_test`, `game_controller_test`, `content_test` |
+| F-052 | Обои в полоску | [ui/F-052](ui/F-052_STRIPED_WALLPAPER_SA_SPEC.md) | `ui/room3d/room_builder.dart` | `room3d_test` |
+| F-053 | Релиз 1.0: название, иконка, заставка | [ops/F-053](ops/F-053_RELEASE_1_0_SA_SPEC.md) | `android/app/src/main/*`, `tool/icon/`, `README.md`, `docs/release/` | эмулятор, CI |
+| F-054 | Рост учитывает траты по плану | [game/F-054](game/F-054_GROWTH_BY_PLAN_SA_SPEC.md) | `economy/economy_engine.dart`, `ui/screens/night_screen.dart` | `period_pet_test`, `game_controller_test` |
+| F-055 | Срок до цели по средней сумме | [game/F-055](game/F-055_GOAL_ETA_AVERAGE_SA_SPEC.md) | `game/game_controller.dart`, `ui/screens/savings_screen.dart` | `game_controller_test` |
+| F-056 | Покупки сегодня и итог вчера | [ui/F-056](ui/F-056_HISTORY_TODAY_YESTERDAY_SA_SPEC.md) | `ui/screens/plan_screen.dart`, `ui/tabs/tasks_tab.dart` | `app_flow_test` |
+| F-057 | Плашка состояния и цель на Доме | [ui/F-057](ui/F-057_HOME_STATE_PANEL_SA_SPEC.md) | `ui/tabs/home_tab.dart` | `app_flow_test` |
+| F-058 | Доступность | [ui/F-058](ui/F-058_ACCESSIBILITY_SA_SPEC.md) | `ui/motion.dart`, `ui/mascot/*`, `ui/widgets/*` | `mascot_test`, `app_flow_test` |
+| F-059 | Карточка RuStore | [ops/F-059](ops/F-059_RUSTORE_CARD_SA_SPEC.md) | `docs/release/rustore/` | — |
+| F-060 | Документация PDF | [ops/F-060](ops/F-060_DOCUMENTATION_PDF_SA_SPEC.md) | `docs/documentation/` | — |
+| F-061 | Баги экономики из теста | [game/F-061](game/F-061_ECONOMY_TEST_BUGS_SA_SPEC.md) | `economy/`, `game/game_controller.dart` | `savings_test`, `period_pet_test`, `game_controller_test` |
+| F-062 | Первый день понятнее, подсказки разделов | [ui/F-062](ui/F-062_FIRST_DAY_TIPS_SA_SPEC.md) | `ui/widgets/first_tip.dart`, экраны | `app_flow_test` |
+| F-063 | Уроки понятнее | [game/F-063](game/F-063_LESSON_CONTENT_FIXES_SA_SPEC.md) | `assets/content/lessons.json`, `ui/lesson/` | `lesson_test`, `content_test` |
+| F-064 | Кнопки итога мини-игры | [ui/F-064](ui/F-064_MINIGAME_RESULT_BUTTONS_SA_SPEC.md) | `ui/games/` | `app_flow_test` |
+| F-065 | Двойная комната | [ui/F-065](ui/F-065_DOUBLE_ROOM_SA_SPEC.md) | `ui/room3d/room_builder.dart`, `ui/tabs/home_tab.dart` | `room3d_test` |
+| F-066 | План: лишний «+» не ломает «Готово» | [ui/F-066](ui/F-066_PLAN_STEPPER_BUG_SA_SPEC.md) | `ui/screens/plan_screen.dart` | `plan_screen_test` |
 
 **Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
 См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.

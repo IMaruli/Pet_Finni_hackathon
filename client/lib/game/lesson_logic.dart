@@ -15,6 +15,16 @@ bool pairOk(PairsStep s, int left, int right) => left == right;
 String pairMiss(PairsStep s, int left, int right) =>
     '${s.pairs[left].left} — ${s.pairs[left].right.toLowerCase()}, не ${s.pairs[right].right.toLowerCase()}.';
 
+/// [placed] — слова в пропусках по порядку; готовые слова ([OrderStep.given]) подставляются сами (F-063).
+bool blanksOk(OrderStep s, List<String> placed) {
+  final blanks = s.blanks;
+  if (placed.length != blanks.length) return false;
+  for (var k = 0; k < blanks.length; k++) {
+    if (placed[k] != s.tiles[blanks[k]]) return false;
+  }
+  return true;
+}
+
 bool orderOk(OrderStep s, List<String> placed) {
   if (placed.length != s.tiles.length) return false;
   for (var i = 0; i < placed.length; i++) {

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../economy/catalog_item.dart';
 import '../../game/game_controller.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/duo.dart';
+import '../widgets/first_tip.dart';
 import '../widgets/jar_view.dart';
 
 /// План дня: три банки (SA F-010).
@@ -24,6 +26,16 @@ class _PlanScreenState extends State<PlanScreen> {
   int get _used => _values.values.fold(0, (s, v) => s + v);
   int get _left => _available - _used;
   bool get _needOk => _values[Basket.need]! >= game.todaysNeedSum;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!game.planConfirmed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) showFirstTip(context, game, 'plan');
+      });
+    }
+  }
 
   void _change(Basket b, int delta) {
     setState(() {
@@ -78,8 +90,38 @@ class _PlanScreenState extends State<PlanScreen> {
   }
 
   Widget _editor() {
+    // «Готово» и «Подсказать» закреплены внизу: подсказка больше не сдвигает кнопку за край экрана (F-066).
+    return Column(
+      children: [
+        Expanded(child: _editorList()),
+        Container(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          decoration: const BoxDecoration(
+            color: FinniColors.bg,
+            border: Border(top: BorderSide(color: Color(0x14000000))),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (_hint != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(_hint!, key: const Key('plan.hint'), textAlign: TextAlign.center, style: const TextStyle(color: FinniColors.primary, fontSize: 15)),
+                ),
+              DuoButton(key: const Key('plan.done'), label: 'Готово', onPressed: _needOk && _left == 0 ? _done : null), // все монеты в банках (F-024)
+              const SizedBox(height: 8),
+              DuoButton(key: const Key('plan.suggest'), label: 'Подсказать', icon: Icons.auto_awesome_rounded, color: FinniColors.surface, onPressed: _suggest),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _editorList() {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
       children: [
         Center(
           child: Column(
@@ -100,6 +142,13 @@ class _PlanScreenState extends State<PlanScreen> {
               Text(
                 _left == 0 ? 'Все $_available монет разложены' : 'из $_available монет осталось разложить',
                 style: const TextStyle(fontSize: 15, color: FinniColors.muted),
+              ),
+              const SizedBox(height: 4),
+              // Не догадаться, что удержание кладёт 5 (F-062).
+              const Text(
+                'Нажми «+» — одна монета, удерживай — сразу 5',
+                key: Key('plan.howto'),
+                style: TextStyle(fontSize: 14, color: FinniColors.primary, fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -138,15 +187,6 @@ class _PlanScreenState extends State<PlanScreen> {
             ),
           ],
         ),
-        if (_hint != null)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-            child: Text(_hint!, textAlign: TextAlign.center, style: const TextStyle(color: FinniColors.primary, fontSize: 15)),
-          ),
-        const SizedBox(height: 20),
-        DuoButton(key: const Key('plan.done'), label: 'Готово', onPressed: _needOk && _left == 0 ? _done : null), // все монеты в банках (F-024)
-        const SizedBox(height: 10),
-        DuoButton(key: const Key('plan.suggest'), label: 'Подсказать', icon: Icons.auto_awesome_rounded, color: FinniColors.surface, onPressed: _suggest),
       ],
     );
   }
@@ -163,21 +203,28 @@ class _PlanScreenState extends State<PlanScreen> {
 
   /// Степпер в стиле iOS: « − | + » в серой капсуле; долгое нажатие — ±5.
   Widget _stepper(Basket b) {
-    Widget half(String label, Key key, int delta) => Semantics(
-      button: true,
-      label: delta > 0 ? 'Добавить монету в «${b.title}»' : 'Убрать монету из «${b.title}»',
-      child: GestureDetector(
-        key: key,
-        behavior: HitTestBehavior.opaque,
-        onTap: () => _change(b, delta),
-        onLongPress: () => _change(b, delta * 5),
-        child: SizedBox(
-          width: 44,
-          height: 36,
-          child: Center(child: Icon(delta > 0 ? Icons.add_rounded : Icons.remove_rounded, size: 22, color: FinniColors.ink)),
+    // «+» выключен, когда монеты кончились; «−» — когда банка пустая (F-066).
+    Widget half(String label, Key key, int delta) {
+      final enabled = delta > 0 ? _left > 0 : _values[b]! > 0;
+      return Semantics(
+        button: true,
+        enabled: enabled,
+        label: delta > 0 ? 'Добавить монету в «${b.title}»' : 'Убрать монету из «${b.title}»',
+        child: GestureDetector(
+          key: key,
+          behavior: HitTestBehavior.opaque,
+          onTap: enabled ? () => _change(b, delta) : null,
+          onLongPress: enabled ? () => _change(b, delta * 5) : null,
+          child: SizedBox(
+            width: 48,
+            height: 48,
+            child: Center(
+              child: Icon(delta > 0 ? Icons.add_rounded : Icons.remove_rounded, size: 22, color: enabled ? FinniColors.ink : const Color(0x40000000)),
+            ),
+          ),
         ),
-      ),
-    );
+      );
+    }
     return Container(
       decoration: BoxDecoration(color: FinniColors.fill, borderRadius: BorderRadius.circular(10)),
       child: Row(
@@ -238,6 +285,24 @@ class _PlanScreenState extends State<PlanScreen> {
               ),
             ),
           ),
+        // История покупок текущего периода (ТЗ 2.5.6, F-056).
+        GroupedSection(
+          key: const Key('plan.history'),
+          header: 'Покупки сегодня',
+          footer: game.purchasesToday.isEmpty ? 'Пока ничего не куплено.' : null,
+          children: [
+            for (final (i, item) in game.purchasesToday.indexed)
+              GroupedRow(
+                key: Key('plan.history.$i'),
+                leading: Text(item.emoji, style: const TextStyle(fontSize: 24)),
+                title: item.title,
+                subtitle: item.kind == ItemKind.need ? 'Нужное' : 'Хочу',
+                trailing: Text('−${item.price}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                chevron: false,
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
         const Text(
           'Новый план — завтра утром. Так проще держать слово.',
           textAlign: TextAlign.center,

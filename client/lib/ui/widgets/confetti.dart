@@ -1,3 +1,5 @@
+import '../motion.dart';
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -25,13 +27,7 @@ class _Piece {
       color = _colors[r.nextInt(_colors.length)],
       w = 6 + r.nextDouble() * 6;
 
-  static const _colors = [
-    Color(0xFFFF7A2F),
-    Color(0xFF22A06B),
-    Color(0xFFE8508F),
-    Color(0xFF3F7FF0),
-    Color(0xFFFFC233),
-  ];
+  static const _colors = [Color(0xFFFF7A2F), Color(0xFF22A06B), Color(0xFFE8508F), Color(0xFF3F7FF0), Color(0xFFFFC233)];
 
   final double x, vx, vy, spin, w;
   final Color color;
@@ -56,6 +52,7 @@ class _ConfettiBurstState extends State<ConfettiBurst> with SingleTickerProvider
   }
 
   void _fire() {
+    if (Motion.reduced) return; // F-058
     setState(() => _pieces = List.generate(90, (_) => _Piece(_random)));
     _anim.forward(from: 0);
   }
@@ -69,9 +66,7 @@ class _ConfettiBurstState extends State<ConfettiBurst> with SingleTickerProvider
           child: IgnorePointer(
             child: AnimatedBuilder(
               animation: _anim,
-              builder: (_, _) => _anim.isAnimating
-                  ? CustomPaint(painter: _ConfettiPainter(_pieces, _anim.value))
-                  : const SizedBox.shrink(),
+              builder: (_, _) => _anim.isAnimating ? CustomPaint(painter: _ConfettiPainter(_pieces, _anim.value)) : const SizedBox.shrink(),
             ),
           ),
         ),
@@ -94,10 +89,7 @@ class _ConfettiPainter extends CustomPainter {
       canvas.save();
       canvas.translate(x, y);
       canvas.rotate(p.spin * time);
-      canvas.drawRect(
-        Rect.fromCenter(center: Offset.zero, width: p.w, height: p.w * 0.5),
-        Paint()..color = p.color.withValues(alpha: (1 - t).clamp(0, 1)),
-      );
+      canvas.drawRect(Rect.fromCenter(center: Offset.zero, width: p.w, height: p.w * 0.5), Paint()..color = p.color.withValues(alpha: (1 - t).clamp(0, 1)));
       canvas.restore();
     }
   }

@@ -31,8 +31,11 @@ final class Lighting {
 
 /// Готовый кадр: слои треугольников + пятна теней.
 final class Frame {
-  const Frame({required this.background, required this.decals, required this.objects, required this.shadows, required this.triangles});
+  const Frame({required this.background, this.walls, required this.decals, required this.objects, required this.shadows, required this.triangles});
   final Vertices? background;
+
+  /// Картины и рисунки на стенах — без сортировки, в порядке добавления (F-051).
+  final Vertices? walls;
   final Vertices? decals;
   final Vertices? objects;
   final List<Path> shadows;
@@ -64,7 +67,9 @@ abstract final class Renderer {
     for (final m in meshes) {
       final view = [for (final v in m.vertices) cam.toView(v)];
       final screen = [for (final v in view) cam.project(v, size, shift: shift, zoom: zoom)];
-      final vertexShade = m.smooth && m.center != null
+      final vertexShade = m.normals != null
+          ? [for (var i = 0; i < m.vertices.length; i++) _shade(m, i, m.normals![i], lighting)]
+          : m.smooth && m.center != null
           ? [for (var i = 0; i < m.vertices.length; i++) _shade(m, i, (m.vertices[i] - m.center!).normalized, lighting)]
           : null;
 
@@ -90,6 +95,7 @@ abstract final class Renderer {
 
     return Frame(
       background: _vertices(layers[MeshLayer.background]!),
+      walls: _vertices(layers[MeshLayer.wall]!, sort: false),
       // Накладки лежат на полу слоями: порядок добавления важнее глубины.
       decals: _vertices(layers[MeshLayer.decal]!, sort: false),
       objects: _vertices(layers[MeshLayer.object]!),

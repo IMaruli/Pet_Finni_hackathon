@@ -13,6 +13,7 @@ import '../screens/savings_screen.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/duo.dart';
+import '../widgets/plan_fact_bars.dart';
 
 /// Задания: 3 дня и 5 недели как квесты Duolingo, без монет сверху (SA F-026).
 class TasksTab extends StatelessWidget {
@@ -53,6 +54,37 @@ class TasksTab extends StatelessWidget {
               ),
             ],
           ),
+          // Итог прошлого периода днём (ТЗ 2.5.11, F-056).
+          if (game.snapshot.lastSummary case final s?) ...[
+            DuoSection('Итог дня ${s.day}'),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: DuoCard(
+                key: const Key('tasks.yesterday'),
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(s.good ? '✅ Хороший день' : '🌱 День, чтобы научиться', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 8),
+                    PlanFactBars(summary: s),
+                    const SizedBox(height: 8),
+                    for (final (ok, text) in [(s.needOk, 'Нужное куплено'), (s.wantOk, 'На хотелки — не больше плана'), (s.savedOk, 'Что-то отложено')])
+                      Row(
+                        children: [
+                          Icon(ok ? Icons.check_circle_rounded : Icons.cancel_rounded, size: 20, color: ok ? const Color(0xFF34C759) : const Color(0xFFFF9500)),
+                          const SizedBox(width: 6),
+                          Expanded(child: Text(ok ? text : '$text — пока нет', style: const TextStyle(fontSize: 16))),
+                        ],
+                      ),
+                    if (s.interest > 0) Text('🏦 Копилка подросла ночью: +${s.interest}', style: const TextStyle(fontSize: 16)),
+                    const SizedBox(height: 6),
+                    Text('💡 ${game.adviceFor(s)}', style: const TextStyle(fontSize: 16, color: FinniColors.muted)),
+                  ],
+                ),
+              ),
+            ),
+          ],
           const DuoSection('Задания дня'),
           for (final (id, p) in daily)
             _quest(

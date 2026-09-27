@@ -27,7 +27,15 @@ class RoomScene extends StatefulWidget {
     this.time = DayTime.day,
     this.initialAzimuth,
     this.orbit = const [],
+    this.fullBleed = false,
+    this.annex = false,
   });
+
+  /// Двойная комната: игровая справа от спальни (F-065). Работает вместе с [fullBleed].
+  final bool annex;
+
+  /// Комната во весь экран: стены и пол уходят за края кадра (F-048).
+  final bool fullBleed;
 
   final Inventory inventory;
 
@@ -64,8 +72,14 @@ class RoomScene extends StatefulWidget {
 }
 
 class _RoomSceneState extends State<RoomScene> with SingleTickerProviderStateMixin {
-  static const _az0 = 0.62, _el0 = 0.34;
+  static const _el0 = 0.34;
+
+  /// С игровой камера смотрит почти прямо на заднюю стену: спальня слева, игровая справа (F-065).
+  double get _az0 => widget.annex ? 0.22 : 0.62;
   late double _az = widget.initialAzimuth ?? _az0;
+
+  /// Где стоит герой: в двойной комнате — в проёме между комнатами (F-065).
+  Vec3 get _spot => widget.annex ? RoomBuilder.annexHeroSpot : RoomBuilder.heroSpot;
   double _el = _el0;
   bool _dragging = false;
   Ticker? _ticker;
@@ -104,10 +118,10 @@ class _RoomSceneState extends State<RoomScene> with SingleTickerProviderStateMix
 
   void _ensureScene() {
     final inv = widget.inventory;
-    final key = '${inv.owned.toList()..sort()}|${inv.furniture}|${widget.room}|${widget._time}|${widget.bowls.key}';
+    final key = '${inv.owned.toList()..sort()}|${inv.furniture}|${widget.room}|${widget._time}|${widget.bowls.key}|${widget.fullBleed}|${widget.annex}';
     if (key == _key) return;
     _key = key;
-    _meshes = RoomBuilder.build(inventory: inv, room: widget.room, time: widget._time, bowls: widget.bowls);
+    _meshes = RoomBuilder.build(inventory: inv, room: widget.room, time: widget._time, bowls: widget.bowls, fullBleed: widget.fullBleed, annex: widget.annex);
     _lighting = RoomBuilder.lighting(inventory: inv, room: widget.room, time: widget._time);
   }
 
@@ -120,8 +134,8 @@ class _RoomSceneState extends State<RoomScene> with SingleTickerProviderStateMix
         if (size.isEmpty) return const SizedBox.shrink();
         final cam = Camera(azimuth: _az, elevation: _el, distance: 9, fov: 0.62);
         final (zoom, shift) = _framing(cam, size);
-        final heroBase = cam.project(cam.toView(RoomBuilder.heroSpot), size, shift: shift, zoom: zoom)!;
-        final heroTop = cam.project(cam.toView(RoomBuilder.heroSpot + const Vec3(0, 1, 0)), size, shift: shift, zoom: zoom)!;
+        final heroBase = cam.project(cam.toView(_spot), size, shift: shift, zoom: zoom)!;
+        final heroTop = cam.project(cam.toView(_spot + const Vec3(0, 1, 0)), size, shift: shift, zoom: zoom)!;
         final unit = (heroBase.dy - heroTop.dy).abs();
         final heroSize = unit * widget.heroScale * 3.125;
         final glows = [
@@ -203,9 +217,11 @@ class _RoomSceneState extends State<RoomScene> with SingleTickerProviderStateMix
       minX = min(minX, p.dx);
       maxX = max(maxX, p.dx);
     }
-    final zoom = size.width * 1.32 / max(1, maxX - minX);
-    final hero = cam.project(cam.toView(RoomBuilder.heroSpot), size, zoom: zoom)!;
-    final target = Offset(size.width / 2, size.height * widget.feetY);
+    // Во весь экран комната крупнее: меньше пустой стены над героем (F-048).
+    // С игровой камера дальше, герой чуть левее центра — видно обе комнаты, пузыри нужд не обрезаются (F-065).
+    final zoom = size.width * (widget.fullBleed ? (widget.annex ? 0.78 : 1.62) : 1.32) / max(1, maxX - minX);
+    final hero = cam.project(cam.toView(_spot), size, zoom: zoom)!;
+    final target = Offset(size.width * 0.5, size.height * widget.feetY);
     return (zoom, target - hero);
   }
 }
@@ -248,6 +264,7 @@ class _RoomPainter extends CustomPainter {
     final paint = Paint();
     if (frame.background != null) canvas.drawVertices(frame.background!, BlendMode.dst, paint);
     if (window != null) _sky(canvas, window!);
+    if (frame.walls != null) canvas.drawVertices(frame.walls!, BlendMode.dst, paint);
     if (frame.decals != null) canvas.drawVertices(frame.decals!, BlendMode.dst, paint);
     final shadow = Paint()
       ..color = const Color(0x40000000)

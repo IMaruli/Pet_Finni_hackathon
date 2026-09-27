@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../content/models.dart';
+import '../motion.dart';
 import '../theme.dart';
 import 'common.dart';
 
@@ -41,31 +42,42 @@ class _NeedBubbleState extends State<NeedBubble> with SingleTickerProviderStateM
         animation: _t,
         builder: (_, child) {
           final a = (_t.value + widget.phase) * 2 * pi;
+          if (Motion.reduced) return child!; // F-058
           final pulse = widget.urgent ? 1 + 0.06 * (0.5 + 0.5 * sin(a * 2)) : 1.0;
-          return Transform.translate(offset: Offset(0, sin(a) * 4), child: Transform.scale(scale: pulse, child: child));
+          return Transform.translate(
+            offset: Offset(0, sin(a) * 4),
+            child: Transform.scale(scale: pulse, child: child),
+          );
         },
         child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: () {
             buzz(Buzz.light);
             widget.onTap();
           },
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(8, 6, 10, 6),
-            decoration: BoxDecoration(
-              color: const Color(0xEEFFFFFF),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: widget.urgent ? FinniColors.want : FinniColors.line, width: widget.urgent ? 2 : 1),
-              boxShadow: const [BoxShadow(color: Color(0x22000000), blurRadius: 10, offset: Offset(0, 4))],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(item.emoji, style: const TextStyle(fontSize: 22)),
-                const SizedBox(width: 4),
-                const CoinIcon(size: 14),
-                const SizedBox(width: 3),
-                Text('${item.price}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: FinniColors.ink)),
-              ],
+          child: Padding(
+            padding: const EdgeInsets.all(5), // зона нажатия ≥ 48 dp (ТЗ 3.6)
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(8, 6, 10, 6),
+              decoration: BoxDecoration(
+                color: const Color(0xEEFFFFFF),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: widget.urgent ? FinniColors.want : FinniColors.line, width: widget.urgent ? 2 : 1),
+                boxShadow: const [BoxShadow(color: Color(0x22000000), blurRadius: 10, offset: Offset(0, 4))],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(item.emoji, style: const TextStyle(fontSize: 22)),
+                  const SizedBox(width: 4),
+                  const CoinIcon(size: 14),
+                  const SizedBox(width: 3),
+                  Text(
+                    '${item.price}',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: FinniColors.ink),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

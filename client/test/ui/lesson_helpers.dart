@@ -69,9 +69,9 @@ Future<void> playLesson(WidgetTester t, Lesson lesson, {bool mistakes = false}) 
           await _key(t, 'pairs.right.$i');
         }
         await _key(t, 'lesson.next');
-      case OrderStep(:final tiles):
-        for (final w in tiles) {
-          await _tap(t, find.widgetWithText(LessonTile, w).last);
+      case OrderStep(:final tiles, :final blanks):
+        for (final i in blanks) {
+          await _tap(t, find.widgetWithText(LessonTile, tiles[i]).last);
         }
         await _key(t, 'lesson.check');
         await _key(t, 'lesson.next');

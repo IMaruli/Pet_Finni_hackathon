@@ -90,6 +90,9 @@ void main() {
     await settle(t, 30);
     await tapKey(t, 'nav.home');
     expect(find.byKey(const Key('home.need.breakfast')), findsOneWidget);
+    // F-057: состояние героя на Доме — словами, не только цветом.
+    expect(t.widget<Text>(find.byKey(const Key('home.state.food'))).data, 'голоден');
+    expect(find.byKey(const Key('home.state.mood')), findsOneWidget);
 
     // А.5 план.
     await tapKey(t, 'home.next');
@@ -211,6 +214,10 @@ void main() {
     await settle(t, 30);
     await scrollTo(t, find.textContaining('День 3'));
     expect(find.textContaining('День 3'), findsOneWidget);
+    // F-056: итог прошлого дня виден ребёнку днём.
+    await scrollTo(t, find.byKey(const Key('tasks.yesterday')));
+    expect(find.byKey(const Key('tasks.yesterday')), findsOneWidget);
+    expect(find.text('✅ Хороший день'), findsOneWidget);
 
     // Уроки: путь — следующий урок открыт, за первый урок дня 2 снова награда.
     await tapKey(t, 'nav.lessons');

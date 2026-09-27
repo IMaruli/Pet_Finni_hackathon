@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../motion.dart';
 import '../../game/game_controller.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
@@ -53,13 +54,10 @@ class _AdultGateState extends State<AdultGate> with SingleTickerProviderStateMix
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  CircularProgressIndicator(
-                    value: _progress.value,
-                    strokeWidth: 10,
-                    backgroundColor: FinniColors.line,
-                    color: FinniColors.primary,
+                  CircularProgressIndicator(value: _progress.value, strokeWidth: 10, backgroundColor: FinniColors.line, color: FinniColors.primary),
+                  const Center(
+                    child: Text('Держать', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                   ),
-                  const Center(child: Text('Держать', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700))),
                 ],
               ),
             ),
@@ -142,10 +140,7 @@ class _AdultScreenState extends State<AdultScreen> {
       children: [
         const Text('Чему учит приложение', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
-        const Text(
-          'Все суммы — вымышленные игровые монеты. Они не имеют ценности вне игры и ни с чем не связаны.',
-          style: TextStyle(color: FinniColors.muted),
-        ),
+        const Text('Все суммы — вымышленные игровые монеты. Они не имеют ценности вне игры и ни с чем не связаны.', style: TextStyle(color: FinniColors.muted)),
         const SizedBox(height: 8),
         for (final (emoji, title, text) in _competencies)
           ListTile(
@@ -175,26 +170,31 @@ class _AdultScreenState extends State<AdultScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
-          'Подсказка: спросите, почему герой сегодня радуется или грустит, и что ребёнок сделает завтра.',
-          style: TextStyle(color: FinniColors.muted),
-        ),
+        const Text('Подсказка: спросите, почему герой сегодня радуется или грустит, и что ребёнок сделает завтра.', style: TextStyle(color: FinniColors.muted)),
         const SizedBox(height: 16),
         SwitchListTile(
-          title: const Text('Вибрация'),
+          key: const Key('adult.sound'),
+          title: const Text('Звук и вибрация'),
           value: g.snapshot.soundOn,
           onChanged: (v) async {
             await g.setSound(v);
             setState(() {});
           },
         ),
-        const SizedBox(height: 16),
-        DuoButton(
-          key: const Key('adult.reset'),
-          label: 'Сбросить профиль (тест)',
-          color: const Color(0xFFE06A5A),
-          onPressed: _reset,
+        // ТЗ 3.6: анимации можно отключить (F-058). Учитывается и системная «Удалить анимацию».
+        SwitchListTile(
+          key: const Key('adult.motion'),
+          title: const Text('Меньше движения'),
+          subtitle: const Text('Герой и пузыри не качаются, без конфетти'),
+          value: g.snapshot.reduceMotion,
+          onChanged: (v) async {
+            await g.setReduceMotion(v);
+            Motion.setting = v;
+            setState(() {});
+          },
         ),
+        const SizedBox(height: 16),
+        DuoButton(key: const Key('adult.reset'), label: 'Сбросить профиль (тест)', color: const Color(0xFFE06A5A), onPressed: _reset),
       ],
     );
   }
@@ -204,9 +204,17 @@ class _AdultScreenState extends State<AdultScreen> {
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(child: Text(k, style: const TextStyle(color: FinniColors.muted))),
+        Expanded(
+          child: Text(k, style: const TextStyle(color: FinniColors.muted)),
+        ),
         const SizedBox(width: 8),
-        Flexible(child: Text(v, textAlign: TextAlign.right, style: const TextStyle(fontWeight: FontWeight.w600))),
+        Flexible(
+          child: Text(
+            v,
+            textAlign: TextAlign.right,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
       ],
     ),
   );

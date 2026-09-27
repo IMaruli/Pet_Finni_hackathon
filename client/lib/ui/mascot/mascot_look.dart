@@ -44,9 +44,7 @@ final class MascotLook {
       mood: game.mood,
       stage: game.stage,
       skin: profile.skin,
-      accessories: {
-        for (final id in game.inventory.worn) ?content.item(id).accessory,
-      },
+      accessories: _wornAccessories(game),
       grubby: game.isGrubby && !game.greeting, // на знакомстве герой чистый (F-038)
       joy: game.todaysJoy,
     );
@@ -99,4 +97,21 @@ final class MascotLook {
     PetMood.steady => 'спокоен',
     PetMood.uneasy => 'грустит',
   };
+
+  /// По одной вещи на место (F-051 BR-09): у старых сохранений побеждает последняя надетая.
+  static Set<String> _wornAccessories(GameController game) {
+    final byPlace = <String, String>{};
+    final free = <String>{};
+    for (final id in game.inventory.worn) {
+      final item = game.content.item(id);
+      final acc = item.accessory;
+      if (acc == null) continue;
+      if (item.wear == null) {
+        free.add(acc);
+      } else {
+        byPlace[item.wear!] = acc;
+      }
+    }
+    return {...free, ...byPlace.values};
+  }
 }

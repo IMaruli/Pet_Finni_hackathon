@@ -27,6 +27,7 @@ final class ShopItem {
     this.joy,
     this.need,
     this.ask,
+    this.wear,
   });
 
   factory ShopItem.fromJson(Map<String, dynamic> j) => ShopItem(
@@ -41,6 +42,7 @@ final class ShopItem {
     joy: j['joy'] as String?,
     need: j['need'] as String?,
     ask: j['ask'] as String?,
+    wear: j['wear'] as String?,
   );
 
   final String id;
@@ -62,6 +64,9 @@ final class ShopItem {
 
   /// Реплика героя, когда эта вещь нужна (F-032).
   final String? ask;
+
+  /// Место одежды (F-051): head|hair|eyes|neck. Две вещи на одно место не надеваются.
+  final String? wear;
 
   GameCoins get coins => GameCoins(price);
   CatalogItem get catalogItem => CatalogItem(id: id, kind: kind, price: coins);

@@ -92,6 +92,49 @@ void main() {
       }
     });
 
+    test('full-bleed room extends floor and walls beyond the frame (F-048)', () {
+      final diorama = RoomBuilder.build(inventory: Inventory.empty);
+      final full = RoomBuilder.build(inventory: Inventory.empty, fullBleed: true);
+      expect(full.length, greaterThan(diorama.length));
+      double maxOf(List<Mesh> ms, double Function(Vec3) f) => ms.expand((m) => m.vertices).map(f).reduce((a, b) => a > b ? a : b);
+      expect(maxOf(full, (v) => v.y), greaterThanOrEqualTo(RoomBuilder.top - 0.01));
+      expect(maxOf(full, (v) => v.x), greaterThanOrEqualTo(RoomBuilder.far - 0.01));
+      expect(maxOf(full, (v) => v.z), greaterThanOrEqualTo(RoomBuilder.far - 0.01));
+      expect(maxOf(diorama, (v) => v.y), lessThan(RoomBuilder.top));
+    });
+
+    test('rounded box and smooth cylinder carry vertex normals; wall art is unsorted (F-051)', () {
+      final b = Mesh.roundedBox(const Vec3(1, 0.5, 0.6), 0.1, const Color(0xFF000000));
+      expect(b.normals, isNotNull);
+      expect(b.normals!.length, b.vertices.length);
+      expect(b.vertices.map((v) => v.y).reduce((a, c) => a < c ? a : c), closeTo(0, 1e-9));
+      expect(b.vertices.map((v) => v.y).reduce((a, c) => a > c ? a : c), closeTo(0.5, 1e-9));
+      expect(Mesh.cylinder(0.2, 0.3, const Color(0xFF000000)).normals, isNotNull);
+      expect(Mesh.cylinder(0.2, 0.3, const Color(0xFF000000), seg: 4).normals, isNull);
+      final room = RoomBuilder.build(inventory: Inventory.empty.copyWith(owned: {'painting', 'poster', 'zoo_photo'}));
+      expect(room.where((m) => m.layer == MeshLayer.wall).length, greaterThan(20));
+      final cam = Camera(azimuth: 0.62, elevation: 0.34, distance: 9, fov: 0.62);
+      expect(Renderer.render(room, cam, const Size(360, 700), RoomBuilder.lighting(inventory: Inventory.empty)).walls, isNotNull);
+    });
+
+    test('bedroom walls have white and pink stripes, playroom does not (F-052)', () {
+      bool has(List<Mesh> ms, Color c) => ms.any((m) => m.color == c && m.layer == MeshLayer.background);
+      final bed = RoomBuilder.build(inventory: Inventory.empty);
+      expect(has(bed, RoomBuilder.stripeLight), isTrue);
+      expect(has(bed, RoomBuilder.stripePink), isTrue);
+      final play = RoomBuilder.build(inventory: Inventory.empty, room: 2);
+      expect(has(play, RoomBuilder.stripePink), isFalse);
+    });
+
+    test('double room adds the playroom to the right of the bedroom (F-065)', () {
+      final single = RoomBuilder.build(inventory: Inventory.empty, fullBleed: true);
+      final twin = RoomBuilder.build(inventory: Inventory.empty, fullBleed: true, annex: true);
+      expect(twin.length, greaterThan(single.length));
+      double maxX(List<Mesh> ms) => ms.where((m) => m.layer == MeshLayer.object).expand((m) => m.vertices).map((v) => v.x).reduce((a, b) => a > b ? a : b);
+      expect(maxX(twin), greaterThan(RoomBuilder.annexWall + 1)); // вещи игровой справа от арки
+      expect(twin.any((m) => m.color == const Color(0xFFCFE3D7)), isTrue); // зелёные обои игровой
+    });
+
     test('full bowls add food and water to the room (F-027)', () {
       int bowls(Bowls b, {int room = 1}) => RoomBuilder.build(inventory: Inventory.empty, room: room, bowls: b).length;
       final empty = bowls(const Bowls(food: false, water: false));
@@ -127,7 +170,7 @@ void main() {
       );
       final cam = Camera(azimuth: 0.62, elevation: 0.34, distance: 9, fov: 0.62);
       final f = Renderer.render(RoomBuilder.build(inventory: inv), cam, const Size(360, 700), RoomBuilder.lighting(inventory: inv));
-      expect(f.triangles, lessThan(4500));
+      expect(f.triangles, lessThan(6500)); // F-051: скруглённая мебель; кадр ~3,7 мс на всю обставленную комнату
       expect(f.triangles, greaterThan(200));
     });
   });

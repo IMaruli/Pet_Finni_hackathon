@@ -23,8 +23,7 @@ final class GameController extends ChangeNotifier {
        _newId = newId ?? _randomId;
 
   static final _random = Random();
-  static String _randomId() =>
-      '${DateTime.now().microsecondsSinceEpoch}-${_random.nextInt(1000000000)}';
+  static String _randomId() => '${DateTime.now().microsecondsSinceEpoch}-${_random.nextInt(1000000000)}';
 
   final GameContent content;
   final ProfileStore _store;
@@ -48,9 +47,8 @@ final class GameController extends ChangeNotifier {
   bool get isIntroDay => day < snapshot.firstNeedsDay;
 
   /// В первый день с нуждами — «первый набор» (завтрак, вода, умывание), дальше — по расписанию.
-  List<ShopItem> get todaysNeeds => isIntroDay
-      ? [for (final id in content.config.introDayNeeds) content.item(id)]
-      : content.needsForDay(day == snapshot.firstNeedsDay ? 1 : day);
+  List<ShopItem> get todaysNeeds =>
+      isIntroDay ? [for (final id in content.config.introDayNeeds) content.item(id)] : content.needsForDay(day == snapshot.firstNeedsDay ? 1 : day);
 
   /// Нужды «проснулись»: в день знакомства — после урока и игры (F-043), в остальные дни — сразу.
   bool get needsAwake => !isIntroDay || (lessonPaidToday && gameRewardToday);
@@ -63,8 +61,7 @@ final class GameController extends ChangeNotifier {
 
   // Потребности видны в комнате (SA F-027).
   bool _needToday(String id) => todaysNeeds.any((i) => i.id == id);
-  bool get foodServed =>
-      !todaysNeeds.any((i) => i.need == 'food') || todaysNeeds.any((i) => i.need == 'food' && isBoughtToday(i.id));
+  bool get foodServed => !todaysNeeds.any((i) => i.need == 'food') || todaysNeeds.any((i) => i.need == 'food' && isBoughtToday(i.id));
   bool get waterServed => !_needToday('water') || isBoughtToday('water');
 
   /// Неухоженный, пока не куплен любой уход дня: умывание, купание, стирка, стрижка (F-032).
@@ -81,18 +78,21 @@ final class GameController extends ChangeNotifier {
   }
 
   // Сначала нужное (SA F-021).
-  List<ShopItem> get needsLeft => [for (final i in todaysNeeds) if (!isBoughtToday(i.id)) i];
+  List<ShopItem> get needsLeft => [
+    for (final i in todaysNeeds)
+      if (!isBoughtToday(i.id)) i,
+  ];
   int get needsLeftCost => needsLeft.fold(0, (s, i) => s + i.price);
   String get needsLeftTitles => needsLeft.map((i) => i.title).join(', ');
   bool get canAffordNeeds => economy.available.value >= needsLeftCost;
 
   /// Игры с наградой ждут нужное; открыты, если на нужное не хватает — чтобы заработать.
   bool get gamesLocked => needsShown.isNotEmpty && canAffordNeeds;
-  String get gamesLockedText => planConfirmed
-      ? content.text('rule.games_locked', {'pet': profile.petName, 'needs': needsLeftTitles})
-      : content.text('rule.games_no_plan');
+  String get gamesLockedText =>
+      planConfirmed ? content.text('rule.games_locked', {'pet': profile.petName, 'needs': needsLeftTitles}) : content.text('rule.games_no_plan');
 
   bool get planConfirmed => economy.plan != null;
+
   /// Награда урока за сегодня уже получена (F-025).
   bool get lessonPaidToday => snapshot.questDoneToday;
   bool get gameRewardToday => snapshot.gameRewardToday;
@@ -110,8 +110,7 @@ final class GameController extends ChangeNotifier {
     return _withTreat(base);
   }
 
-  PetMood _withTreat(PetMood base) =>
-      base == PetMood.steady && content.treatItems.any((i) => isBoughtToday(i.id)) ? PetMood.glad : base;
+  PetMood _withTreat(PetMood base) => base == PetMood.steady && content.treatItems.any((i) => isBoughtToday(i.id)) ? PetMood.glad : base;
 
   int get stage => economy.petStage;
   String get stageTitle => content.text('stage.$stage');
@@ -168,6 +167,14 @@ final class GameController extends ChangeNotifier {
   }
 
   Future<void> setSound(bool on) => _commit(snapshot.copyWith(soundOn: on));
+  Future<void> setReduceMotion(bool on) => _commit(snapshot.copyWith(reduceMotion: on));
+
+  /// Подсказки разделов при первом входе (F-062).
+  bool tipSeen(String id) => snapshot.tipsSeen.contains(id);
+  Future<void> markTip(String id) async {
+    if (tipSeen(id)) return;
+    await _commit(snapshot.copyWith(tipsSeen: [...snapshot.tipsSeen, id]));
+  }
 
   /// Герой ещё не познакомился с игроком (F-038).
   bool get greeting => !snapshot.introDone;
@@ -195,7 +202,11 @@ final class GameController extends ChangeNotifier {
     if (skin != null && !isSkinUnlocked(skin)) {
       return _fail(FeedbackReason.locked, [skinLockedText(skin)]);
     }
-    await _commit(snapshot.copyWith(profile: profile.restyled(skin: skin, color: color, hair: hair)));
+    await _commit(
+      snapshot.copyWith(
+        profile: profile.restyled(skin: skin, color: color, hair: hair),
+      ),
+    );
     return const GameFeedback(ok: true);
   }
 
@@ -205,16 +216,18 @@ final class GameController extends ChangeNotifier {
     // Подтверждённый план не переписывают: с ним сравнивают факт до конца периода (ТЗ: план → факт).
     if (planConfirmed) return _fail(FeedbackReason.planLocked, [content.text('exp.plan_locked')]);
     if (need < todaysNeedSum) {
-      return _fail(FeedbackReason.planNeedLow, [
-        'В банку «Нужное» положи хотя бы $todaysNeedSum: столько стоит нужное на сегодня.',
-      ]);
+      return _fail(FeedbackReason.planNeedLow, ['В банку «Нужное» положи хотя бы $todaysNeedSum: столько стоит нужное на сегодня.']);
     }
-    final plan = BudgetPlan(need: GameCoins(need), want: GameCoins(want), save: GameCoins(save));
+    final plan = BudgetPlan(need: GameCoins(need), want: GameCoins(want), save: GameCoins(save), needDue: GameCoins(todaysNeedSum));
     final r = _engine.apply(economy, ConfirmPlan(plan));
     if (r.error != null) return _fail(FeedbackReason.planTooBig, _texts(r));
     // Все монеты по банкам: запас не отменяет выбор (SA F-024).
     final left = economy.available.value - plan.total.value;
-    if (left > 0) return _fail(FeedbackReason.planNotAll, [content.text('exp.plan_not_all', {'n': '$left'})]);
+    if (left > 0) {
+      return _fail(FeedbackReason.planNotAll, [
+        content.text('exp.plan_not_all', {'n': '$left'}),
+      ]);
+    }
     await _commit(snapshot.copyWith(economy: r.state));
     return GameFeedback(ok: true, messages: _texts(r));
   }
@@ -252,7 +265,12 @@ final class GameController extends ChangeNotifier {
     if (item.slot != ItemSlot.consumable) {
       inv = inv.copyWith(
         owned: {...inv.owned, itemId},
-        worn: item.slot == ItemSlot.hero ? {...inv.worn, itemId} : inv.worn,
+        worn: item.slot == ItemSlot.hero
+            ? {
+                ...inv.worn.difference({for (final r in _sameWear(inv.worn, itemId)) r.id}),
+                itemId,
+              } // купленное надевается вместо вещи того же места (F-051)
+            : inv.worn,
       );
     }
     final bought = [...snapshot.boughtToday, itemId];
@@ -268,11 +286,30 @@ final class GameController extends ChangeNotifier {
     return GameFeedback(ok: true, messages: [..._texts(r), item.effect]);
   }
 
-  Future<void> toggleWear(String itemId) async {
-    if (!inventory.owned.contains(itemId)) return;
+  /// Надеть или снять. Надетая вещь снимает другую с того же места (F-051); вернёт снятую, если была.
+  Future<ShopItem?> toggleWear(String itemId) async {
+    if (!inventory.owned.contains(itemId)) return null;
     final worn = {...inventory.worn};
-    if (!worn.remove(itemId)) worn.add(itemId);
+    if (worn.remove(itemId)) {
+      await _commit(snapshot.copyWith(inventory: inventory.copyWith(worn: worn)));
+      return null;
+    }
+    final replaced = _sameWear(worn, itemId);
+    worn
+      ..removeAll([for (final r in replaced) r.id])
+      ..add(itemId);
     await _commit(snapshot.copyWith(inventory: inventory.copyWith(worn: worn)));
+    return replaced.firstOrNull;
+  }
+
+  /// Надетые вещи с того же места, что и [itemId].
+  List<ShopItem> _sameWear(Set<String> worn, String itemId) {
+    final place = content.item(itemId).wear;
+    if (place == null) return const [];
+    return [
+      for (final id in worn)
+        if (id != itemId && content.item(id).wear == place) content.item(id),
+    ];
   }
 
   // ---------- Копилка и цель ----------
@@ -290,6 +327,29 @@ final class GameController extends ChangeNotifier {
     }
     await _commit(snapshot.copyWith(economy: r.state));
     return GameFeedback(ok: true, messages: _texts(r));
+  }
+
+  /// Покупки текущего периода по порядку (ТЗ 2.5.6, F-056).
+  List<ShopItem> get purchasesToday => [for (final id in snapshot.boughtToday) content.item(id)];
+
+  /// Средняя сумма регулярного пополнения копилки (ТЗ 2.5.7, F-055): по прошлым периодам;
+  /// нет истории — отложенное сегодня, затем план «Отложить». 0 — посчитать нельзя.
+  int get averageSaving {
+    final h = snapshot.savedHistory;
+    if (h.isNotEmpty) {
+      final avg = h.reduce((a, b) => a + b) ~/ h.length;
+      return avg == 0 && h.any((v) => v > 0) ? 1 : avg;
+    }
+    final today = economy.savedThisPeriod.value;
+    if (today > 0) return today;
+    return economy.plan?.save.value ?? 0;
+  }
+
+  /// Сколько дней до цели при средней сумме пополнения; null — посчитать нельзя.
+  int? daysToGoal(int remaining) {
+    if (remaining <= 0) return 0;
+    final avg = averageSaving;
+    return avg <= 0 ? null : (remaining / avg).ceil();
   }
 
   /// Прибавка копилки-вклада за сумму: 1 монета за каждые 10 (F-044).
@@ -358,8 +418,7 @@ final class GameController extends ChangeNotifier {
 
   bool isLessonDone(String id) => snapshot.lessonLog.any((r) => r.lessonId == id);
   bool isLessonDoneLesson(Lesson l) => isLessonDone(l.id);
-  bool isTopicStarted(String topicId) =>
-      snapshot.lessonLog.any((r) => content.lesson(r.lessonId).topic == topicId);
+  bool isTopicStarted(String topicId) => snapshot.lessonLog.any((r) => content.lesson(r.lessonId).topic == topicId);
   LessonProgress? get lessonProgress => snapshot.lessonProgress;
 
   /// День, когда блок (тема) закончен впервые; `null` — ещё нет (F-035).
@@ -423,7 +482,11 @@ final class GameController extends ChangeNotifier {
     final p = lessonProgress;
     if (p != null && p.lessonId == id) {
       if (p.step > 0 && !p.resumed) {
-        await _commit(snapshot.copyWith(lessonProgress: LessonProgress(lessonId: id, step: p.step, resumed: true)));
+        await _commit(
+          snapshot.copyWith(
+            lessonProgress: LessonProgress(lessonId: id, step: p.step, resumed: true),
+          ),
+        );
       }
       return p.step;
     }
@@ -433,7 +496,11 @@ final class GameController extends ChangeNotifier {
 
   Future<void> saveLessonStep(String id, int step) async {
     final resumed = lessonProgress?.lessonId == id && lessonProgress!.resumed;
-    await _commit(snapshot.copyWith(lessonProgress: LessonProgress(lessonId: id, step: step, resumed: resumed)));
+    await _commit(
+      snapshot.copyWith(
+        lessonProgress: LessonProgress(lessonId: id, step: step, resumed: resumed),
+      ),
+    );
   }
 
   Future<void> addLearnTime(int seconds) async {
@@ -465,13 +532,18 @@ final class GameController extends ChangeNotifier {
     final r = _engine.apply(economy, Credit(GameCoins(reward), 'lesson:$id'));
     next = next.copyWith(economy: r.state, questDoneToday: true);
     await _commit(next);
-    return GameFeedback(ok: true, reward: reward, messages: [content.text('lesson.reward', {'n': '$reward'})]);
+    return GameFeedback(
+      ok: true,
+      reward: reward,
+      messages: [
+        content.text('lesson.reward', {'n': '$reward'}),
+      ],
+    );
   }
 
   // ---------- Задания дня и недели (SA F-026) ----------
 
-  LearnFacts get _facts =>
-      LearnFacts(day: day, runs: snapshot.lessonLog, learnSeconds: snapshot.learnSeconds, needsDays: snapshot.needsDays);
+  LearnFacts get _facts => LearnFacts(day: day, runs: snapshot.lessonLog, learnSeconds: snapshot.learnSeconds, needsDays: snapshot.needsDays);
 
   List<(QuestId, QuestProgress)> get dailyQuests {
     final ids = snapshot.dailyQuests.isEmpty
@@ -504,12 +576,21 @@ final class GameController extends ChangeNotifier {
   Future<GameFeedback> _claim(String key, String source, int reward) async {
     final r = _engine.apply(economy, Credit(GameCoins(reward), source));
     await _commit(snapshot.copyWith(economy: r.state, claimed: [...snapshot.claimed, key]));
-    return GameFeedback(ok: true, reward: reward, messages: [content.text('quest.claim.ok', {'n': '$reward'})]);
+    return GameFeedback(
+      ok: true,
+      reward: reward,
+      messages: [
+        content.text('quest.claim.ok', {'n': '$reward'}),
+      ],
+    );
   }
 
   /// Урок, в который ведёт задание.
   Lesson lessonFor(QuestId q) {
-    final open = [for (final l in content.lessons) if (isLessonOpen(l.id)) l];
+    final open = [
+      for (final l in content.lessons)
+        if (isLessonOpen(l.id)) l,
+    ];
     Lesson pick(bool Function(Lesson l) test) =>
         open.where((l) => test(l) && !isLessonDone(l.id)).firstOrNull ?? open.where(test).firstOrNull ?? recommendedLesson;
     return switch (q) {
@@ -526,11 +607,7 @@ final class GameController extends ChangeNotifier {
     best[gameId] = max(best[gameId] ?? 0, score);
     if (gameRewardToday) {
       await _commit(snapshot.copyWith(gameBest: best));
-      return const GameFeedback(
-        ok: true,
-        repeat: true,
-        messages: ['Награда за игру сегодня уже получена. Играй для тренировки!'],
-      );
+      return const GameFeedback(ok: true, repeat: true, messages: ['Награда за игру сегодня уже получена. Играй для тренировки!']);
     }
     final reward = win ? content.config.gameWin : content.config.gameTry;
     final r = _engine.apply(economy, Credit(GameCoins(reward), 'game:$gameId'));
@@ -548,12 +625,11 @@ final class GameController extends ChangeNotifier {
     if (interest > 0) closed = _engine.apply(closed, AccrueInterest(GameCoins(interest), 'interest:$day')).state;
     final dayMood = _withTreat(closed.petMood);
     final nextDay = day + 1;
-    final morning = _engine
-        .apply(closed, Credit(GameCoins(content.config.pocketMoney), 'pocket:$nextDay'))
-        .state;
+    final morning = _engine.apply(closed, Credit(GameCoins(content.config.pocketMoney), 'pocket:$nextDay')).state;
     final summary = DaySummary(
       day: day,
       planNeed: plan?.need.value ?? 0,
+      needDue: plan?.needDue.value,
       planWant: plan?.want.value ?? 0,
       planSave: plan?.save.value ?? 0,
       spentNeed: before.spentNeed.value,
@@ -574,10 +650,9 @@ final class GameController extends ChangeNotifier {
         questDoneToday: false,
         gameRewardToday: false,
         withdrewToday: false,
+        savedHistory: [...snapshot.savedHistory, before.savedThisPeriod.value].reversed.take(10).toList().reversed.toList(),
         lastSummary: summary,
-        dailyQuests: [
-          for (final q in pickDailyQuests(day: nextDay, hasNewTopic: _newTopicOn(nextDay), hasStarted: lessonProgress != null)) q.name,
-        ],
+        dailyQuests: [for (final q in pickDailyQuests(day: nextDay, hasNewTopic: _newTopicOn(nextDay), hasStarted: lessonProgress != null)) q.name],
       ),
     );
     return summary;
@@ -586,8 +661,8 @@ final class GameController extends ChangeNotifier {
   /// Совет на завтра по итогу дня.
   String adviceFor(DaySummary s) {
     if (s.spentNeed < s.planNeed || s.planNeed == 0) return content.text('advice.need');
+    if (s.spentWant > s.planWant) return content.text('advice.plan'); // перерасход хотелок мешает росту (F-054)
     if (s.saved == 0) return content.text('advice.save');
-    if (s.spentWant > s.planWant) return content.text('advice.plan');
     return content.text('advice.great');
   }
 

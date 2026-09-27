@@ -103,10 +103,13 @@ final class EconomyEngine {
             error: EconomyError.withdrawNotPending,
           );
         }
+        // Снятие уменьшает и отложенное за период (F-061): «отложил 18, снял 15» — отложено 3.
+        final saved = state.savedThisPeriod.value - pending.value;
         return EconomyResult(
           state: state.copyWith(
             available: state.available + pending,
             savings: state.savings - pending,
+            savedThisPeriod: GameCoins(saved < 0 ? 0 : saved),
             clearPendingWithdraw: true,
           ),
           explanationIds: const ['exp.withdraw_done'],
@@ -133,9 +136,11 @@ final class EconomyEngine {
         );
       case ClosePeriod():
         final plan = state.plan;
+        // Хороший период (ТЗ 2.5.10, F-054): нужное закрыто, хотелки по плану, что-то отложено.
         final isGood =
             plan != null &&
-            state.spentNeed >= plan.need &&
+            state.spentNeed >= plan.needDue && // нужды периода куплены (F-061)
+            state.spentWant <= plan.want &&
             state.savedThisPeriod.value > 0;
         final goodPeriods = state.goodPeriods + (isGood ? 1 : 0);
         return EconomyResult(
@@ -161,7 +166,7 @@ final class EconomyEngine {
       return PetMood.steady;
     }
 
-    final needMet = state.spentNeed >= plan.need;
+    final needMet = state.spentNeed >= plan.needDue; // F-061: по стоимости нужд, не по размеру банки
     final actual =
         state.spentNeed.value +
         state.spentWant.value +
@@ -170,7 +175,7 @@ final class EconomyEngine {
     if (needMet && actual * 5 >= planned * 4 && actual * 5 <= planned * 6) {
       return PetMood.glad;
     }
-    if (plan.need.value > 0 && !needMet) {
+    if (plan.needDue.value > 0 && !needMet) {
       return PetMood.uneasy;
     }
     return PetMood.steady;

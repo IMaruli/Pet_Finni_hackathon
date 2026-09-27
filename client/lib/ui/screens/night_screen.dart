@@ -221,6 +221,24 @@ class _NightScreenState extends State<NightScreen> with SingleTickerProviderStat
                 s.good ? '✅ Хороший день!' : '🌱 Завтра будет лучше',
                 style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
               ),
+              const SizedBox(height: 6),
+              // Почему день хороший или нет — три условия (F-054).
+              for (final (ok, text, k) in [
+                (s.needOk, 'Нужное куплено', 'need'),
+                (s.wantOk, 'На хотелки — не больше плана', 'want'),
+                (s.savedOk, 'Что-то отложено', 'save'),
+              ])
+                Padding(
+                  key: Key('night.cond.$k'),
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    children: [
+                      Icon(ok ? Icons.check_circle_rounded : Icons.cancel_rounded, size: 22, color: ok ? const Color(0xFF34C759) : const Color(0xFFFF9500)),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(ok ? text : '$text — пока нет', style: const TextStyle(fontSize: 16))),
+                    ],
+                  ),
+                ),
               const SizedBox(height: 10),
               _ladder(s),
               const SizedBox(height: 6),

@@ -205,6 +205,59 @@ class _SortViewState extends State<SortView> {
     buzz(Buzz.select);
   }
 
+  /// Карточку бросили в корзину (F-046).
+  void _drop(int i, String bin) {
+    if (_demo || _feedback != null || _placed[i] == bin) return;
+    setState(() {
+      _placed[i] = bin;
+      _selected = null;
+    });
+    buzz(Buzz.light);
+  }
+
+  /// Карточку вытащили из корзины обратно в ряд (F-046).
+  void _unplace(int i) {
+    if (_demo || _feedback != null || !_placed.containsKey(i)) return;
+    setState(() => _placed.remove(i));
+    buzz(Buzz.select);
+  }
+
+  bool get _dragOn => !_demo && _feedback == null;
+
+  /// Карточка, которую можно взять пальцем; тап по-прежнему работает (F-046 BR-05).
+  Widget _draggable(int i, {required Key key, required Widget child}) {
+    final text = widget.text(s.cards[i].text);
+    return LayoutBuilder(
+      key: key,
+      builder: (context, c) => Draggable<int>(
+        data: i,
+        maxSimultaneousDrags: _dragOn ? 1 : 0,
+        onDragStarted: () {
+          buzz(Buzz.select);
+          setState(() => _selected = null);
+        },
+        feedback: Material(
+          color: Colors.transparent,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: c.maxWidth.isFinite ? c.maxWidth : 260),
+            child: Transform.rotate(
+              angle: -0.04,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 16, offset: Offset(0, 8))],
+                ),
+                child: LessonTile(text: text, selected: true, onTap: null),
+              ),
+            ),
+          ),
+        ),
+        childWhenDragging: Opacity(opacity: 0.3, child: child),
+        child: child,
+      ),
+    );
+  }
+
   void _check() {
     final wrong = [
       for (final e in _placed.entries)
@@ -241,20 +294,31 @@ class _SortViewState extends State<SortView> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 56),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final i in row)
-                  LessonTile(
-                    key: Key('sort.card.$i'),
-                    text: widget.text(s.cards[i].text),
-                    selected: _selected == i,
-                    onTap: () => _tapCard(i),
-                  ),
-              ],
+          // Ряд — тоже цель: сюда возвращают карточку из корзины (F-046 BR-03).
+          DragTarget<int>(
+            key: const Key('sort.row'),
+            onWillAcceptWithDetails: (d) => _placed.containsKey(d.data),
+            onAcceptWithDetails: (d) => _unplace(d.data),
+            builder: (context, candidates, _) => AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              constraints: const BoxConstraints(minHeight: 56),
+              padding: EdgeInsets.all(candidates.isEmpty ? 0 : 6),
+              decoration: BoxDecoration(
+                color: candidates.isEmpty ? null : FinniColors.primary.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final i in row)
+                    _draggable(
+                      i,
+                      key: Key('sort.card.$i'),
+                      child: LessonTile(text: widget.text(s.cards[i].text), selected: _selected == i, onTap: () => _tapCard(i)),
+                    ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 14),
@@ -264,41 +328,60 @@ class _SortViewState extends State<SortView> {
               children: [
                 for (final b in s.bins)
                   Expanded(
-                    child: GestureDetector(
-                      key: Key('sort.bin.${b.id}'),
-                      onTap: () => _tapBin(b.id),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: _selected != null ? FinniColors.primary.withValues(alpha: 0.06) : FinniColors.fill,
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: _selected != null ? FinniColors.primary : FinniColors.line, width: 1.5),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(4, 2, 4, 8),
-                              child: Text(
-                                b.title,
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: FinniColors.muted),
+                    child: DragTarget<int>(
+                      onWillAcceptWithDetails: (d) => _placed[d.data] != b.id,
+                      onAcceptWithDetails: (d) => _drop(d.data, b.id),
+                      builder: (context, candidates, _) {
+                        final hover = candidates.isNotEmpty; // корзина под карточкой (F-046 BR-02)
+                        final lit = hover || _selected != null;
+                        return GestureDetector(
+                          key: Key('sort.bin.${b.id}'),
+                          onTap: () => _tapBin(b.id),
+                          child: AnimatedScale(
+                            scale: hover ? 1.04 : 1,
+                            duration: const Duration(milliseconds: 150),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: hover
+                                    ? FinniColors.primary.withValues(alpha: 0.14)
+                                    : lit
+                                    ? FinniColors.primary.withValues(alpha: 0.06)
+                                    : FinniColors.fill,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(color: lit ? FinniColors.primary : FinniColors.line, width: hover ? 2.5 : 1.5),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(4, 2, 4, 8),
+                                    child: Text(
+                                      b.title,
+                                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: FinniColors.muted),
+                                    ),
+                                  ),
+                                  for (final e in _placed.entries.where((e) => e.value == b.id))
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 6),
+                                      child: _draggable(
+                                        e.key,
+                                        key: Key('sort.placed.${e.key}'),
+                                        child: LessonTile(
+                                          text: widget.text(s.cards[e.key].text),
+                                          center: true,
+                                          onTap: () => _selected != null ? _tapBin(e.value) : _tapCard(e.key), // с выбранной карточкой тап по корзине кладёт её
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
-                            for (final e in _placed.entries.where((e) => e.value == b.id))
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 6),
-                                child: LessonTile(
-                                  key: Key('sort.placed.${e.key}'),
-                                  text: widget.text(s.cards[e.key].text),
-                                  center: true,
-                                  onTap: () => _selected != null ? _tapBin(e.value) : _tapCard(e.key), // с выбранной карточкой тап по корзине кладёт её
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     ),
                   ),
               ],
@@ -307,10 +390,7 @@ class _SortViewState extends State<SortView> {
           if (!_demo)
             const Padding(
               padding: EdgeInsets.only(top: 8),
-              child: Text(
-                'Нажми карточку, потом корзину. Повторное нажатие возвращает карточку в ряд.',
-                style: TextStyle(fontSize: 13, color: FinniColors.muted),
-              ),
+              child: Text('Перетащи карточку в корзину — или нажми карточку, потом корзину.', style: TextStyle(fontSize: 15, color: FinniColors.muted)),
             ),
         ],
       ),
@@ -437,28 +517,31 @@ class OrderView extends StatefulWidget {
 }
 
 class _OrderViewState extends State<OrderView> {
-  late final List<String> _bank = [
-    for (final i in shuffled(widget.step.tiles.length + widget.step.extra.length, widget.step.prompt.length + 3))
-      [...widget.step.tiles, ...widget.step.extra][i],
-  ];
+  OrderStep get s => widget.step;
 
-  /// Индексы плиток банка в слотах.
+  /// В банке — только слова для пропусков и лишние (F-063).
+  late final List<String> _bank = () {
+    final words = [for (final i in s.blanks) s.tiles[i], ...s.extra];
+    return [for (final i in shuffled(words.length, s.prompt.length + 3)) words[i]];
+  }();
+
+  /// Индексы плиток банка в пропусках по порядку.
   final _slots = <int>[];
   StepFeedback? _feedback;
 
-  OrderStep get s => widget.step;
-
   void _check() {
-    final ok = orderOk(s, [for (final i in _slots) _bank[i]]);
+    final ok = blanksOk(s, [for (final i in _slots) _bank[i]]);
     buzz(ok ? Buzz.medium : Buzz.heavy);
     setState(() => _feedback = ok ? StepFeedback.good(widget.text(s.why)) : StepFeedback.retry(widget.text(s.hint)));
   }
 
   @override
   Widget build(BuildContext context) {
+    final blanks = s.blanks;
+    final scene = s.scene;
     return StepScaffold(
       prompt: widget.text(s.prompt),
-      onButton: _slots.length == s.tiles.length ? _check : null,
+      onButton: _slots.length == blanks.length ? _check : null,
       feedback: _feedback,
       onFeedback: () => _feedback!.good
           ? widget.onPassed()
@@ -466,32 +549,56 @@ class _OrderViewState extends State<OrderView> {
               _feedback = null;
               _slots.clear();
             }),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      // Прокрутка: сцена, предложение и плитки помещаются на любом экране и шрифте.
+      body: ListView(
         children: [
+          // Сцена привязывает правило к ситуации (F-063).
+          if (scene != null) ...[
+            Container(
+              key: const Key('order.scene'),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(color: FinniColors.fill, borderRadius: BorderRadius.circular(18)),
+              child: Row(
+                children: [
+                  Text(scene.emoji, style: const TextStyle(fontSize: 40)),
+                  const SizedBox(width: 12),
+                  Expanded(child: Text(widget.text(scene.text), style: const TextStyle(fontSize: 17, height: 1.35))),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
               for (var k = 0; k < s.tiles.length; k++)
-                k < _slots.length
-                    ? LessonTile(
-                        key: Key('order.slot.$k'),
-                        text: _bank[_slots[k]],
-                        onTap: _feedback != null ? null : () => setState(() => _slots.removeAt(k)),
-                      )
-                    : Container(
-                        width: 86,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: FinniColors.line, width: 2),
-                          color: FinniColors.fill,
-                        ),
-                      ),
+                if (s.given.contains(k))
+                  // Готовое слово стоит на месте.
+                  Container(
+                    key: Key('order.given.$k'),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                    child: Text(s.tiles[k], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                  )
+                else if (blanks.indexOf(k) < _slots.length)
+                  LessonTile(
+                    key: Key('order.slot.${blanks.indexOf(k)}'),
+                    text: _bank[_slots[blanks.indexOf(k)]],
+                    onTap: _feedback != null ? null : () => setState(() => _slots.removeRange(blanks.indexOf(k), _slots.length)),
+                  )
+                else
+                  Container(
+                    width: 86,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: FinniColors.primary.withValues(alpha: 0.5), width: 2),
+                      color: FinniColors.fill,
+                    ),
+                  ),
             ],
           ),
-          const Spacer(),
+          const SizedBox(height: 28),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -502,7 +609,7 @@ class _OrderViewState extends State<OrderView> {
                   key: Key('order.tile.$i'),
                   text: word,
                   dim: _slots.contains(i),
-                  onTap: _slots.contains(i) || _feedback != null || _slots.length == s.tiles.length
+                  onTap: _slots.contains(i) || _feedback != null || _slots.length == blanks.length
                       ? null
                       : () {
                           buzz(Buzz.select);
@@ -582,12 +689,7 @@ class _NextViewState extends State<NextView> {
             for (final (i, o) in s.outcomes.indexed)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: LessonTile(
-                  key: Key('next.outcome.$i'),
-                  text: widget.text(o.text),
-                  selected: _selected == i,
-                  onTap: () => setState(() => _selected = i),
-                ),
+                child: LessonTile(key: Key('next.outcome.$i'), text: widget.text(o.text), selected: _selected == i, onTap: () => setState(() => _selected = i)),
               ),
         ],
       ),

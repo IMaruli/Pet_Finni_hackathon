@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/first_tip.dart';
+import '../motion.dart';
 import '../../game/game_controller.dart';
 import '../tabs/games_tab.dart';
 import '../tabs/home_tab.dart';
@@ -44,7 +46,16 @@ class _MainShellState extends State<MainShell> {
   }
 
   void _go(ShellTab tab) {
-    if (mounted) setState(() => _tab = tab);
+    if (!mounted) return;
+    setState(() => _tab = tab);
+    // Подсказка при первом входе во вкладку (F-062).
+    final tip = switch (tab) {
+      ShellTab.lessons => 'lessons',
+      ShellTab.games => 'games',
+      ShellTab.tasks => 'tasks',
+      ShellTab.home => null,
+    };
+    if (tip != null) showFirstTip(context, widget.game, tip);
   }
 
   @override
@@ -55,6 +66,8 @@ class _MainShellState extends State<MainShell> {
       builder: (context, _) {
         if (!game.hasProfile) return const SizedBox.shrink();
         Haptics.enabled = game.snapshot.soundOn;
+        Motion.setting = game.snapshot.reduceMotion; // F-058
+        Motion.system = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
         final reward = '+${game.content.config.gameWin}';
         return Scaffold(
           body: IndexedStack(
@@ -71,8 +84,7 @@ class _MainShellState extends State<MainShell> {
             onTap: _go,
             badges: {
               if (!game.gameRewardToday) ShellTab.games: reward,
-              if (!game.planConfirmed || game.dailyQuests.any((q) => !q.$2.done))
-                ShellTab.tasks: '!',
+              if (!game.planConfirmed || game.dailyQuests.any((q) => !q.$2.done)) ShellTab.tasks: '!',
             },
           ),
         );

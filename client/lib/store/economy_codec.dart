@@ -7,7 +7,7 @@ abstract final class EconomyCodec {
     'savings': s.savings.value,
     'plan': s.plan == null
         ? null
-        : {'need': s.plan!.need.value, 'want': s.plan!.want.value, 'save': s.plan!.save.value},
+        : {'need': s.plan!.need.value, 'want': s.plan!.want.value, 'save': s.plan!.save.value, 'needDue': s.plan!.needDue.value},
     'spentNeed': s.spentNeed.value,
     'spentWant': s.spentWant.value,
     'savedThisPeriod': s.savedThisPeriod.value,
@@ -32,6 +32,7 @@ abstract final class EconomyCodec {
               need: GameCoins(plan['need'] as int),
               want: GameCoins(plan['want'] as int),
               save: GameCoins(plan['save'] as int),
+              needDue: plan['needDue'] == null ? null : GameCoins(plan['needDue'] as int),
             ),
       spentNeed: c('spentNeed'),
       spentWant: c('spentWant'),

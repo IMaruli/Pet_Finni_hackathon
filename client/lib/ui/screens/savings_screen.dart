@@ -9,6 +9,7 @@ import '../mascot/mascot_view.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/duo.dart';
+import '../widgets/first_tip.dart';
 import '../widgets/confetti.dart';
 import '../widgets/jar_view.dart';
 import 'look_screen.dart';
@@ -29,6 +30,14 @@ class _SavingsScreenState extends State<SavingsScreen> {
   final _scroll = ScrollController();
 
   GameController get game => widget.game;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) showFirstTip(context, game, 'savings');
+    });
+  }
 
   @override
   void dispose() {
@@ -286,9 +295,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                game.canRedeem
-                                    ? 'Накоплено — можно забирать'
-                                    : 'осталось ${game.goalRemaining} · примерно ${(game.goalRemaining / 5).ceil()} дн. по 5 монет',
+                                game.canRedeem ? 'Накоплено — можно забирать' : _eta(),
                                 style: const TextStyle(fontSize: 13, color: FinniColors.muted),
                               ),
                             ),
@@ -325,7 +332,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                                 child: DuoButton(
                                   key: Key('save.$a'),
                                   label: '+$a',
-                                  height: 44,
+                                  height: 48,
                                   color: FinniColors.surface,
                                   onPressed: wallet >= a ? () => _save(a) : null,
                                 ),
@@ -367,6 +374,14 @@ class _SavingsScreenState extends State<SavingsScreen> {
         );
       },
     );
+  }
+
+  /// Срок до цели по средней сумме пополнения (ТЗ 2.5.7, F-055).
+  String _eta() {
+    final left = game.goalRemaining;
+    final days = game.daysToGoal(left);
+    if (days == null) return 'осталось $left · отложи монеты, и мы посчитаем срок';
+    return 'осталось $left · в среднем ты откладываешь ${game.averageSaving} в день — ещё примерно $days дн.';
   }
 
   /// Копилка как накопительный счёт: 10% каждую ночь (F-044).
@@ -552,6 +567,14 @@ class WithdrawSheetState extends State<WithdrawSheet> {
                 children: [
                   _line('🐷', 'Останется в копилке', '$left'),
                   if (goal != null) _line(goal.emoji, 'До цели «${goal.title}»', '${max(0, goal.cost - _saved)} → ${max(0, goal.cost - left)}'),
+                  // Как изменится срок до цели (ТЗ 2.5.7, F-055).
+                  if (goal != null && game.daysToGoal(max(0, goal.cost - _saved)) != null)
+                    _line(
+                      '📅',
+                      'Срок до цели',
+                      '${game.daysToGoal(max(0, goal.cost - _saved))} → ${game.daysToGoal(max(0, goal.cost - left))} дн.',
+                      warn: true,
+                    ),
                   _line('🌙', 'Прибавка этой ночью', tonight == 0 ? '0' : '+$tonight → 0', warn: tonight > 0),
                 ],
               ),

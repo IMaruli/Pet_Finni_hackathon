@@ -43,9 +43,10 @@ Future<bool> showGameResult(
               ),
               if (details != null) ...[const SizedBox(height: 12), details],
               const SizedBox(height: 16),
-              DuoButton(key: const Key('game.again'), label: 'Ещё раз', onPressed: () => Navigator.of(sheet).pop(true)),
+              // Главная — «Готово»: яркое «ещё раз» ребёнок жал машинально (F-064).
+              DuoButton(key: const Key('game.exit'), label: 'Готово', onPressed: () => Navigator.of(sheet).pop(false)),
               const SizedBox(height: 8),
-              DuoButton(key: const Key('game.exit'), label: 'Готово', color: FinniColors.surface, onPressed: () => Navigator.of(sheet).pop(false)),
+              DuoButton(key: const Key('game.again'), label: 'Играть ещё раз', color: FinniColors.surface, onPressed: () => Navigator.of(sheet).pop(true)),
             ],
           ),
         ),

@@ -4,14 +4,7 @@ import 'economy_codec.dart';
 List<String> _strings(Object? raw) => [for (final s in raw as List) s as String];
 
 final class Profile {
-  const Profile({
-    required this.playerName,
-    required this.petName,
-    required this.lookId,
-    this.skin = 'finik',
-    this.color,
-    this.hair,
-  });
+  const Profile({required this.playerName, required this.petName, required this.lookId, this.skin = 'finik', this.color, this.hair});
   factory Profile.fromJson(Map<String, dynamic> j) => Profile(
     playerName: j['playerName'] as String,
     petName: j['petName'] as String,
@@ -33,43 +26,16 @@ final class Profile {
   /// tuft|bangs|buns; `null` — причёска облика [lookId].
   final String? hair;
 
-  Profile restyled({String? skin, int? color, String? hair}) => Profile(
-    playerName: playerName,
-    petName: petName,
-    lookId: lookId,
-    skin: skin ?? this.skin,
-    color: color ?? this.color,
-    hair: hair ?? this.hair,
-  );
+  Profile restyled({String? skin, int? color, String? hair}) =>
+      Profile(playerName: playerName, petName: petName, lookId: lookId, skin: skin ?? this.skin, color: color ?? this.color, hair: hair ?? this.hair);
 
-  Map<String, dynamic> toJson() => {
-    'playerName': playerName,
-    'petName': petName,
-    'lookId': lookId,
-    'skin': skin,
-    'color': ?color,
-    'hair': ?hair,
-  };
+  Map<String, dynamic> toJson() => {'playerName': playerName, 'petName': petName, 'lookId': lookId, 'skin': skin, 'color': ?color, 'hair': ?hair};
 }
 
 final class Inventory {
-  const Inventory({
-    required this.owned,
-    required this.worn,
-    required this.goalsDone,
-    required this.skin,
-    required this.rooms,
-    required this.furniture,
-  });
+  const Inventory({required this.owned, required this.worn, required this.goalsDone, required this.skin, required this.rooms, required this.furniture});
 
-  static const empty = Inventory(
-    owned: {},
-    worn: {},
-    goalsDone: {},
-    skin: null,
-    rooms: 1,
-    furniture: null,
-  );
+  static const empty = Inventory(owned: {}, worn: {}, goalsDone: {}, skin: null, rooms: 1, furniture: null);
 
   factory Inventory.fromJson(Map<String, dynamic> j) => Inventory(
     owned: _strings(j['owned']).toSet(),
@@ -94,14 +60,7 @@ final class Inventory {
   /// sofa|shelf|tv|console или null.
   final String? furniture;
 
-  Inventory copyWith({
-    Set<String>? owned,
-    Set<String>? worn,
-    Set<String>? goalsDone,
-    String? skin,
-    int? rooms,
-    String? furniture,
-  }) => Inventory(
+  Inventory copyWith({Set<String>? owned, Set<String>? worn, Set<String>? goalsDone, String? skin, int? rooms, String? furniture}) => Inventory(
     owned: owned ?? this.owned,
     worn: worn ?? this.worn,
     goalsDone: goalsDone ?? this.goalsDone,
@@ -124,6 +83,7 @@ final class DaySummary {
   const DaySummary({
     required this.day,
     required this.planNeed,
+    int? needDue,
     required this.planWant,
     required this.planSave,
     required this.spentNeed,
@@ -135,11 +95,12 @@ final class DaySummary {
     required this.good,
     required this.goodPeriods,
     this.interest = 0,
-  });
+  }) : needDue = needDue ?? planNeed;
 
   factory DaySummary.fromJson(Map<String, dynamic> j) => DaySummary(
     day: j['day'] as int,
     planNeed: j['planNeed'] as int,
+    needDue: j['needDue'] as int?,
     planWant: j['planWant'] as int,
     planSave: j['planSave'] as int,
     spentNeed: j['spentNeed'] as int,
@@ -155,6 +116,9 @@ final class DaySummary {
 
   final int day;
   final int planNeed;
+
+  /// Сколько стоили нужды дня (F-061); у старых сохранений — [planNeed].
+  final int needDue;
   final int planWant;
   final int planSave;
   final int spentNeed;
@@ -171,9 +135,15 @@ final class DaySummary {
 
   bool get grew => stageAfter > stageBefore;
 
+  /// Три условия хорошего дня (F-054): нужное куплено, хотелки по плану, что-то отложено.
+  bool get needOk => spentNeed >= needDue;
+  bool get wantOk => spentWant <= planWant;
+  bool get savedOk => saved > 0;
+
   Map<String, dynamic> toJson() => {
     'day': day,
     'planNeed': planNeed,
+    'needDue': needDue,
     'planWant': planWant,
     'planSave': planSave,
     'spentNeed': spentNeed,
@@ -190,14 +160,7 @@ final class DaySummary {
 
 /// Законченный урок в журнале (SA F-025, F-026).
 final class LessonRun {
-  const LessonRun({
-    required this.lessonId,
-    required this.day,
-    required this.newTopic,
-    required this.review,
-    required this.kinds,
-    required this.resumed,
-  });
+  const LessonRun({required this.lessonId, required this.day, required this.newTopic, required this.review, required this.kinds, required this.resumed});
   factory LessonRun.fromJson(Map<String, dynamic> j) => LessonRun(
     lessonId: j['lessonId'] as String,
     day: j['day'] as int,
@@ -221,14 +184,7 @@ final class LessonRun {
   /// Доигран после выхода по ×.
   final bool resumed;
 
-  Map<String, dynamic> toJson() => {
-    'lessonId': lessonId,
-    'day': day,
-    'newTopic': newTopic,
-    'review': review,
-    'kinds': kinds,
-    'resumed': resumed,
-  };
+  Map<String, dynamic> toJson() => {'lessonId': lessonId, 'day': day, 'newTopic': newTopic, 'review': review, 'kinds': kinds, 'resumed': resumed};
 }
 
 /// Начатый и не законченный урок: с какого шага доиграть.
@@ -259,6 +215,7 @@ final class GameSnapshot {
     required this.gameBest,
     required this.lastSummary,
     required this.soundOn,
+    this.reduceMotion = false,
     this.lessonLog = const [],
     this.lessonProgress,
     this.learnSeconds = const {},
@@ -268,6 +225,8 @@ final class GameSnapshot {
     this.introDone = true,
     this.firstNeedsDay = 1,
     this.withdrewToday = false,
+    this.savedHistory = const [],
+    this.tipsSeen = const [],
   });
 
   static const version = 1;
@@ -291,21 +250,18 @@ final class GameSnapshot {
       gameBest: (j['gameBest'] as Map<String, dynamic>).cast<String, int>(),
       lastSummary: summary == null ? null : DaySummary.fromJson(summary),
       soundOn: j['soundOn'] as bool,
-      lessonLog: [
-        for (final r in j['lessonLog'] as List? ?? const []) LessonRun.fromJson(r as Map<String, dynamic>),
-      ],
-      lessonProgress: j['lessonProgress'] == null
-          ? null
-          : LessonProgress.fromJson(j['lessonProgress'] as Map<String, dynamic>),
-      learnSeconds: {
-        for (final e in (j['learnSeconds'] as Map<String, dynamic>? ?? const {}).entries) int.parse(e.key): e.value as int,
-      },
+      reduceMotion: j['reduceMotion'] as bool? ?? false,
+      lessonLog: [for (final r in j['lessonLog'] as List? ?? const []) LessonRun.fromJson(r as Map<String, dynamic>)],
+      lessonProgress: j['lessonProgress'] == null ? null : LessonProgress.fromJson(j['lessonProgress'] as Map<String, dynamic>),
+      learnSeconds: {for (final e in (j['learnSeconds'] as Map<String, dynamic>? ?? const {}).entries) int.parse(e.key): e.value as int},
       needsDays: [for (final d in j['needsDays'] as List? ?? const []) d as int],
       dailyQuests: _strings(j['dailyQuests'] ?? const <String>[]),
       claimed: _strings(j['claimed'] ?? const <String>[]),
       introDone: j['introDone'] as bool? ?? true,
       firstNeedsDay: j['firstNeedsDay'] as int? ?? 1,
       withdrewToday: j['withdrewToday'] as bool? ?? false,
+      savedHistory: [for (final v in j['savedHistory'] as List? ?? const []) v as int],
+      tipsSeen: [for (final v in j['tipsSeen'] as List? ?? const []) v as String],
     );
   }
 
@@ -318,6 +274,7 @@ final class GameSnapshot {
 
   /// Id товаров, купленных сегодня.
   final List<String> boughtToday;
+
   /// Награда урока за сегодня уже выдана (поле от прежних квестов, F-025).
   final bool questDoneToday;
   final bool gameRewardToday;
@@ -329,6 +286,9 @@ final class GameSnapshot {
   final Map<String, int> gameBest;
   final DaySummary? lastSummary;
   final bool soundOn;
+
+  /// «Меньше движения» (ТЗ 3.6, F-058).
+  final bool reduceMotion;
 
   /// Журнал законченных уроков (F-025).
   final List<LessonRun> lessonLog;
@@ -355,6 +315,12 @@ final class GameSnapshot {
   /// Сегодня снимали из копилки — ночью без процентов (F-044).
   final bool withdrewToday;
 
+  /// Сколько отложено в каждом прошлом периоде, последние 10 (F-055): срок до цели по средней.
+  final List<int> savedHistory;
+
+  /// Показанные подсказки разделов (F-062).
+  final List<String> tipsSeen;
+
   GameSnapshot copyWith({
     Profile? profile,
     EconomyState? economy,
@@ -371,6 +337,7 @@ final class GameSnapshot {
     DaySummary? lastSummary,
     bool clearSummary = false,
     bool? soundOn,
+    bool? reduceMotion,
     List<LessonRun>? lessonLog,
     LessonProgress? lessonProgress,
     bool clearLessonProgress = false,
@@ -381,6 +348,8 @@ final class GameSnapshot {
     bool? introDone,
     int? firstNeedsDay,
     bool? withdrewToday,
+    List<int>? savedHistory,
+    List<String>? tipsSeen,
   }) => GameSnapshot(
     profile: profile ?? this.profile,
     economy: economy ?? this.economy,
@@ -395,6 +364,7 @@ final class GameSnapshot {
     gameBest: gameBest ?? this.gameBest,
     lastSummary: clearSummary ? null : (lastSummary ?? this.lastSummary),
     soundOn: soundOn ?? this.soundOn,
+    reduceMotion: reduceMotion ?? this.reduceMotion,
     lessonLog: lessonLog ?? this.lessonLog,
     lessonProgress: clearLessonProgress ? null : (lessonProgress ?? this.lessonProgress),
     learnSeconds: learnSeconds ?? this.learnSeconds,
@@ -404,6 +374,8 @@ final class GameSnapshot {
     introDone: introDone ?? this.introDone,
     firstNeedsDay: firstNeedsDay ?? this.firstNeedsDay,
     withdrewToday: withdrewToday ?? this.withdrewToday,
+    savedHistory: savedHistory ?? this.savedHistory,
+    tipsSeen: tipsSeen ?? this.tipsSeen,
   );
 
   Map<String, dynamic> toJson() => {
@@ -421,6 +393,7 @@ final class GameSnapshot {
     'gameBest': gameBest,
     'lastSummary': lastSummary?.toJson(),
     'soundOn': soundOn,
+    'reduceMotion': reduceMotion,
     'lessonLog': [for (final r in lessonLog) r.toJson()],
     'lessonProgress': lessonProgress?.toJson(),
     'learnSeconds': {for (final e in learnSeconds.entries) '${e.key}': e.value},
@@ -430,5 +403,7 @@ final class GameSnapshot {
     'introDone': introDone,
     'firstNeedsDay': firstNeedsDay,
     'withdrewToday': withdrewToday,
+    'savedHistory': savedHistory,
+    'tipsSeen': tipsSeen,
   };
 }

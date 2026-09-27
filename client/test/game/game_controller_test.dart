@@ -140,6 +140,26 @@ void main() {
     expect(game.economy.available, before);
   });
 
+  test('one item per wear place: a new hat replaces the old one (F-051)', () async {
+    await planAll(game, need: game.todaysNeedSum, want: 20);
+    await buyNeeds();
+    expect((await game.buy('cap', commandId: game.newCommandId())).ok, isTrue);
+    expect((await game.buy('flower', commandId: game.newCommandId())).ok, isTrue);
+    expect(game.inventory.worn, containsAll(['cap', 'flower'])); // голова и волосы — разные места
+    await game.endDay();
+    await planAll(game, need: game.todaysNeedSum, want: 12);
+    await buyNeeds();
+    expect((await game.buy('partyhat', commandId: game.newCommandId())).ok, isTrue);
+    expect(game.inventory.worn, containsAll(['partyhat', 'flower']));
+    expect(game.inventory.worn, isNot(contains('cap'))); // купленный колпак снял кепку
+    final replaced = await game.toggleWear('cap');
+    expect(replaced?.id, 'partyhat');
+    expect(game.inventory.worn, containsAll(['cap', 'flower']));
+    expect(game.inventory.worn, isNot(contains('partyhat')));
+    expect(await game.toggleWear('cap'), isNull); // снять — просто снять
+    expect(game.inventory.worn, isNot(contains('cap')));
+  });
+
   test('hero sticker is owned, worn, and not sold twice', () async {
     await planAll(game, need: game.todaysNeedSum, want: 20);
     await buyNeeds();
@@ -364,6 +384,72 @@ void main() {
     await game.redeemGoal();
     expect(game.inventory.rooms, 2);
     expect((await game.redeemGoal()).reason, FeedbackReason.noGoal);
+  });
+
+  test('day summary shows the three good-day conditions (F-054)', () async {
+    await planAll(game, need: game.todaysNeedSum, want: 6);
+    await buyNeeds();
+    await game.buy('stickers', commandId: game.newCommandId()); // 6 — ровно по плану
+    await game.toSavings(2);
+    final s = await game.endDay();
+    expect((s.needOk, s.wantOk, s.savedOk, s.good), (true, true, true, true));
+  });
+
+  test('goal ETA uses the average saving, and a withdraw pushes it back (TZ 2.5.7, F-055)', () async {
+    expect(game.averageSaving, 0);
+    expect(game.daysToGoal(20), isNull); // нечего считать
+    await planAll(game, need: game.todaysNeedSum, want: 0);
+    await buyNeeds();
+    await game.toSavings(8);
+    expect(game.averageSaving, 8); // истории нет — отложенное сегодня
+    await game.endDay();
+    await planAll(game, need: game.todaysNeedSum, want: 0);
+    await buyNeeds();
+    await game.toSavings(4);
+    await game.endDay();
+    expect(game.snapshot.savedHistory, [8, 4]);
+    expect(game.averageSaving, 6);
+    expect(game.daysToGoal(20), 4); // ⌈20 / 6⌉
+    expect(game.daysToGoal(6), 1);
+    expect(game.daysToGoal(16), 3); // после снятия 10 срок 1 → 3
+    expect(game.daysToGoal(0), 0);
+  });
+
+  test('purchases of the current period are listed in order (TZ 2.5.6, F-056)', () async {
+    await planAll(game, need: game.todaysNeedSum, want: 6);
+    expect(game.purchasesToday, isEmpty);
+    await buyNeeds();
+    await game.buy('stickers', commandId: game.newCommandId());
+    expect(game.purchasesToday.map((i) => i.id), [...game.todaysNeeds.map((i) => i.id), 'stickers']);
+    await game.endDay();
+    expect(game.purchasesToday, isEmpty);
+  });
+
+  test('test bugs: withdraw lowers today\'s saving; goal purchase does not; spare need coins are fine (F-061)', () async {
+    // B-3: «Нужное» больше, чем стоят нужды — всё нужное куплено, питомец не грустит.
+    final due = game.todaysNeedSum;
+    await game.confirmPlan(need: due + 4, want: 0, save: game.economy.available.value - due - 4);
+    await buyNeeds();
+    expect(game.economy.plan!.needDue.value, due);
+    expect(game.mood, isNot(PetMood.uneasy));
+    // B-1: отложил 18, снял 15 — отложено за день 3.
+    await game.toSavings(18);
+    await game.requestWithdraw(15);
+    await game.confirmWithdraw();
+    expect(game.economy.savedThisPeriod.value, 3);
+    final s = await game.endDay();
+    expect(s.saved, 3);
+    expect(s.needOk, isTrue);
+    // B-2: цель не считается снятием — отложенное за день остаётся.
+    await planAll(game, need: game.todaysNeedSum, want: 0);
+    await buyNeeds();
+    await game.chooseGoal('zoo');
+    await game.toSavings(game.economy.available.value);
+    final savedToday = game.economy.savedThisPeriod.value;
+    if (game.canRedeem) {
+      await game.redeemGoal();
+      expect(game.economy.savedThisPeriod.value, savedToday);
+    }
   });
 
   test('withdraw needs confirm; cancel keeps savings', () async {
