@@ -211,7 +211,7 @@ final class GameController extends ChangeNotifier {
     if (need < todaysNeedSum) {
       return _fail(FeedbackReason.planNeedLow, ['В банку «Нужное» положи хотя бы $todaysNeedSum: столько стоит нужное на сегодня.']);
     }
-    final plan = BudgetPlan(need: GameCoins(need), want: GameCoins(want), save: GameCoins(save));
+    final plan = BudgetPlan(need: GameCoins(need), want: GameCoins(want), save: GameCoins(save), needDue: GameCoins(todaysNeedSum));
     final r = _engine.apply(economy, ConfirmPlan(plan));
     if (r.error != null) return _fail(FeedbackReason.planTooBig, _texts(r));
     // Все монеты по банкам: запас не отменяет выбор (SA F-024).
@@ -622,6 +622,7 @@ final class GameController extends ChangeNotifier {
     final summary = DaySummary(
       day: day,
       planNeed: plan?.need.value ?? 0,
+      needDue: plan?.needDue.value,
       planWant: plan?.want.value ?? 0,
       planSave: plan?.save.value ?? 0,
       spentNeed: before.spentNeed.value,

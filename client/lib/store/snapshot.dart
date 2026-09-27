@@ -83,6 +83,7 @@ final class DaySummary {
   const DaySummary({
     required this.day,
     required this.planNeed,
+    int? needDue,
     required this.planWant,
     required this.planSave,
     required this.spentNeed,
@@ -94,11 +95,12 @@ final class DaySummary {
     required this.good,
     required this.goodPeriods,
     this.interest = 0,
-  });
+  }) : needDue = needDue ?? planNeed;
 
   factory DaySummary.fromJson(Map<String, dynamic> j) => DaySummary(
     day: j['day'] as int,
     planNeed: j['planNeed'] as int,
+    needDue: j['needDue'] as int?,
     planWant: j['planWant'] as int,
     planSave: j['planSave'] as int,
     spentNeed: j['spentNeed'] as int,
@@ -114,6 +116,9 @@ final class DaySummary {
 
   final int day;
   final int planNeed;
+
+  /// Сколько стоили нужды дня (F-061); у старых сохранений — [planNeed].
+  final int needDue;
   final int planWant;
   final int planSave;
   final int spentNeed;
@@ -131,13 +136,14 @@ final class DaySummary {
   bool get grew => stageAfter > stageBefore;
 
   /// Три условия хорошего дня (F-054): нужное куплено, хотелки по плану, что-то отложено.
-  bool get needOk => spentNeed >= planNeed;
+  bool get needOk => spentNeed >= needDue;
   bool get wantOk => spentWant <= planWant;
   bool get savedOk => saved > 0;
 
   Map<String, dynamic> toJson() => {
     'day': day,
     'planNeed': planNeed,
+    'needDue': needDue,
     'planWant': planWant,
     'planSave': planSave,
     'spentNeed': spentNeed,

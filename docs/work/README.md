@@ -76,6 +76,11 @@
 | F-058 | Доступность | [ui/F-058](ui/F-058_ACCESSIBILITY_SA_SPEC.md) | `ui/motion.dart`, `ui/mascot/*`, `ui/widgets/*` | `mascot_test`, `app_flow_test` |
 | F-059 | Карточка RuStore | [ops/F-059](ops/F-059_RUSTORE_CARD_SA_SPEC.md) | `docs/release/rustore/` | — |
 | F-060 | Документация PDF | [ops/F-060](ops/F-060_DOCUMENTATION_PDF_SA_SPEC.md) | `docs/documentation/` | — |
+| F-061 | Баги экономики из теста | [game/F-061](game/F-061_ECONOMY_TEST_BUGS_SA_SPEC.md) | `economy/`, `game/game_controller.dart` | `savings_test`, `period_pet_test`, `game_controller_test` |
+| F-062 | Первый день понятнее, подсказки разделов | [ui/F-062](ui/F-062_FIRST_DAY_TIPS_SA_SPEC.md) | `ui/widgets/first_tip.dart`, экраны | `app_flow_test` |
+| F-063 | Уроки понятнее | [game/F-063](game/F-063_LESSON_CONTENT_FIXES_SA_SPEC.md) | `assets/content/lessons.json`, `ui/lesson/` | `lesson_test`, `content_test` |
+| F-064 | Кнопки итога мини-игры | [ui/F-064](ui/F-064_MINIGAME_RESULT_BUTTONS_SA_SPEC.md) | `ui/games/` | `app_flow_test` |
+| F-065 | Двойная комната | [ui/F-065](ui/F-065_DOUBLE_ROOM_SA_SPEC.md) | `ui/room3d/room_builder.dart`, `ui/tabs/home_tab.dart` | `room3d_test` |
 
 **Пайплайн:** brainstorming → design spec + SA → writing-plans (одна подсистема) → TDD → проверка.  
 См. `.cursor/rules/delivery-workflow.mdc` и `superpowers-workflow.mdc`.

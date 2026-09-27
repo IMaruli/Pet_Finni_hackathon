@@ -74,4 +74,15 @@ void main() {
     expect(r.state.lastCreditSourceId, 'interest:1');
     expect(r.explanationIds, ['exp.interest']);
   });
+
+  test('confirmed withdraw lowers savedThisPeriod, never below zero (F-061)', () {
+    var st = EconomyState.empty().copyWith(available: GameCoins(20), savings: GameCoins(40), savedThisPeriod: GameCoins(18));
+    st = engine.apply(st, RequestWithdraw(GameCoins(15))).state;
+    st = engine.apply(st, const ConfirmWithdraw()).state;
+    expect(st.savedThisPeriod, GameCoins(3));
+    st = engine.apply(st, RequestWithdraw(GameCoins(10))).state;
+    st = engine.apply(st, const ConfirmWithdraw()).state;
+    expect(st.savedThisPeriod, GameCoins.zero);
+    expect(st.savings, GameCoins(15));
+  });
 }

@@ -425,6 +425,33 @@ void main() {
     expect(game.purchasesToday, isEmpty);
   });
 
+  test('test bugs: withdraw lowers today\'s saving; goal purchase does not; spare need coins are fine (F-061)', () async {
+    // B-3: «Нужное» больше, чем стоят нужды — всё нужное куплено, питомец не грустит.
+    final due = game.todaysNeedSum;
+    await game.confirmPlan(need: due + 4, want: 0, save: game.economy.available.value - due - 4);
+    await buyNeeds();
+    expect(game.economy.plan!.needDue.value, due);
+    expect(game.mood, isNot(PetMood.uneasy));
+    // B-1: отложил 18, снял 15 — отложено за день 3.
+    await game.toSavings(18);
+    await game.requestWithdraw(15);
+    await game.confirmWithdraw();
+    expect(game.economy.savedThisPeriod.value, 3);
+    final s = await game.endDay();
+    expect(s.saved, 3);
+    expect(s.needOk, isTrue);
+    // B-2: цель не считается снятием — отложенное за день остаётся.
+    await planAll(game, need: game.todaysNeedSum, want: 0);
+    await buyNeeds();
+    await game.chooseGoal('zoo');
+    await game.toSavings(game.economy.available.value);
+    final savedToday = game.economy.savedThisPeriod.value;
+    if (game.canRedeem) {
+      await game.redeemGoal();
+      expect(game.economy.savedThisPeriod.value, savedToday);
+    }
+  });
+
   test('withdraw needs confirm; cancel keeps savings', () async {
     await planAll(game, need: game.todaysNeedSum, want: 0);
     await game.toSavings(20);
