@@ -5,6 +5,7 @@ import '../../game/game_controller.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/duo.dart';
+import '../widgets/first_tip.dart';
 import '../widgets/jar_view.dart';
 
 /// План дня: три банки (SA F-010).
@@ -25,6 +26,16 @@ class _PlanScreenState extends State<PlanScreen> {
   int get _used => _values.values.fold(0, (s, v) => s + v);
   int get _left => _available - _used;
   bool get _needOk => _values[Basket.need]! >= game.todaysNeedSum;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!game.planConfirmed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) showFirstTip(context, game, 'plan');
+      });
+    }
+  }
 
   void _change(Basket b, int delta) {
     setState(() {
@@ -101,6 +112,13 @@ class _PlanScreenState extends State<PlanScreen> {
               Text(
                 _left == 0 ? 'Все $_available монет разложены' : 'из $_available монет осталось разложить',
                 style: const TextStyle(fontSize: 15, color: FinniColors.muted),
+              ),
+              const SizedBox(height: 4),
+              // Не догадаться, что удержание кладёт 5 (F-062).
+              const Text(
+                'Нажми «+» — одна монета, удерживай — сразу 5',
+                key: Key('plan.howto'),
+                style: TextStyle(fontSize: 14, color: FinniColors.primary, fontWeight: FontWeight.w600),
               ),
             ],
           ),

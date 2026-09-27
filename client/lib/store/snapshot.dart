@@ -226,6 +226,7 @@ final class GameSnapshot {
     this.firstNeedsDay = 1,
     this.withdrewToday = false,
     this.savedHistory = const [],
+    this.tipsSeen = const [],
   });
 
   static const version = 1;
@@ -260,6 +261,7 @@ final class GameSnapshot {
       firstNeedsDay: j['firstNeedsDay'] as int? ?? 1,
       withdrewToday: j['withdrewToday'] as bool? ?? false,
       savedHistory: [for (final v in j['savedHistory'] as List? ?? const []) v as int],
+      tipsSeen: [for (final v in j['tipsSeen'] as List? ?? const []) v as String],
     );
   }
 
@@ -316,6 +318,9 @@ final class GameSnapshot {
   /// Сколько отложено в каждом прошлом периоде, последние 10 (F-055): срок до цели по средней.
   final List<int> savedHistory;
 
+  /// Показанные подсказки разделов (F-062).
+  final List<String> tipsSeen;
+
   GameSnapshot copyWith({
     Profile? profile,
     EconomyState? economy,
@@ -344,6 +349,7 @@ final class GameSnapshot {
     int? firstNeedsDay,
     bool? withdrewToday,
     List<int>? savedHistory,
+    List<String>? tipsSeen,
   }) => GameSnapshot(
     profile: profile ?? this.profile,
     economy: economy ?? this.economy,
@@ -369,6 +375,7 @@ final class GameSnapshot {
     firstNeedsDay: firstNeedsDay ?? this.firstNeedsDay,
     withdrewToday: withdrewToday ?? this.withdrewToday,
     savedHistory: savedHistory ?? this.savedHistory,
+    tipsSeen: tipsSeen ?? this.tipsSeen,
   );
 
   Map<String, dynamic> toJson() => {
@@ -397,5 +404,6 @@ final class GameSnapshot {
     'firstNeedsDay': firstNeedsDay,
     'withdrewToday': withdrewToday,
     'savedHistory': savedHistory,
+    'tipsSeen': tipsSeen,
   };
 }

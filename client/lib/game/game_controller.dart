@@ -169,6 +169,13 @@ final class GameController extends ChangeNotifier {
   Future<void> setSound(bool on) => _commit(snapshot.copyWith(soundOn: on));
   Future<void> setReduceMotion(bool on) => _commit(snapshot.copyWith(reduceMotion: on));
 
+  /// Подсказки разделов при первом входе (F-062).
+  bool tipSeen(String id) => snapshot.tipsSeen.contains(id);
+  Future<void> markTip(String id) async {
+    if (tipSeen(id)) return;
+    await _commit(snapshot.copyWith(tipsSeen: [...snapshot.tipsSeen, id]));
+  }
+
   /// Герой ещё не познакомился с игроком (F-038).
   bool get greeting => !snapshot.introDone;
   Future<void> finishGreeting() => _commit(snapshot.copyWith(introDone: true));

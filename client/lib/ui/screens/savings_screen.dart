@@ -9,6 +9,7 @@ import '../mascot/mascot_view.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/duo.dart';
+import '../widgets/first_tip.dart';
 import '../widgets/confetti.dart';
 import '../widgets/jar_view.dart';
 import 'look_screen.dart';
@@ -29,6 +30,14 @@ class _SavingsScreenState extends State<SavingsScreen> {
   final _scroll = ScrollController();
 
   GameController get game => widget.game;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) showFirstTip(context, game, 'savings');
+    });
+  }
 
   @override
   void dispose() {

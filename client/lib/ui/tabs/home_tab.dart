@@ -19,6 +19,7 @@ import '../shell/main_shell.dart';
 import '../theme.dart';
 import '../../economy/economy_state.dart';
 import '../widgets/common.dart';
+import '../widgets/first_tip.dart';
 import '../widgets/buy_sheet.dart';
 import '../widgets/duo.dart';
 import '../widgets/need_bubble.dart';
@@ -172,7 +173,7 @@ class _HomeTabState extends State<HomeTab> {
                             icon: Icons.icecream_rounded,
                             label: 'Хотелки',
                             color: FinniColors.want,
-                            onTap: () => _open(CategoryScreen(game: game, category: ShopCategory.treats)),
+                            onTap: () => _open(FirstTipGate(id: 'treats', game: game, child: CategoryScreen(game: game, category: ShopCategory.treats))),
                           ),
                         ),
                         Expanded(
@@ -181,7 +182,7 @@ class _HomeTabState extends State<HomeTab> {
                             icon: Icons.checkroom_rounded,
                             label: 'Образ',
                             color: FinniColors.primary,
-                            onTap: () => _open(LookScreen(game: game)),
+                            onTap: () => _open(FirstTipGate(id: 'look', game: game, child: LookScreen(game: game))),
                           ),
                         ),
                         Expanded(
@@ -190,7 +191,7 @@ class _HomeTabState extends State<HomeTab> {
                             icon: Icons.weekend_rounded,
                             label: 'Дом',
                             color: FinniColors.orange,
-                            onTap: () => _open(RoomScreen(game: game)),
+                            onTap: () => _open(FirstTipGate(id: 'room', game: game, child: RoomScreen(game: game))),
                           ),
                         ),
                         Expanded(
@@ -219,8 +220,11 @@ class _HomeTabState extends State<HomeTab> {
     final saved = game.economy.savings.value;
     return Row(
       children: [
-        // Кошелёк.
-        Glass(
+        // Кошелёк: тап объясняет разницу с копилкой (F-062).
+        Pressable(
+          key: const Key('home.wallet'),
+          onTap: () => showToast(context, const ['Кошелёк — монеты на покупки сегодня.', 'Копилка — отдельно, на мечту. В магазине её не тратят.'], emoji: '👛'),
+          child: Glass(
           radius: 24,
           padding: const EdgeInsets.fromLTRB(12, 8, 14, 8),
           child: Row(
@@ -231,6 +235,7 @@ class _HomeTabState extends State<HomeTab> {
               Text('${game.economy.available.value}', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, letterSpacing: -0.3)),
             ],
           ),
+        ),
         ),
         const SizedBox(width: 8),
         // Копилка на виду: сколько отложено и сколько до цели (SA F-040).

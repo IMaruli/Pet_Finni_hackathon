@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/first_tip.dart';
 import '../motion.dart';
 import '../../game/game_controller.dart';
 import '../tabs/games_tab.dart';
@@ -45,7 +46,16 @@ class _MainShellState extends State<MainShell> {
   }
 
   void _go(ShellTab tab) {
-    if (mounted) setState(() => _tab = tab);
+    if (!mounted) return;
+    setState(() => _tab = tab);
+    // Подсказка при первом входе во вкладку (F-062).
+    final tip = switch (tab) {
+      ShellTab.lessons => 'lessons',
+      ShellTab.games => 'games',
+      ShellTab.tasks => 'tasks',
+      ShellTab.home => null,
+    };
+    if (tip != null) showFirstTip(context, widget.game, tip);
   }
 
   @override
