@@ -37,7 +37,6 @@ class HomeTab extends StatefulWidget {
 
 class _HomeTabState extends State<HomeTab> {
   final _mascot = MascotController();
-  int _room = 1;
 
   /// Реплика о самочувствии после тапа по герою (F-020 BR-07).
   String? _moodLine;
@@ -71,7 +70,7 @@ class _HomeTabState extends State<HomeTab> {
   @override
   Widget build(BuildContext context) {
     final name = game.profile.petName;
-    final room = game.inventory.rooms > 1 ? _room : 1;
+    const room = 1; // вторая комната — пристройка справа, без переключателя (F-065)
     return LayoutBuilder(
       builder: (context, box) {
         final size = Size(box.maxWidth, box.maxHeight);
@@ -94,6 +93,7 @@ class _HomeTabState extends State<HomeTab> {
                 feetY: feetY,
                 heroScale: 0.78,
                 fullBleed: true, // комната во весь экран (F-048)
+                annex: game.inventory.rooms > 1, // игровая справа от спальни (F-065)
                 hero: MascotView(
                   look: MascotLook.fromGame(game).withEmotion(game.greeting ? PetEmotion.excited : (_moodLine == null ? wish.emotion : null)),
                   controller: _mascot,
@@ -141,7 +141,6 @@ class _HomeTabState extends State<HomeTab> {
                     Row(
                       children: [
                         Flexible(child: _nameRow(name)),
-                        if (game.inventory.rooms > 1) ...[const Spacer(), _roomToggle()],
                       ],
                     ),
                     if (!game.greeting) ...[const SizedBox(height: 6), Align(alignment: Alignment.centerLeft, child: _statePanel(name))],
@@ -399,30 +398,6 @@ class _HomeTabState extends State<HomeTab> {
       ),
     );
   }
-
-  Widget _roomToggle() => Glass(
-    radius: 18,
-    padding: const EdgeInsets.all(3),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (final (id, label) in [(1, 'Спальня'), (2, 'Игровая')])
-          GestureDetector(
-            onTap: () => setState(() => _room = id),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: _room == id ? FinniColors.surface : Colors.transparent,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: _room == id ? const [BoxShadow(color: Color(0x1A000000), blurRadius: 4, offset: Offset(0, 1))] : null,
-              ),
-              child: Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-            ),
-          ),
-      ],
-    ),
-  );
 
   void _nextGreet() {
     _mascot.jump();

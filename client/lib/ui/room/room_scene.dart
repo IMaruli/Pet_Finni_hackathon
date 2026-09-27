@@ -28,7 +28,11 @@ class RoomScene extends StatefulWidget {
     this.initialAzimuth,
     this.orbit = const [],
     this.fullBleed = false,
+    this.annex = false,
   });
+
+  /// Двойная комната: игровая справа от спальни (F-065). Работает вместе с [fullBleed].
+  final bool annex;
 
   /// Комната во весь экран: стены и пол уходят за края кадра (F-048).
   final bool fullBleed;
@@ -108,10 +112,10 @@ class _RoomSceneState extends State<RoomScene> with SingleTickerProviderStateMix
 
   void _ensureScene() {
     final inv = widget.inventory;
-    final key = '${inv.owned.toList()..sort()}|${inv.furniture}|${widget.room}|${widget._time}|${widget.bowls.key}|${widget.fullBleed}';
+    final key = '${inv.owned.toList()..sort()}|${inv.furniture}|${widget.room}|${widget._time}|${widget.bowls.key}|${widget.fullBleed}|${widget.annex}';
     if (key == _key) return;
     _key = key;
-    _meshes = RoomBuilder.build(inventory: inv, room: widget.room, time: widget._time, bowls: widget.bowls, fullBleed: widget.fullBleed);
+    _meshes = RoomBuilder.build(inventory: inv, room: widget.room, time: widget._time, bowls: widget.bowls, fullBleed: widget.fullBleed, annex: widget.annex);
     _lighting = RoomBuilder.lighting(inventory: inv, room: widget.room, time: widget._time);
   }
 
@@ -208,9 +212,10 @@ class _RoomSceneState extends State<RoomScene> with SingleTickerProviderStateMix
       maxX = max(maxX, p.dx);
     }
     // Во весь экран комната крупнее: меньше пустой стены над героем (F-048).
-    final zoom = size.width * (widget.fullBleed ? 1.62 : 1.32) / max(1, maxX - minX);
+    // С игровой камера дальше, а герой левее центра — видно обе комнаты (F-065).
+    final zoom = size.width * (widget.fullBleed ? (widget.annex ? 1.0 : 1.62) : 1.32) / max(1, maxX - minX);
     final hero = cam.project(cam.toView(RoomBuilder.heroSpot), size, zoom: zoom)!;
-    final target = Offset(size.width / 2, size.height * widget.feetY);
+    final target = Offset(size.width * (widget.annex ? 0.3 : 0.5), size.height * widget.feetY);
     return (zoom, target - hero);
   }
 }

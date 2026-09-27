@@ -126,6 +126,15 @@ void main() {
       expect(has(play, RoomBuilder.stripePink), isFalse);
     });
 
+    test('double room adds the playroom to the right of the bedroom (F-065)', () {
+      final single = RoomBuilder.build(inventory: Inventory.empty, fullBleed: true);
+      final twin = RoomBuilder.build(inventory: Inventory.empty, fullBleed: true, annex: true);
+      expect(twin.length, greaterThan(single.length));
+      double maxX(List<Mesh> ms) => ms.where((m) => m.layer == MeshLayer.object).expand((m) => m.vertices).map((v) => v.x).reduce((a, b) => a > b ? a : b);
+      expect(maxX(twin), greaterThan(RoomBuilder.annexWall + 1)); // вещи игровой справа от арки
+      expect(twin.any((m) => m.color == const Color(0xFFCFE3D7)), isTrue); // зелёные обои игровой
+    });
+
     test('full bowls add food and water to the room (F-027)', () {
       int bowls(Bowls b, {int room = 1}) => RoomBuilder.build(inventory: Inventory.empty, room: room, bowls: b).length;
       final empty = bowls(const Bowls(food: false, water: false));

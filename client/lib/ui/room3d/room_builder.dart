@@ -25,6 +25,9 @@ abstract final class RoomBuilder {
   /// [far] — докуда тянутся пол, задняя и левая стены к камере и вправо; [top] — высота стен.
   static const far = 6.0, top = 6.0;
 
+  /// Двойная комната (F-065): игровая сдвинута вправо на [annexShift], граница обоев — [annexWall].
+  static const annexShift = 4.2, annexWall = 2.2;
+
   static const _lampPos = Vec3(-1.2, 0, 0.95);
   static const _pendantPos = Vec3(0.2, 2.75, -0.2);
 
@@ -35,16 +38,24 @@ abstract final class RoomBuilder {
     Bowls bowls = const Bowls(),
     DayTime time = DayTime.day,
     bool fullBleed = false,
+    bool annex = false,
   }) {
     if (night) time = DayTime.night;
     night = time == DayTime.night;
     final lampsOn = night || time == DayTime.evening; // вечером лампы уже горят
     final play = room == 2;
     final meshes = <Mesh>[];
-    _shell(meshes, play: play, time: time, fullBleed: fullBleed);
+    _shell(meshes, play: play, time: time, fullBleed: fullBleed, annex: annex && !play);
     if (play) {
       _playroom(meshes);
     } else {
+      // Двойная комната (F-065): игровая пристроена справа от спальни.
+      if (annex) {
+        final extra = <Mesh>[];
+        _playroom(extra);
+        meshes.addAll([for (final e in extra) e.translated(const Vec3(annexShift, 0, 0))]);
+        _annexArch(meshes);
+      }
       _decor(meshes, night: night);
       if (inventory.owned.contains('rug')) _rug(meshes, const Color(0xFFE2B8AE), const Color(0xFFF6E9E2));
       if (inventory.owned.contains('poster')) _poster(meshes);
@@ -153,9 +164,9 @@ abstract final class RoomBuilder {
 
   // ---------- Коробка комнаты ----------
 
-  static void _shell(List<Mesh> m, {required bool play, required DayTime time, bool fullBleed = false}) {
-    // Во весь экран: пол и стены длиннее и выше, срезов диорамы нет (F-048).
-    final x1 = fullBleed ? far : 2.0, z1 = fullBleed ? far : 2.0, wh = fullBleed ? top : h;
+  static void _shell(List<Mesh> m, {required bool play, required DayTime time, bool fullBleed = false, bool annex = false}) {
+    // Во весь экран: пол и стены длиннее и выше, срезов диорамы нет (F-048). С игровой — ещё шире (F-065).
+    final x1 = fullBleed ? (annex ? far + annexShift : far) : 2.0, z1 = fullBleed ? far : 2.0, wh = fullBleed ? top : h;
     final wallC = play ? const Color(0xFFCFE3D7) : const Color(0xFFE9DED2);
     final panelC = play ? const Color(0xFFE6F0EA) : const Color(0xFFF3ECE3);
     final capC = const Color(0xFFFBF8F3);
@@ -193,6 +204,10 @@ abstract final class RoomBuilder {
     m.add(Mesh.grid(const Vec3(-2, 0, -2), Vec3(x1 + 2, 0, 0), const Vec3(0, panelTop, 0), panelC, nu: nx, nv: 3));
     if (play) {
       m.add(Mesh.grid(const Vec3(-2, panelTop, -2), Vec3(x1 + 2, 0, 0), Vec3(0, wh - panelTop, 0), wallC, nu: nx, nv: fullBleed ? 10 : 6));
+    } else if (annex) {
+      // Спальня — полоски, игровая за аркой — свои зелёные обои (F-065).
+      _stripes(m, -2, annexWall, panelTop, wh, back: true, nv: fullBleed ? 10 : 6);
+      m.add(Mesh.grid(const Vec3(annexWall, panelTop, -2), Vec3(x1 - annexWall, 0, 0), Vec3(0, wh - panelTop, 0), const Color(0xFFCFE3D7), nu: ((x1 - annexWall) / 0.4).round(), nv: 10));
     } else {
       _stripes(m, -2, x1, panelTop, wh, back: true, nv: fullBleed ? 10 : 6); // обои в полоску (F-052)
     }
@@ -353,6 +368,17 @@ abstract final class RoomBuilder {
       }
       k++;
     }
+  }
+
+  /// Арка на задней стене между спальней и игровой (F-065): белые пилястры и перемычка.
+  static void _annexArch(List<Mesh> m) {
+    const c = Color(0xFFFBF8F3);
+    for (final x in [annexWall - 0.08, annexWall + 0.08]) {
+      m.add(Mesh.box(const Vec3(0.12, 2.9, 0.06), c, castShadow: false).translated(Vec3(x, 0, -1.97)));
+    }
+    m.add(Mesh.roundedBox(const Vec3(0.5, 0.14, 0.08), 0.04, c, seg: 2, castShadow: false).translated(const Vec3(annexWall, 2.9, -1.97)));
+    // Табличка «Игровая».
+    m.add(Mesh.roundedBox(const Vec3(0.44, 0.2, 0.03), 0.04, const Color(0xFF5DB6A6), seg: 2, castShadow: false).translated(const Vec3(annexWall + 1.3, 2.3, -1.97)));
   }
 
   static void _pendant(List<Mesh> m, {required bool night, double ceiling = h}) {
