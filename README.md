@@ -9,7 +9,7 @@
 </p>
 
 > ### 📦 Готовый APK — без сборки
-> **[Релиз v1.2.0 в GitHub Releases](https://github.com/IMaruli/Pet_Finni_hackathon/releases/tag/v1.2.0)** — файл `finni-1.2.0.apk` (~53 МБ, Android 7.0+; ТЗ требует 8.0+). Все релизы — [Releases](https://github.com/IMaruli/Pet_Finni_hackathon/releases).
+> **[Релиз v1.2.1 в GitHub Releases](https://github.com/IMaruli/Pet_Finni_hackathon/releases/tag/v1.2.1)** — файл `finni-1.2.1.apk` (~53 МБ, Android 7.0+; ТЗ требует 8.0+). Все релизы — [Releases](https://github.com/IMaruli/Pet_Finni_hackathon/releases).
 > Скопируйте APK на телефон, откройте его и разрешите установку из этого источника. Каждый пуш тоже собирает APK: **Actions → Android APK → Artifacts → `finni-apk`**.
 
 > ### 📖 История Финни
@@ -17,7 +17,7 @@
 
 | Пакет | Версия | Номер сборки | Android | Стек |
 |-------|--------|--------------|---------|------|
-| `ru.petfinni.finni` | **1.2.0** (`pubspec.yaml`: `1.2.0+3`) | в CI — номер запуска GitHub Actions | 7.0+ (ТЗ: 8.0+), портрет, офлайн | Flutter 3.47 / Dart 3.13 |
+| `ru.petfinni.finni` | **1.2.1** (`pubspec.yaml`: `1.2.1+4`) | в CI — номер запуска GitHub Actions | 7.0+ (ТЗ: 8.0+), портрет, офлайн | Flutter 3.47 / Dart 3.13 |
 
 **Содержание:** [Быстрый запуск и демо](#быстрый-запуск-и-демо-режим) · [О приложении](#о-приложении) · [Механики с примерами](#механики-с-примерами) · [Реализованные требования](#реализованные-требования-тз) · [Техническое решение](#техническое-решение) · [Состав репозитория](#состав-репозитория) · [Собрать самому](#собрать-самому-flutter) · [Документация](#документация)
 
