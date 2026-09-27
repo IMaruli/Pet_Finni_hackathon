@@ -40,7 +40,15 @@ sealed class LessonStep {
         pairs: [for (final p in j['pairs'] as List) (left: (p as List)[0] as String, right: p[1] as String)],
         why: text('why'),
       ),
-      'order' => OrderStep(prompt: text('prompt'), tiles: strings('tiles'), extra: strings('extra'), why: text('why'), hint: text('hint')),
+      'order' => OrderStep(
+        prompt: text('prompt'),
+        tiles: strings('tiles'),
+        extra: strings('extra'),
+        why: text('why'),
+        hint: text('hint'),
+        given: [for (final i in j['given'] as List? ?? const []) i as int],
+        scene: j['scene'] == null ? null : (emoji: (j['scene'] as Map)['emoji'] as String, text: j['scene']['text'] as String),
+      ),
       'next' => NextStep(
         situation: text('situation'),
         emoji: j['emoji'] as String? ?? '💭',
@@ -104,9 +112,26 @@ final class PairsStep extends LessonStep {
 
 /// Собери фразу: [tiles] в верном порядке + отвлекающие [extra].
 final class OrderStep extends LessonStep {
-  const OrderStep({required this.prompt, required this.tiles, required this.extra, required this.why, required this.hint});
+  const OrderStep({
+    required this.prompt,
+    required this.tiles,
+    required this.extra,
+    required this.why,
+    required this.hint,
+    this.given = const [],
+    this.scene,
+  });
   final String prompt;
   final List<String> tiles;
+
+  /// Слова, которые уже стоят на месте (индексы [tiles]); ребёнок вставляет остальные (F-063).
+  final List<int> given;
+
+  /// Сцена, к которой относится правило: эмодзи и короткая ситуация (F-063).
+  final ({String emoji, String text})? scene;
+
+  /// Индексы пропусков по порядку.
+  List<int> get blanks => [for (var i = 0; i < tiles.length; i++) if (!given.contains(i)) i];
   final List<String> extra;
   final String why;
   final String hint;
@@ -165,8 +190,10 @@ final class Lesson {
           if (cards.any((c) => !ids.contains(c.bin))) p.add('lessons: $id sort card with unknown bin');
         case PairsStep(:final pairs):
           if (pairs.length < 3 || pairs.length > 4) p.add('lessons: $id pairs needs 3–4 pairs');
-        case OrderStep(:final tiles):
+        case OrderStep(:final tiles, :final given):
           if (tiles.length < 3 || tiles.length > 4) p.add('lessons: $id order needs 3–4 tiles');
+          if (given.any((i) => i < 0 || i >= tiles.length)) p.add('lessons: $id order given out of range');
+          if (given.length >= tiles.length) p.add('lessons: $id order needs at least one blank');
         case NextStep(:final outcomes):
           if (outcomes.length < 2 || outcomes.length > 3) p.add('lessons: $id next needs 2–3 outcomes');
           if (!outcomes.any((o) => o.good)) p.add('lessons: $id next needs a good outcome');

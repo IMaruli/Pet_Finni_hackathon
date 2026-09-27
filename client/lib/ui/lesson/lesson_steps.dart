@@ -517,28 +517,31 @@ class OrderView extends StatefulWidget {
 }
 
 class _OrderViewState extends State<OrderView> {
-  late final List<String> _bank = [
-    for (final i in shuffled(widget.step.tiles.length + widget.step.extra.length, widget.step.prompt.length + 3))
-      [...widget.step.tiles, ...widget.step.extra][i],
-  ];
+  OrderStep get s => widget.step;
 
-  /// Индексы плиток банка в слотах.
+  /// В банке — только слова для пропусков и лишние (F-063).
+  late final List<String> _bank = () {
+    final words = [for (final i in s.blanks) s.tiles[i], ...s.extra];
+    return [for (final i in shuffled(words.length, s.prompt.length + 3)) words[i]];
+  }();
+
+  /// Индексы плиток банка в пропусках по порядку.
   final _slots = <int>[];
   StepFeedback? _feedback;
 
-  OrderStep get s => widget.step;
-
   void _check() {
-    final ok = orderOk(s, [for (final i in _slots) _bank[i]]);
+    final ok = blanksOk(s, [for (final i in _slots) _bank[i]]);
     buzz(ok ? Buzz.medium : Buzz.heavy);
     setState(() => _feedback = ok ? StepFeedback.good(widget.text(s.why)) : StepFeedback.retry(widget.text(s.hint)));
   }
 
   @override
   Widget build(BuildContext context) {
+    final blanks = s.blanks;
+    final scene = s.scene;
     return StepScaffold(
       prompt: widget.text(s.prompt),
-      onButton: _slots.length == s.tiles.length ? _check : null,
+      onButton: _slots.length == blanks.length ? _check : null,
       feedback: _feedback,
       onFeedback: () => _feedback!.good
           ? widget.onPassed()
@@ -546,28 +549,56 @@ class _OrderViewState extends State<OrderView> {
               _feedback = null;
               _slots.clear();
             }),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      // Прокрутка: сцена, предложение и плитки помещаются на любом экране и шрифте.
+      body: ListView(
         children: [
+          // Сцена привязывает правило к ситуации (F-063).
+          if (scene != null) ...[
+            Container(
+              key: const Key('order.scene'),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(color: FinniColors.fill, borderRadius: BorderRadius.circular(18)),
+              child: Row(
+                children: [
+                  Text(scene.emoji, style: const TextStyle(fontSize: 40)),
+                  const SizedBox(width: 12),
+                  Expanded(child: Text(widget.text(scene.text), style: const TextStyle(fontSize: 17, height: 1.35))),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
               for (var k = 0; k < s.tiles.length; k++)
-                k < _slots.length
-                    ? LessonTile(key: Key('order.slot.$k'), text: _bank[_slots[k]], onTap: _feedback != null ? null : () => setState(() => _slots.removeAt(k)))
-                    : Container(
-                        width: 86,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: FinniColors.line, width: 2),
-                          color: FinniColors.fill,
-                        ),
-                      ),
+                if (s.given.contains(k))
+                  // Готовое слово стоит на месте.
+                  Container(
+                    key: Key('order.given.$k'),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                    child: Text(s.tiles[k], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                  )
+                else if (blanks.indexOf(k) < _slots.length)
+                  LessonTile(
+                    key: Key('order.slot.${blanks.indexOf(k)}'),
+                    text: _bank[_slots[blanks.indexOf(k)]],
+                    onTap: _feedback != null ? null : () => setState(() => _slots.removeRange(blanks.indexOf(k), _slots.length)),
+                  )
+                else
+                  Container(
+                    width: 86,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: FinniColors.primary.withValues(alpha: 0.5), width: 2),
+                      color: FinniColors.fill,
+                    ),
+                  ),
             ],
           ),
-          const Spacer(),
+          const SizedBox(height: 28),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -578,7 +609,7 @@ class _OrderViewState extends State<OrderView> {
                   key: Key('order.tile.$i'),
                   text: word,
                   dim: _slots.contains(i),
-                  onTap: _slots.contains(i) || _feedback != null || _slots.length == s.tiles.length
+                  onTap: _slots.contains(i) || _feedback != null || _slots.length == blanks.length
                       ? null
                       : () {
                           buzz(Buzz.select);

@@ -20,6 +20,14 @@ void main() {
     const pairs = PairsStep(prompt: 'p', pairs: [(left: 'Миска', right: 'Еда'), (left: 'Наклейка', right: 'Хотелка'), (left: 'Стакан', right: 'Вода')], why: 'w');
     const order = OrderStep(prompt: 'p', tiles: ['Сначала', 'нужное,', 'потом', 'хотелки'], extra: ['сразу'], why: 'w', hint: 'h');
 
+    test('fill-in order: given words stay, only blanks are placed (F-063)', () {
+      const fill = OrderStep(prompt: 'p', tiles: ['Сначала', 'нужное,', 'потом', 'хотелки'], extra: ['сразу'], why: 'w', hint: 'h', given: [0, 2]);
+      expect(fill.blanks, [1, 3]);
+      expect(blanksOk(fill, ['нужное,', 'хотелки']), isTrue);
+      expect(blanksOk(fill, ['хотелки', 'нужное,']), isFalse);
+      expect(blanksOk(fill, ['нужное,']), isFalse);
+    });
+
     test('pick, sort, order', () {
       expect(pickOk(pick, 1), isTrue);
       expect(pickOk(pick, 0), isFalse);
